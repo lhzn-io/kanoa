@@ -11,7 +11,14 @@ We welcome contributions! Please follow these guidelines to ensure a smooth proc
     pip install -e ".[dev]"
     ```
 
-3. **Create a branch** for your feature or fix:
+3. **Install pre-commit hooks**:
+    This sets up git hooks to automatically lint and format your code before each commit.
+
+    ```bash
+    pre-commit install
+    ```
+
+4. **Create a branch** for your feature or fix:
 
     ```bash
     git checkout -b feature/my-awesome-feature

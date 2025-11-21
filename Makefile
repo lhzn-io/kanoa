@@ -14,7 +14,7 @@ install:
 	pre-commit install
 
 test:
-	pytest tests/ --cov=kanoa --cov-report=term-missing
+	pytest tests/
 
 test-fast:
 	pytest tests/ -m "not integration and not slow"
