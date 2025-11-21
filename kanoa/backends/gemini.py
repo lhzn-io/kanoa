@@ -2,8 +2,10 @@
 Gemini backend implementation.
 """
 
-from .base import BaseBackend, InterpretationResult
+from .base import BaseBackend
+
 
 class GeminiBackend(BaseBackend):
     """Google Gemini backend."""
+
     pass

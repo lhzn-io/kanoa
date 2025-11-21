@@ -1,1 +1,1 @@
-"""Utility functions for Kanoa."""
+"""Utility functions for kanoa."""

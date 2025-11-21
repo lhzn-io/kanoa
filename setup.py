@@ -1,10 +1,13 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="kanoa",
     version="0.1.0",
-    description="AI-powered interpretation of data science outputs with multi-backend support",
-    author="LHZN",
+    description=(
+        "AI-powered interpretation of data science outputs "
+        "with multi-backend support"
+    ),
+    author="dfry@lhzn.io",
     packages=find_packages(),
     python_requires=">=3.8",
     install_requires=[

@@ -1,1 +1,1 @@
-"""Knowledge base components for Kanoa."""
+"""Knowledge base components for kanoa."""

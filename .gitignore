@@ -39,7 +39,7 @@ coverage.xml
 
 # IDEs
 .idea/
-.vscode/
+
 *.swp
 *.swo
 

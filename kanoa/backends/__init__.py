@@ -1,1 +1,1 @@
-"""AI backends for Kanoa."""
+"""AI backends for kanoa."""

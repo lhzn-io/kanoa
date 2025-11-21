@@ -1,0 +1,20 @@
+include LICENSE
+include README.md
+include CONTRIBUTING.md
+include requirements.txt
+
+recursive-include kanoa *.py
+recursive-include docs *.md
+
+exclude .flake8
+exclude .gitignore
+exclude .pre-commit-config.yaml
+exclude Makefile
+exclude task.md
+exclude implementation_plan.md
+
+prune .agent
+prune .github
+prune .vscode
+prune tests
+prune examples

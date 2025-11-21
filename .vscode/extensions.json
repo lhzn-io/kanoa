@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "DavidAnson.vscode-markdownlint",
+        "tamasfe.even-better-toml",
+        "bierner.markdown-mermaid"
+    ]
+}

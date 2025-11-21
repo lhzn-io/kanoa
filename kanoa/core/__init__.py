@@ -1,1 +1,1 @@
-"""Core components of Kanoa."""
+"""Core components of kanoa."""

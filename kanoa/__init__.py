@@ -1,5 +1,5 @@
 """
-Kanoa: AI-powered interpretation of data science outputs.
+kanoa: AI-powered interpretation of data science outputs.
 """
 
 __version__ = "0.1.0"
