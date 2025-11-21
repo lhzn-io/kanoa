@@ -8,7 +8,7 @@
 
 **kanoa** is a standalone Python package that programmatically interprets matplotlib figures, DataFrames, and statistical summaries using state-of-the-art AI models. It is designed to be dropped into any data science project to provide instant, context-aware analysis.
 
-## Features 🚀
+## Features
 
 - **Multi-Backend Support**: Seamlessly switch between Gemini 3.0 Pro (native PDF/vision), Claude Sonnet 4.5, and remote & local Molmo models.
 - **Knowledge Base Grounding**: Automatically load project documentation (Markdown) or academic papers (PDFs) to ground interpretations in domain-specific facts.
