@@ -7,8 +7,8 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "--cov=kanoa --cov-report=term-missing --strict-markers"
 markers = [
-    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
 ]
 
 [tool.black]
@@ -40,7 +40,7 @@ ensure_newline_before_comments = true
 line_length = 88
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -60,3 +60,8 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = ["setuptools.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["pytest", "_pytest", "_pytest.*"]
+ignore_missing_imports = true
+ignore_errors = true
