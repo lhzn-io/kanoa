@@ -42,21 +42,30 @@ This section outlines the coding, documentation, and aesthetic standards for the
 - **Constants**: `UPPER_CASE` (e.g., `DEFAULT_MODEL`)
 - **Files**: `snake_case` (e.g., `text_kb.py`)
 
-### 2. Emoji Policy 🎨
+### 2. Emoji Policy
 
-We use emojis to add visual cues and personality, but they must be used consistently and not distract from the content.
+We use emojis sparingly to highlight important information without creating visual clutter.
 
 #### Allowed Contexts
 
-- **Headers (H1, H2)**: Optional, single emoji at the end of the header.
-- **Lists/Features**: To distinguish bullet points in marketing-facing docs (README).
-- **Status Messages**: ✅ (Success), ❌ (Error), ⚠️ (Warning), 🚀 (Start/Speed).
+- **Warnings/Alerts**: ⚠️ for warnings, cautions, or important notes (replaces "WARNING:", "CRITICAL:", etc.)
+- **Errors**: ❌ for error messages or failed states
+- **Marketing docs (README only)**: To distinguish key features in bullet points (e.g., "- 🔒 **Privacy First**")
 
 #### Prohibited Contexts
 
-- **Code Comments**: Keep comments strictly technical.
-- **Commit Messages**: Use conventional commits (e.g., `feat:`, `fix:`) without emojis, unless using a specific gitmoji standard (which we are currently NOT enforcing).
-- **Mid-sentence**: Do not put emojis in the middle of a sentence.
+- **Headers**: Do not use emojis in section headers (H1-H6). Let the words speak for themselves.
+- **Success indicators**: Avoid ✅ checkmarks in lists, checklists, or status messages
+- **Code comments**: Keep comments strictly technical
+- **Commit messages**: Use conventional commits (e.g., `feat:`, `fix:`) without emojis
+- **Mid-sentence**: Do not put emojis in the middle of a sentence
+- **Excessive decoration**: Do not use emojis as visual flair or decoration
+
+#### Guidelines
+
+- **Replace ALL CAPS with symbols**: Use ⚠️ instead of "WARNING:", "CRITICAL:", "IMPORTANT:", etc.
+- **One emoji per context**: If you use ⚠️ for a warning, don't add additional emojis
+- **When in doubt, omit**: Professional technical writing should default to no emojis
 
 ### 3. Markdown & Documentation
 

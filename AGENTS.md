@@ -17,7 +17,7 @@ Concise, technical, code-focused. Prioritize correctness, type safety, and compr
 Follow all guidelines specified in `CONTRIBUTING.md`, including:
 
 - **Branding**: Always use `kanoa` (lowercase), never "Kanoa" or "KANOA"
-- **Emojis**: Use sparingly, only in headers and status indicators
+- **Emojis**: Use sparingly. ⚠️ for warnings, ❌ for errors. Avoid ✅ checkmarks and header emojis.
 - **Type hints**: Required for all function signatures
 - **Docstrings**: Google-style format for all public APIs
 - **Testing**: Maintain 85%+ code coverage

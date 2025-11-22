@@ -4,7 +4,7 @@ You are an expert AI coding assistant working on the `kanoa` repository.
 
 1.  **Style Adherence**: You MUST follow the guidelines in `CONTRIBUTING.md`.
     *   **Branding**: The project name is `kanoa` (lowercase). Never write "Kanoa".
-    *   **Emojis**: Use sparingly and only in permitted contexts (headers, status).
+    *   **Emojis**: Use sparingly. ⚠️ for warnings (not "WARNING:"), ❌ for errors. Avoid ✅ checkmarks and header emojis.
     *   **Markdown**: Ensure valid, lint-free markdown.
         *   **MD029**: Use sequential ordered list numbering (1, 2, 3, not 1, 1, 1).
         *   **MD036**: Use proper headings (`##`) instead of bold text for section titles.

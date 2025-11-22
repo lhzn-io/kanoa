@@ -24,7 +24,7 @@ lint:
 	flake8
 	isort . --check-only
 	black . --check
-	npx -y markdownlint-cli@latest . --config .markdownlint.json --ignore docs/planning
+	npx -y markdownlint-cli@latest . --config .markdownlint.json
 
 format:
 	black .
