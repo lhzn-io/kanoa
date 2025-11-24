@@ -32,6 +32,8 @@ pip install -e .
 
 ## Quick Start
 
+📓 **New to kanoa?** Check out [10 Minutes to kanoa](./examples/quickstart_10min.ipynb) for a comprehensive introduction!
+
 ### Basic Usage
 
 ```python
