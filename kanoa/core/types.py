@@ -1,7 +1,3 @@
-"""
-Type definitions for kanoa.
-"""
-
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 

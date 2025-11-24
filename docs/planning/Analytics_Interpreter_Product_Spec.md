@@ -33,7 +33,7 @@ Build a **standalone, open-source Python package** that provides AI-powered inte
 
 1. **Standalone Package**: `kanoa` - Fully independent, pip-installable
 2. **Multi-Project Support**: Import into any data science project
-3. **Multi-Backend Support**: Claude 3.5, Gemini 3.0, OpenAI GPT-4o, Molmo-7B
+3. **Multi-Backend Support**: Claude Sonnet 4.5, Gemini 3.0, OpenAI GPT-5.1, Ai2 Molmo-7B
 4. **Provider-Native Grounding**: Leverage Gemini Context Caching, OpenAI Vector Stores, etc.
 5. **Multimodal Knowledge Base**: Native PDF, Code, Audio, and Video processing (Gemini)
 6. **Open Source**: MIT/Apache 2.0 license, community-friendly
@@ -1729,7 +1729,7 @@ interpreter = AnalyticsInterpreter(
     kb_type='pdf'  # Use full PDFs
 )
 
-# Biologger usage
+# Project usage
 from your_project.analysis import interpret
 
 interpret(
@@ -2087,7 +2087,7 @@ setup(
 
 - Jupyter notebooks in `examples/`
 - Show different backends
-- Show different domains (biologger, imta, generic)
+- Show different domains (marine biology, aquaculture, generic)
 - Cost optimization examples
 
 #### Communication
@@ -2191,6 +2191,58 @@ setup(
 - [ ] Knowledge base tests
 - [ ] Examples and documentation
 - [ ] Achieve 85%+ test coverage
+
+### Phase 2.5: Vertex AI RAG & Grounding Integration (Week 3.5)
+
+**Strategic Goal**: Implement provider-native RAG solutions as an alternative to context-stuffing for knowledge base integration.
+
+#### Vertex AI RAG Engine Integration
+
+- [ ] **RAG Corpus Management**
+  - [ ] Create `VertexRAGKnowledgeBase` class
+  - [ ] Implement corpus creation and indexing
+  - [ ] Support for local files, GCS, and Google Drive sources
+  - [ ] Automatic chunking and embedding generation
+  - [ ] Managed vector database (`RagManagedDb`)
+
+- [ ] **Retrieval Integration**
+  - [ ] Implement semantic search against RAG corpus
+  - [ ] Configure similarity thresholds and top-k results
+  - [ ] Integrate retrieved context into Gemini prompts
+  - [ ] Track retrieval metrics and relevance scores
+
+- [ ] **Grounding with Google Search**
+  - [ ] Add `enable_google_search_grounding` parameter
+  - [ ] Implement dynamic retrieval (model decides when to ground)
+  - [ ] Parse and include grounding metadata with source citations
+  - [ ] Support for third-party data sources (Moody's, MSCI, etc.)
+
+#### Implementation Details
+
+- [ ] **Backend Enhancement**
+  - [ ] Extend `GeminiBackend` with RAG Engine support
+  - [ ] Add `grounding_mode` parameter: `'context_stuffing'`, `'rag_engine'`, `'google_search'`, `'hybrid'`
+  - [ ] Implement cost comparison between strategies
+  - [ ] Add grounding source attribution to results
+
+- [ ] **Knowledge Base Adapter**
+  - [ ] Create `VertexRAGAdapter` for existing KB types
+  - [ ] Auto-convert TextKB/PDFKB to RAG corpus
+  - [ ] Implement incremental updates for corpus
+  - [ ] Cache corpus IDs for reuse
+
+- [ ] **Testing & Validation**
+  - [ ] Compare accuracy: context-stuffing vs RAG Engine
+  - [ ] Benchmark costs for different KB sizes
+  - [ ] Test dynamic retrieval effectiveness
+  - [ ] Validate grounding source citations
+
+#### Success Metrics
+
+- RAG Engine reduces costs by 60%+ for large KBs (>500K tokens)
+- Retrieval precision >85% for domain-specific queries
+- Google Search grounding adds verifiable citations
+- Hybrid mode optimizes for both accuracy and cost
 
 ### Phase 3: Open Source Release (Week 4)
 

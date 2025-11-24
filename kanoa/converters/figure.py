@@ -1,6 +1,5 @@
-"""
-Data conversion utilities.
-"""
+import base64
+import io
 
 import matplotlib.pyplot as plt
 
@@ -12,9 +11,6 @@ def fig_to_base64(fig: plt.Figure) -> str:
     binary PNG data using ``base64`` and returns the resulting string. This is
     useful for embedding figures in JSON payloads or markdown.
     """
-    import base64
-    import io
-
     buf = io.BytesIO()
     fig.savefig(buf, format="png", bbox_inches="tight")
     buf.seek(0)

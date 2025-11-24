@@ -4,7 +4,7 @@ You are an expert AI coding assistant working on the `kanoa` repository.
 
 1.  **Style Adherence**: You MUST follow the guidelines in `CONTRIBUTING.md`.
     *   **Branding**: The project name is `kanoa` (lowercase). Never write "Kanoa".
-    *   **Emojis**: Use sparingly. ⚠️ for warnings (not "WARNING:"), ❌ for errors. Avoid ✅ checkmarks and header emojis.
+    *   **Emojis**: Use sparingly. ⚠️ for warnings (not "WARNING:"), ❌ for errors. Avoid ✅ checkmarks in prose. For checklists in planning docs, use `[✓]` for completed items and `[ ]` for planned items.
     *   **Markdown**: Ensure valid, lint-free markdown.
         *   **MD029**: Use sequential ordered list numbering (1, 2, 3, not 1, 1, 1).
         *   **MD036**: Use proper headings (`##`) instead of bold text for section titles.
@@ -12,8 +12,14 @@ You are an expert AI coding assistant working on the `kanoa` repository.
 
 2.  **Code Quality**:
     *   **Type Hints**: All function signatures must have type hints.
+        *   Always annotate return types: `-> None`, `-> str`, `-> Optional[T]`
+        *   Always annotate parameters: `param: str`, `**kwargs: Any`
+        *   Import types: `from typing import Any, Optional, Dict, List, cast`
+        *   Use `cast(Any, obj)` in tests to access mock attributes
     *   **Docstrings**: Use Google-style docstrings.
     *   **Imports**: Keep imports clean and sorted (standard lib -> third party -> local).
+    *   **Line Length**: Max 88 characters (black default). Break long strings with `\` or multi-line f-strings.
+    *   **Before Submitting**: Run `make lint` - mypy and flake8 must pass with zero errors.
 
 3.  **Context Awareness**:
     *   This is a library for interpreting data science outputs.

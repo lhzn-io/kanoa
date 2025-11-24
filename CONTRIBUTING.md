@@ -50,16 +50,32 @@ We use emojis sparingly to highlight important information without creating visu
 
 - **Warnings/Alerts**: ⚠️ for warnings, cautions, or important notes (replaces "WARNING:", "CRITICAL:", etc.)
 - **Errors**: ❌ for error messages or failed states
+- **Checklists**: Use `[✓]` for completed items and `[ ]` for planned/incomplete items in planning documents
 - **Marketing docs (README only)**: To distinguish key features in bullet points (e.g., "- 🔒 **Privacy First**")
 
 #### Prohibited Contexts
 
 - **Headers**: Do not use emojis in section headers (H1-H6). Let the words speak for themselves.
-- **Success indicators**: Avoid ✅ checkmarks in lists, checklists, or status messages
+- **Success indicators**: Avoid ✅ checkmarks in prose, lists, or status messages (use `[✓]` in checklists only)
 - **Code comments**: Keep comments strictly technical
 - **Commit messages**: Use conventional commits (e.g., `feat:`, `fix:`) without emojis
 - **Mid-sentence**: Do not put emojis in the middle of a sentence
 - **Excessive decoration**: Do not use emojis as visual flair or decoration
+
+#### Checklist Convention
+
+For planning documents and task lists:
+
+```markdown
+[✓] Completed task
+[ ] Planned/incomplete task
+```
+
+**Do not use**:
+
+- `[x]` - too harsh, prefer the elegant checkmark
+- `✅` - standalone emoji, use bracketed version in checklists
+- Mixed styles - be consistent within a document
 
 #### Guidelines
 
@@ -106,13 +122,71 @@ If you are an AI assistant (GitHub Copilot, Antigravity, etc.):
 
 - Type hints are required for all function signatures.
 
+### Type Annotations
+
+`kanoa` enforces a strict type annotation policy to ensure code quality and maintainability.
+
+**Quick Summary:**
+
+| Code Type | Type Hints | Enforcement |
+| :--- | :--- | :--- |
+| **Public APIs** | Required | Strict (mypy) |
+| **Internal Code** | Encouraged | Relaxed |
+| **Tests** | Optional | Not enforced |
+
+**Key Rules:**
+
+1. **Public APIs Must Be Typed**: All functions/classes exported to users must have complete type hints.
+2. **Avoid `Any`**: Use `Any` only as a last resort.
+    - ❌ `def process(data: Any)`
+    - ✓ `def process(data: Union[str, int])`
+3. **Typed Containers**: Always specify types for containers.
+    - ❌ `data: Dict = {}`
+    - ✓ `data: Dict[str, int] = {}`
+4. **No Implicit `Any`**: Do not import from untyped libraries without handling types (use stubs or `type: ignore` if necessary).
+
+**Checking Types:**
+
+```bash
+# Run strict type check
+make lint
+
+# Check Any usage stats
+make check-any-usage
+```
+
+For detailed guidelines, examples, and migration strategies, see the full [Type Annotation Policy](docs/TYPE_ANNOTATION_POLICY.md).
+
 ## Testing
 
-- Run the full test suite:
+We use `pytest` for testing. The test suite is divided into **Unit Tests** (fast, mocked) and **Integration Tests** (slower, hit live APIs).
 
-    ```bash
-    pytest tests/
-    ```
+### 1. Unit Tests (Required)
+
+Run these before every commit. They mock all external API calls and should complete in seconds.
+
+```bash
+# Run only unit tests
+pytest -m "not integration"
+```
+
+### 2. Integration Tests (Golden Set)
+
+Run these to verify end-to-end functionality with live APIs (Gemini, Claude). These require valid credentials/ADC.
+
+```bash
+# Run only integration tests
+pytest -m integration
+```
+
+**Note**: Integration tests use the "Golden Set" strategy—running a small, fixed set of prompts to verify the pipeline without incurring high costs.
+
+### 3. Full Suite
+
+```bash
+# Run everything
+pytest
+```
 
 - Ensure coverage remains above 85%:
 

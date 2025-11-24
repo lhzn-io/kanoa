@@ -6,7 +6,7 @@ import re
 import matplotlib.pyplot as plt
 import pytest
 
-from kanoa.utils.converters import fig_to_base64
+from kanoa.converters.figure import fig_to_base64
 
 # A regex to check if a string is valid base64
 # This is a simple check, not a full validation

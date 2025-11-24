@@ -2,16 +2,61 @@
 description: Run the test suite
 ---
 
-To run the tests for the project:
+# Run Tests
 
-1. Run the full test suite with coverage:
-// turbo
+This workflow provides commands for running different test suites.
+
+## Unit Tests (Fast, Mocked)
+
+Run unit tests only (no API calls):
+
 ```bash
-make test
+pytest -m "not integration"
 ```
 
-2. If you only want to run fast unit tests (skipping integration tests):
-// turbo
+## Integration Tests
+
+### All Integration Tests
+
+Run all integration tests (hits live APIs):
+
 ```bash
-make test-fast
+pytest -m integration
+```
+
+### By Backend
+
+Run integration tests for a specific backend:
+
+```bash
+# Gemini only
+pytest -m "integration and gemini"
+
+# Claude only (when implemented)
+pytest -m "integration and claude"
+```
+
+### With Verbose Output
+
+Show detailed test output including prompts and responses:
+
+```bash
+pytest -m integration -s
+```
+
+## Full Test Suite
+
+Run everything (unit + integration):
+
+```bash
+pytest
+```
+
+## Coverage Report
+
+Generate a coverage report:
+
+```bash
+pytest --cov=kanoa --cov-report=html
+open htmlcov/index.html
 ```

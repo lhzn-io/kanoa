@@ -8,32 +8,31 @@
 
 **kanoa** brings the power of a dedicated AI research assistant directly into your **Python workflows—whether in Jupyter notebooks, Streamlit apps, or automated scripts**. It programmatically interprets visualizations, tables, and results using multimodal LLMs (Gemini, Claude, OpenAI, Molmo), grounded in your project's documentation and literature. It is designed to be dropped into any data science project to provide instant, context-aware analysis.
 
-## How it Works
-
-1. **Run Code**: Generate a plot, table, or result in your notebook.
-2. **Ask**: Pass the result to `kanoa` with a specific question.
-3. **Ground**: The LLM consults your project's codebase, docs, and PDF knowledge base.
-4. **Interpret**: Receive a rich Markdown interpretation with tables and diagrams, rendered directly in the notebook.
-
 ## Features
 
-- **Multi-Backend Support**: Seamlessly switch between Gemini 3.0 (native PDF/vision), Claude Sonnet 4.5, OpenAI GPT-4o, and local Molmo models.
-- **Provider-Native Grounding**: Offloads knowledge retrieval to best-in-breed provider solutions (Gemini Context Caching, OpenAI Vector Stores) for maximum efficiency and accuracy.
-- **Native Vision**: Uses Gemini's native multimodal capabilities to "see" complex plots and diagrams without OCR.
-- **Cost Optimized**: Intelligent context caching and token usage tracking to keep costs low (<$0.05/run).
-- **Privacy First**: Support for local inference using Molmo for sensitive data.
+- **Multi-Backend Support**: Seamlessly switch between Gemini (native PDF/vision), Claude Sonnet 3.5, and others.
+- **Provider-Native Grounding**: Offloads knowledge retrieval to best-in-breed provider solutions.
+- **Native Vision**: Uses multimodal capabilities to "see" complex plots and diagrams.
+- **Cost Optimized**: Intelligent context caching and token usage tracking.
+- **Knowledge Base**: Support for text (Markdown) and PDF knowledge bases.
 
-## Roadmap
-
-- **Streamlit Integration**: Reference implementation for building interactive research assistants.
-- **Reference Manager Sync**: Connect to Zotero/Paperguide to auto-sync PDFs from your library.
-- **BibTeX Automation**: Utilities to convert `.bib` files into a populated PDF knowledge base.
-
-## Quick Start
+## Installation
 
 ```bash
 pip install kanoa
 ```
+
+Or for development:
+
+```bash
+git clone https://github.com/lhzn-io/kanoa.git
+cd kanoa
+pip install -e .
+```
+
+## Quick Start
+
+### Basic Usage
 
 ```python
 import matplotlib.pyplot as plt
@@ -43,25 +42,71 @@ from kanoa import AnalyticsInterpreter
 plt.plot([1, 2, 3], [1, 4, 9])
 plt.title("Growth Curve")
 
-# 2. Interpret it
+# 2. Initialize Interpreter (defaults to Gemini)
+# Ensure GOOGLE_API_KEY is set in your environment
 interpreter = AnalyticsInterpreter(backend='gemini-3')
-result = interpreter.interpret(plt.gcf(), context="Bacterial growth experiment")
 
-# 3. Get insights
+# 3. Interpret it
+result = interpreter.interpret(
+    fig=plt.gcf(),
+    context="Bacterial growth experiment",
+    focus="Exponential phase"
+)
+
+# 4. View results (auto-displays in Jupyter)
 print(result.text)
 ```
 
+### Using Claude
+
+```python
+# Ensure ANTHROPIC_API_KEY is set
+interpreter = AnalyticsInterpreter(backend='claude')
+
+result = interpreter.interpret(
+    fig=plt.gcf(),
+    context="Sales analysis"
+)
+```
+
+### Using a Knowledge Base
+
+```python
+# Point to a directory of Markdown or PDF files
+interpreter = AnalyticsInterpreter(
+    backend='gemini-3',
+    kb_path='./docs/literature',
+    kb_type='auto'  # Detects if PDFs are present
+)
+
+# The interpreter will now use the knowledge base to ground its analysis
+result = interpreter.interpret(
+    fig=plt.gcf(),
+    context="Compare with Smith et al. 2023 results"
+)
+```
+
+## Supported Backends
+
+| Backend | Key Features | Best For |
+| :--- | :--- | :--- |
+| `gemini-3` | Native PDF support, 1M context, caching | Complex analysis with PDF references |
+| `claude` | Strong reasoning, vision support | General analysis, text-heavy KBs |
+| `molmo` | Local inference (coming soon) | Privacy-sensitive data |
+
 ## Documentation
 
-(forthcoming)
-
-## Installation
+Full API documentation is available and built using Sphinx:
 
 ```bash
-git clone https://github.com/lhzn-io/kanoa.git
-cd kanoa
-pip install -e .
+cd docs
+pip install -r requirements-docs.txt
+make html
 ```
+
+Then open `docs/build/html/index.html` in your browser.
+
+The API reference is auto-generated from docstrings in the source code.
 
 ## License
 

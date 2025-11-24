@@ -25,6 +25,9 @@ setup(
             "isort>=5.12.0",
             "flake8>=6.0.0",
             "mypy>=1.0.0",
+            "autoflake>=2.0.0",
+            "pre-commit>=3.0.0",
+            "types-setuptools",
         ],
     },
     classifiers=[

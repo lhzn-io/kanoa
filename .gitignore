@@ -46,3 +46,7 @@ coverage.xml
 # Project specific
 *.log
 .DS_Store
+*.Zone.Identifier
+
+# Sphinx documentation
+docs/build/
