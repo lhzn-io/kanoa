@@ -9,7 +9,7 @@ kanoa supports multiple AI backends, each with different strengths and use cases
 ### Features
 
 - **Native PDF Support**: Upload PDFs directly, Gemini "sees" figures and tables
-- **1M Token Context**: Massive context window for large knowledge bases
+- **2M Token Context**: Massive context window (Gemini 3 Pro) for large knowledge bases
 - **Context Caching**: Reuse cached content to reduce costs
 - **Multimodal**: Images, PDFs, text, and more
 
@@ -50,7 +50,7 @@ interpreter = AnalyticsInterpreter(
 
 ## Claude (`claude`)
 
-**Best for**: Strong reasoning, text-heavy analysis
+**Best for**: Strong reasoning, text-heavy analysis (Claude Sonnet 4.5)
 
 ### Features
 

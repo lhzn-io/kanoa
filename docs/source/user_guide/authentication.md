@@ -2,7 +2,7 @@
 
 kanoa supports multiple authentication methods depending on your backend and environment.
 
-## Gemini / Vertex AI
+## Gemini 3 Pro / Vertex AI
 
 ### Local Development
 
@@ -56,7 +56,7 @@ interpreter = AnalyticsInterpreter(
     credentials_json: ${{ secrets.GCP_SA_KEY }}
 ```
 
-## Claude
+## Claude Sonnet 4.5
 
 ### Local Development
 

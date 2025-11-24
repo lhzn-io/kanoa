@@ -49,7 +49,7 @@ from kanoa import AnalyticsInterpreter
 plt.plot([1, 2, 3], [1, 4, 9])
 plt.title("Growth Curve")
 
-# Initialize interpreter (defaults to Gemini)
+# Initialize interpreter (defaults to Gemini 3 Pro)
 interpreter = AnalyticsInterpreter()
 
 # Interpret
@@ -62,7 +62,7 @@ result = interpreter.interpret(
 print(result.text)
 ```
 
-### Using Claude
+### Using Claude Sonnet 4.5
 
 ```python
 interpreter = AnalyticsInterpreter(backend='claude')

@@ -6,7 +6,7 @@ This directory contains the Sphinx documentation for kanoa.
 
 ```text
 docs/
-├── source/              # Sphinx source files
+├── source/              # Sphinx source files (Public Documentation)
 │   ├── index.md        # Main landing page
 │   ├── quickstart.md   # Quick start guide
 │   ├── user_guide/     # User guide section
@@ -18,10 +18,21 @@ docs/
 │   ├── api.md          # Auto-generated API reference
 │   └── conf.py         # Sphinx configuration
 ├── build/              # Generated HTML (gitignored)
-├── planning/           # Internal planning docs (not built)
-├── analysis/           # Internal analysis docs (not built)
+├── planning/           # Living planning documents & checklists
+├── analysis/           # Static analysis snapshots (dated)
 ├── Makefile           # Build commands
 └── requirements-docs.txt  # Documentation dependencies
+
+## Documentation Strategy
+
+We distinguish between three types of documentation:
+
+1.  **Public Documentation (`source/`)**: The official user manual and API reference. Built with Sphinx.
+2.  **Planning Documents (`planning/`)**: Living documents that track project status, checklists, and roadmaps. These are updated continuously.
+3.  **Analysis Documents (`analysis/`)**: Static, dated snapshots of technical research, design decisions, or strategy proposals.
+    -   **Naming**: `YYYYMMDD-topic-name.md`
+    -   **Content**: Should NOT contain living checklists. Once an analysis is complete, any action items should be moved to a planning document.
+    -   **Purpose**: Historical record of "why we did this".
 ```
 
 ## Building the Documentation

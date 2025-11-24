@@ -60,24 +60,24 @@ This document summarizes the knowledge base integration strategies for kanoa, co
 - **Video**: Extracts speech-to-text transcripts + scene descriptions
 - **Multimodal embeddings**: Text and images in same semantic space
 
-## Implementation Status
+## Implementation Status (Snapshot: 2025-11-22)
 
-### Completed (Current)
+### Completed
 
-[✓] Context stuffing with Gemini 3.0
-[✓] PDF knowledge base with native vision
-[✓] Text knowledge base (markdown)
-[✓] Context caching for cost optimization
+- Context stuffing with Gemini 3.0
+- PDF knowledge base with native vision
+- Text knowledge base (markdown)
+- Context caching for cost optimization
 
-### Planned (Phase 2.5)
+### Proposed Roadmap (Phase 2.5)
 
-[ ] `VertexRAGKnowledgeBase` class
-[ ] RAG corpus creation and management
-[ ] Multimodal content extraction (images, tables, video)
-[ ] Semantic retrieval integration
-[ ] Google Search grounding with dynamic retrieval
-[ ] Hybrid mode orchestration
-[ ] `grounding_mode` parameter: `'context_stuffing'`, `'rag_engine'`, `'google_search'`, `'hybrid'`
+- `VertexRAGKnowledgeBase` class
+- RAG corpus creation and management
+- Multimodal content extraction (images, tables, video)
+- Semantic retrieval integration
+- Google Search grounding with dynamic retrieval
+- Hybrid mode orchestration
+- `grounding_mode` parameter: `'context_stuffing'`, `'rag_engine'`, `'google_search'`, `'hybrid'`
 
 ## Updated Documentation
 

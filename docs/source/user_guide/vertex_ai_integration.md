@@ -161,7 +161,7 @@ kanoa supports multiple strategies for integrating domain knowledge, each optimi
 
 **Best for**: Small to medium knowledge bases (<200K tokens), simple setup
 
-The default approach loads your entire knowledge base into the model's context window. With Gemini 3.0's 1M token context and context caching, this is cost-effective for most use cases.
+The default approach loads your entire knowledge base into the model's context window. With Gemini 3 Pro's 2M token context and context caching, this is cost-effective for most use cases.
 
 ```python
 interpreter = AnalyticsInterpreter(
@@ -713,7 +713,7 @@ print("RAG Engine cost:", result_rag.usage.cost)
 # Update your wrapper to use grounding_mode='rag_engine'
 ```
 
-### Gemini 3.0 (Recommended)
+### Gemini 3 Pro (Recommended)
 
 - Best for: PDF knowledge bases, cost optimization
 - Requires: `GOOGLE_API_KEY` environment variable
@@ -733,7 +733,7 @@ interpreter = AnalyticsInterpreter(backend='gemini-3')
 interpreter = AnalyticsInterpreter(backend='claude')
 ```
 
-### OpenAI GPT-4o
+### OpenAI GPT 5.1
 
 - Best for: Vector store integration
 - Requires: `OPENAI_API_KEY` environment variable

@@ -33,7 +33,7 @@ Build a **standalone, open-source Python package** that provides AI-powered inte
 
 1. **Standalone Package**: `kanoa` - Fully independent, pip-installable
 2. **Multi-Project Support**: Import into any data science project
-3. **Multi-Backend Support**: Claude Sonnet 4.5, Gemini 3.0, OpenAI GPT-5.1, Ai2 Molmo-7B
+3. **Multi-Backend Support**: Claude Sonnet 4.5, Gemini 3 Pro, OpenAI GPT 5.1, Ai2 Molmo-7B
 4. **Provider-Native Grounding**: Leverage Gemini Context Caching, OpenAI Vector Stores, etc.
 5. **Multimodal Knowledge Base**: Native PDF, Code, Audio, and Video processing (Gemini)
 6. **Open Source**: MIT/Apache 2.0 license, community-friendly
@@ -132,11 +132,11 @@ graph TD
 
     Claude[Claude Backend<br/>Anthropic<br/>• Text KB only<br/>• $3/$15 per 1M<br/>• 200K context]
 
-    Gemini[Gemini Backend<br/>Google<br/>• Full PDF vision<br/>• $2/$12 per 1M<br/>• 1M context]
+    Gemini[Gemini Backend<br/>Google<br/>• Full PDF vision<br/>• $2/$12 per 1M<br/>• 2M context (Gemini 3 Pro)]
 
     Molmo[Molmo Backend<br/>Local<br/>• Text KB<br/>• $0 local<br/>• 128K ctx]
 
-    OpenAI[OpenAI Backend<br/>GPT-4o<br/>• Vector Stores<br/>• Assistants API]
+    OpenAI[OpenAI Backend<br/>GPT 5.1<br/>• Vector Stores<br/>• Assistants API]
 
     KB[Knowledge Base Layer<br/>• Pre-integrated Content<br/>• Provider-Specific Adapters<br/>• (Gemini Cache, OpenAI Vector Store)]
 
@@ -2150,33 +2150,56 @@ setup(
 
 ## Implementation Checklist
 
-### Phase 1: Core Package Development (Week 1-2)
+### Phase 1: Core Implementation (Week 1-2)
 
-#### Week 1: Foundation
+- [x] **Project Setup**
+  - [x] Repository structure
+  - [x] CI/CD (GitHub Actions)
+  - [x] Pre-commit hooks (linting/formatting)
+  - [x] Strict Type Annotation Policy
 
-- [ ] GitHub repo setup (`lhzn-io/kanoa`)
-  - [ ] Initialize with README, LICENSE (MIT), .gitignore
-  - [ ] Add CONTRIBUTING.md, CODE_OF_CONDUCT.md
-  - [ ] Set up GitHub Actions for CI/CD
-- [ ] Project structure and dependencies
-- [ ] Base classes (BaseBackend, BaseKnowledgeBase)
-- [ ] Core AnalyticsInterpreter class
-- [ ] Input converters (figure, dataframe)
-- [ ] Unit tests for core (50% coverage)
+- [x] **Core Logic**
+  - [x] `AnalyticsInterpreter` class
+  - [x] Backend abstraction layer
+  - [x] Knowledge Base abstraction layer
 
-#### Week 2: Backends
+- [x] **Backends**
+  - [x] Claude (Anthropic)
+  - [x] Gemini (Google) - Native PDF support
+  - [x] Molmo (Local) - Stub/Initial implementation
 
-- [ ] Gemini backend implementation
-  - [ ] Basic text interpretation
-  - [ ] PDF upload and processing
-  - [ ] Context caching
-  - [ ] Cost tracking
-- [ ] Claude backend implementation
-  - [ ] Text interpretation
-  - [ ] Vision support
-- [ ] Molmo backend (stub for future)
-- [ ] Integration tests
-- [ ] Documentation (README, API docs)
+- [x] **Knowledge Base**
+  - [x] Text/Markdown support
+  - [x] PDF support (Gemini native)
+  - [x] Caching layer
+
+- [x] **Testing**
+  - [x] Unit test suite
+  - [x] Integration tests (Gemini)
+  - [x] 85%+ coverage
+
+### Phase 2: Advanced Features (Week 3-4)
+
+- [ ] **RAG & Grounding**
+  - [ ] Vertex AI RAG Engine integration
+  - [ ] Google Search grounding
+  - [ ] Hybrid retrieval strategies
+
+- [ ] **Enhanced Backends**
+  - [ ] OpenAI Backend (GPT 5.1)
+  - [ ] Molmo local inference optimization
+
+- [ ] **Documentation**
+  - [x] Sphinx setup
+  - [x] API Reference
+  - [x] User Guides
+  - [ ] Advanced RAG tutorials
+
+### Phase 3: Polish & Release (Week 5)
+
+- [ ] **Performance Optimization**
+- [ ] **Security Audit**
+- [ ] **PyPI Release**
 
 ### Phase 2: Knowledge Base & Testing (Week 3)
 
