@@ -32,7 +32,7 @@ pip install -e .
 
 ## Quick Start
 
-📓 **New to kanoa?** Check out [10 Minutes to kanoa](./examples/quickstart_10min.ipynb) for a comprehensive introduction!
+Check out [10 Minutes to kanoa](./examples/quickstart_10min.ipynb) for a comprehensive introduction.
 
 ### Basic Usage
 
@@ -106,11 +106,10 @@ echo "GOOGLE_API_KEY=your-key" > ~/.config/kanoa/.env
 echo "ANTHROPIC_API_KEY=your-key" >> ~/.config/kanoa/.env
 ```
 
-Alternatively, use repo-root `.env` (already in `.gitignore` with pre-commit protection).
+⚠️ **Security Note**: API keys generate costs. We recommend `keeping secrets outside of your kanoa-dev workspace,
+and we include detect-secrets in our pre-commit hooks for defense-in-depth.
 
-⚠️ **Security**: API keys generate costs. We recommend `~/.config/kanoa/` + pre-commit hooks for defense-in-depth.
-
-📖 **For detailed setup instructions**, see:
+**For detailed setup instructions**, see:
 
 - [Authentication Guide](./docs/source/user_guide/authentication.md) - Complete setup, security best practices
 - [Get Gemini API Key](https://aistudio.google.com/apikey)
