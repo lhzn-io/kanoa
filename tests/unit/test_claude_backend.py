@@ -16,7 +16,7 @@ class TestClaudeBackend:
     def test_initialization(self, mock_anthropic: Any) -> None:
         backend = ClaudeBackend(api_key="test_key")
         mock_anthropic.assert_called_once_with(api_key="test_key")
-        assert backend.model == "claude-3-5-sonnet-20241022"
+        assert backend.model == "claude-sonnet-4-5-20250929"
 
     def test_interpret_text_only(self, mock_anthropic: Any) -> None:
         backend = ClaudeBackend(api_key="test_key")

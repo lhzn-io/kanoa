@@ -13,21 +13,22 @@ class ClaudeBackend(BaseBackend):
     Anthropic Claude backend implementation.
 
     Supports:
-    - Claude 3.5 Sonnet (default)
+    - Claude 4.5 Sonnet (default)
+    - Claude 4.5 Opus
     - Vision capabilities (interprets figures)
     - Text knowledge base integration
     """
 
     PRICING = {
-        "claude-3-5-sonnet-20241022": {"input": 3.00, "output": 15.00},
-        "claude-3-opus-20240229": {"input": 15.00, "output": 75.00},
-        "claude-3-haiku-20240307": {"input": 0.25, "output": 1.25},
+        # Claude 4.5 models (latest, Nov 2025)
+        "claude-sonnet-4-5-20250929": {"input": 3.00, "output": 15.00},
+        "claude-opus-4-5-20251101": {"input": 5.00, "output": 25.00},
     }
 
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "claude-3-5-sonnet-20241022",
+        model: str = "claude-sonnet-4-5-20250929",
         max_tokens: int = 3000,
         enable_caching: bool = True,
         **kwargs: Any,

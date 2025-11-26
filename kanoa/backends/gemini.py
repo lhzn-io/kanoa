@@ -23,10 +23,13 @@ class GeminiBackend(BaseBackend):
     """
 
     # Pricing (per 1M tokens) - Approximate
+    # Pricing (per 1M tokens) - Gemini 3.0 Pro (Preview)
+    # Note: Google does not provide a public pricing API.
+    # These values are manually maintained based on official documentation.
     PRICING = {
-        "input": 2.00,  # <200K context
-        "output": 12.00,
-        "input_long": 4.00,  # >200K context
+        "input_short": 2.00,  # <= 200K context
+        "output_short": 12.00,
+        "input_long": 4.00,  # > 200K context
         "output_long": 18.00,
         "cached": 0.20,  # Cached content
     }
@@ -34,6 +37,7 @@ class GeminiBackend(BaseBackend):
     def __init__(
         self,
         api_key: Optional[str] = None,
+        # Updated default to the user-specified preview model
         # Updated default to the user-specified preview model
         model: str = "gemini-3-pro-preview",
         max_tokens: int = 3000,
@@ -278,9 +282,20 @@ Use markdown formatting. Be concise but technically precise.
         input_tokens = usage_metadata.prompt_token_count
         output_tokens = usage_metadata.candidates_token_count
 
-        # Simple cost calculation (approximate)
-        cost = (input_tokens / 1_000_000 * self.PRICING["input"]) + (
-            output_tokens / 1_000_000 * self.PRICING["output"]
+        # Determine pricing tier based on context length
+        # Threshold is 200,000 tokens for Gemini 3.0 Pro
+        if input_tokens <= 200_000:
+            input_price = self.PRICING["input_short"]
+            output_price = self.PRICING["output_short"]
+        else:
+            input_price = self.PRICING["input_long"]
+            output_price = self.PRICING["output_long"]
+
+        # Simple cost calculation
+        # Note: Does not currently account for cached tokens as API response
+        # structure for cache hits needs verification.
+        cost = (input_tokens / 1_000_000 * input_price) + (
+            output_tokens / 1_000_000 * output_price
         )
 
         return UsageInfo(

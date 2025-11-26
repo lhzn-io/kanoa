@@ -4,13 +4,13 @@
 
 [![Tests](https://github.com/lhzn-io/kanoa/actions/workflows/tests.yml/badge.svg)](https://github.com/lhzn-io/kanoa/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
 **kanoa** brings the power of a dedicated AI research assistant directly into your **Python workflows—whether in Jupyter notebooks, Streamlit apps, or automated scripts**. It programmatically interprets visualizations, tables, and results using multimodal LLMs (Gemini, Claude, OpenAI, Molmo), grounded in your project's documentation and literature. It is designed to be dropped into any data science project to provide instant, context-aware analysis.
 
 ## Features
 
-- **Multi-Backend Support**: Seamlessly switch between Gemini (native PDF/vision), Claude Sonnet 3.5, and others.
+- **Multi-Backend Support**: Seamlessly switch between Gemini, Claude Sonnet/Opus, and others.
 - **Provider-Native Grounding**: Offloads knowledge retrieval to best-in-breed provider solutions.
 - **Native Vision**: Uses multimodal capabilities to "see" complex plots and diagrams.
 - **Cost Optimized**: Intelligent context caching and token usage tracking.
@@ -95,6 +95,26 @@ result = interpreter.interpret(
 | `gemini-3` | Native PDF support, 1M context, caching | Complex analysis with PDF references |
 | `claude` | Strong reasoning, vision support | General analysis, text-heavy KBs |
 | `molmo` | Local inference (coming soon) | Privacy-sensitive data |
+
+## API Keys
+
+kanoa requires API keys for cloud backends. **Recommended**: Store in `~/.config/kanoa/.env`:
+
+```bash
+mkdir -p ~/.config/kanoa
+echo "GOOGLE_API_KEY=your-key" > ~/.config/kanoa/.env
+echo "ANTHROPIC_API_KEY=your-key" >> ~/.config/kanoa/.env
+```
+
+Alternatively, use repo-root `.env` (already in `.gitignore` with pre-commit protection).
+
+⚠️ **Security**: API keys generate costs. We recommend `~/.config/kanoa/` + pre-commit hooks for defense-in-depth.
+
+📖 **For detailed setup instructions**, see:
+
+- [Authentication Guide](./docs/source/user_guide/authentication.md) - Complete setup, security best practices
+- [Get Gemini API Key](https://aistudio.google.com/apikey)
+- [Get Claude API Key](https://console.anthropic.com/)
 
 ## Documentation
 

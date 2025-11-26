@@ -122,10 +122,10 @@ Molmo runs locally and requires no API key, but may need additional model setup.
 Based on typical usage in the demo notebook:
 
 | Backend | Approximate Cost per Run |
-|---------|-------------------------|
-| Gemini  | $0.01 - $0.05          |
-| Claude  | $0.02 - $0.08          |
-| Molmo   | $0.00 (local)          |
+|---------|--------------------------|
+| Gemini  | $0.01 - $0.05            |
+| Claude  | $0.02 - $0.08            |
+| Molmo   | $0.00 (local)            |
 
 *Actual costs depend on input size and response length.*
 

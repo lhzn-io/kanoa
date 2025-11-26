@@ -24,6 +24,8 @@ MANIFEST
 
 # Environments
 .env
+.envrc
+.integration_test_lock
 .venv
 env/
 venv/
@@ -50,3 +52,11 @@ coverage.xml
 
 # Sphinx documentation
 docs/build/
+
+# API Keys and Secrets
+*.apikey
+*.key
+.secrets/
+.claude/
+.anthropic/
+.openai/

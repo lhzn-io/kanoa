@@ -2,23 +2,23 @@
 
 help:
 	@echo "Available commands:"
-	@echo "  make install          - Install dependencies (including dev)"
-	@echo "  make test             - Run all tests with coverage"
-	@echo "  make test-fast        - Run unit tests only (skip integration/slow)"
-	@echo "  make test-integration - Run all integration tests"
-	@echo "  make test-gemini      - Run Gemini integration tests only"
-	@echo "  make test-claude      - Run Claude integration tests only"
-	@echo "  make lint             - Run all linters (black, isort, flake8, mypy)"
-	@echo "  make format           - Auto-format code (black, isort)"
-	@echo "  make check-any-usage  - Check Any usage in codebase"
-	@echo "  make clean            - Remove build artifacts and cache"
+	@echo "  make install                  - Install dependencies (including dev)"
+	@echo "  make test                     - Run unit tests only (skips integration)"
+	@echo "  make test-fast                - Run unit tests only (skip integration/slow)"
+	@echo "  make test-integration         - Run all integration tests"
+	@echo "  make test-gemini-integration  - Run Gemini integration tests only"
+	@echo "  make test-claude-integration  - Run Claude integration tests only"
+	@echo "  make lint                     - Run all linters (black, isort, flake8, mypy)"
+	@echo "  make format                   - Auto-format code (black, isort)"
+	@echo "  make check-any-usage          - Check Any usage in codebase"
+	@echo "  make clean                    - Remove build artifacts and cache"
 
 install:
 	pip install -e ".[dev]"
 	pre-commit install
 
 test:
-	pytest tests/
+	pytest tests/ -m "not integration"
 
 test-fast:
 	pytest tests/ -m "not integration and not slow"
@@ -26,10 +26,10 @@ test-fast:
 test-integration:
 	pytest tests/ -m integration -s
 
-test-gemini:
+test-gemini-integration:
 	pytest tests/ -m "integration and gemini" -s
 
-test-claude:
+test-claude-integration:
 	pytest tests/ -m "integration and claude" -s
 
 lint:

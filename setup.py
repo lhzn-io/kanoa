@@ -9,7 +9,7 @@ setup(
     ),
     author="dfry@lhzn.io",
     packages=find_packages(),
-    python_requires=">=3.10",
+    python_requires=">=3.11",
     install_requires=[
         "matplotlib>=3.5.0",
         "pandas>=1.3.0",
@@ -21,6 +21,7 @@ setup(
         "dev": [
             "pytest>=7.0.0",
             "pytest-cov>=4.0.0",
+            "python-dotenv>=1.0.0",
             "black>=23.0.0",
             "isort>=5.12.0",
             "flake8>=6.0.0",
@@ -35,7 +36,7 @@ setup(
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
 )

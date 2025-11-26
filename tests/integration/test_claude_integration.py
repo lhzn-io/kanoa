@@ -15,34 +15,19 @@ if (config_dir / ".env").exists():
     load_dotenv(config_dir / ".env")
 
 
-# Check if we can run integration tests
 def has_credentials() -> bool:
-    """
-    Check if credentials are available.
-
-    We only check for explicit environment variables to avoid issues with
-    stale ADC tokens. The Google SDK will handle ADC refresh automatically
-    when actually making API calls.
-    """
-    # Check for API key (most common for development)
-    if os.environ.get("GOOGLE_API_KEY"):
-        return True
-
-    # Check for explicit ADC path (service account key file)
-    if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
-        return True
-
-    return False
+    """Check if ANTHROPIC_API_KEY is set."""
+    return os.environ.get("ANTHROPIC_API_KEY") is not None
 
 
-# Module-level skip condition - evaluated at collection time
+# Module-level skip condition
 pytestmark = [
     pytest.mark.integration,
-    pytest.mark.gemini,
+    pytest.mark.claude,
     pytest.mark.skipif(
         not has_credentials(),
         reason=(
-            "Missing Gemini credentials. See: "
+            "Missing Anthropic API key. See: "
             "https://github.com/lhzn-io/kanoa/blob/main/docs/source/user_guide/"
             "authentication.md"
         ),
@@ -50,33 +35,30 @@ pytestmark = [
 ]
 
 
-class TestGeminiIntegration:
+class TestClaudeIntegration:
     @pytest.fixture(scope="class")
     def interpreter(self) -> Any:
         """
-        Initialize Gemini backend.
+        Initialize Claude backend.
 
-        Requires one of:
-        - GOOGLE_API_KEY environment variable
-        - Application Default Credentials (run: gcloud auth application-default login)
+        Requires ANTHROPIC_API_KEY environment variable.
+        Get your key at: https://console.anthropic.com/
         """
         try:
-            # Try to initialize with configured credentials
-            return AnalyticsInterpreter(backend="gemini-3")
+            return AnalyticsInterpreter(backend="claude")
         except Exception as e:
             pytest.skip(
-                f"Could not initialize Gemini backend: {e}\n"
-                "Your credentials may be expired or invalid. "
-                "Try: gcloud auth application-default login"
+                f"Could not initialize Claude backend: {e}\n"
+                "Your API key may be invalid or expired."
             )
 
     def test_hello_world_generation(self, interpreter: Any) -> None:
         """
         Simple 'Golden Set' test:
-        Verify that Gemini can see a sine wave and identify it.
+        Verify that Claude can see a sine wave and identify it.
         """
         print("\n" + "=" * 50)
-        print("📐 TEST: Hello World (Vision)")
+        print("📐 TEST: Hello World (Vision) - Claude")
         print("=" * 50)
 
         # 1. Create artifact
@@ -90,12 +72,12 @@ class TestGeminiIntegration:
         context = "Verification test run"
         focus = "Identify the waveform shape"
 
-        print(f"\n� User: {context} | {focus}")
+        print(f"\n💬 User: {context} | {focus}")
 
         try:
             result = interpreter.interpret(fig=plt.gcf(), context=context, focus=focus)
         except Exception as e:
-            pytest.fail(f"Gemini API call failed: {e}")
+            pytest.fail(f"Claude API call failed: {e}")
 
         # 3. Assertions (Golden Set check)
         print(
@@ -109,7 +91,7 @@ class TestGeminiIntegration:
         assert "sine" in result.text.lower() or "sinusoidal" in result.text.lower()
 
         # Check metadata
-        assert result.backend == "gemini-3"
+        assert result.backend == "claude"
         assert result.usage is not None
         assert result.usage.cost > 0
 
@@ -120,14 +102,14 @@ class TestGeminiIntegration:
         Verify text-only reasoning capabilities.
         """
         print("\n" + "=" * 50)
-        print("📐 TEST: Text Reasoning")
+        print("📐 TEST: Text Reasoning - Claude")
         print("=" * 50)
 
         data = {"revenue": [100, 120, 150, 140], "quarter": ["Q1", "Q2", "Q3", "Q4"]}
         context = "Quarterly revenue report"
         focus = "Identify the trend"
 
-        print(f"\n� User: {context} | {focus}")
+        print(f"\n💬 User: {context} | {focus}")
 
         result = interpreter.interpret(data=data, context=context, focus=focus)
 
@@ -140,3 +122,52 @@ class TestGeminiIntegration:
         assert "Q3" in result.text
 
         print(f"\n💰 Cost: ${result.usage.cost:.6f}")
+
+    def test_knowledge_base_integration(self, interpreter: Any, tmp_path: Any) -> None:
+        """
+        Test Claude with text-based knowledge base.
+        """
+        print("\n" + "=" * 50)
+        print("📐 TEST: Knowledge Base Integration - Claude")
+        print("=" * 50)
+
+        # Create temporary knowledge base
+        kb_dir = tmp_path / "kb"
+        kb_dir.mkdir()
+        kb_file = kb_dir / "context.md"
+        kb_file.write_text(
+            """# Domain Knowledge
+
+This is a test dataset for marine biology research.
+The sine wave represents simulated dive depth over time.
+"""
+        )
+
+        # Initialize interpreter with KB
+        kb_interpreter = AnalyticsInterpreter(
+            backend="claude", kb_path=str(kb_dir), kb_type="text"
+        )
+
+        # Create test figure
+        x = np.linspace(0, 10, 100)
+        y = np.sin(x)
+        plt.figure(figsize=(8, 4))
+        plt.plot(x, y)
+        plt.title("Dive Depth Simulation")
+
+        result = kb_interpreter.interpret(
+            fig=plt.gcf(),
+            context="Marine biology dive profile",
+            focus="Interpret using domain knowledge",
+        )
+
+        print(
+            f"🎓 {result.metadata.get('model', 'AI') if result.metadata else 'AI'}: "
+            f"{result.text[:50].replace(chr(10), ' ')}..."
+        )
+
+        # Should reference the knowledge base context
+        assert "dive" in result.text.lower() or "depth" in result.text.lower()
+
+        if result.usage:
+            print(f"\n💰 Cost: ${result.usage.cost:.6f}")
