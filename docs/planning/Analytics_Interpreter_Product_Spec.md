@@ -35,7 +35,7 @@ Build a **standalone, open-source Python package** that provides AI-powered inte
 2. **Multi-Project Support**: Import into any data science project
 3. **Multi-Backend Support**:
     - **Open Source First**: vLLM integration for Ai2 Molmo (Priority #1), Gemma 3 (Priority #2), and others.
-    - **Proprietary**: Gemini 3 Pro, Claude Opus 4.5 (Thinking Mode), OpenAI GPT-4o.
+    - **Proprietary**: Gemini 3 Pro, Claude Opus 4.5 (Thinking Mode), OpenAI GPT-5.1.
 4. **Provider-Native Grounding**: Leverage Gemini Context Caching, OpenAI Vector Stores, etc.
 5. **Multimodal Knowledge Base**: Native PDF, Code, Audio, and Video processing (Gemini)
 6. **Open Source**: MIT/Apache 2.0 license, community-friendly
@@ -167,7 +167,7 @@ graph TD
 
 **Repository**: `lhzn-io/kanoa`
 **License**: MIT (recommended for open-source data science tools)
-**Python Version**: 3.8+
+**Python Version**: 3.11+
 **Distribution**: PyPI + GitHub releases
 
 ### Directory Structure
@@ -2003,13 +2003,13 @@ setup(
         "Topic :: Scientific/Engineering :: Visualization",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.11",
     install_requires=[
         "anthropic>=0.39.0",
         "google-genai>=1.0.0",

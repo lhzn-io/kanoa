@@ -112,7 +112,7 @@ result = interpreter.interpret(
 | :--- | :--- | :--- |
 | `gemini-3` | Native PDF support, 1M context, caching | Complex analysis with PDF references |
 | `claude` | Strong reasoning, vision support | General analysis, text-heavy KBs |
-| `openai` | Generic OpenAI support (GPT-4, vLLM) | Local inference (Gemma 3), Azure OpenAI |
+| `openai` | Generic OpenAI support (GPT-5.1, vLLM) | Local inference (Gemma 3), Azure OpenAI |
 
 ## API Keys
 

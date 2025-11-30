@@ -80,7 +80,7 @@ interpreter = AnalyticsInterpreter(
 
 ## OpenAI / vLLM (`openai`)
 
-**Best for**: Local inference (Gemma 3, Molmo), Azure OpenAI, or GPT-4
+**Best for**: Local inference (Gemma 3, Molmo), Azure OpenAI, or GPT-5.1
 
 ### Features
 
@@ -100,7 +100,7 @@ interpreter = AnalyticsInterpreter(
 )
 ```
 
-#### OpenAI (GPT-4)
+#### OpenAI (GPT-5.1)
 
 ```python
 interpreter = AnalyticsInterpreter(
