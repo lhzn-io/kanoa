@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from ..backends.base import BaseBackend
 from ..backends.claude import ClaudeBackend
 from ..backends.gemini import GeminiBackend
-from ..backends.molmo import MolmoBackend
+from ..backends.openai import OpenAIBackend
 from ..knowledge_base.base import BaseKnowledgeBase
 from ..knowledge_base.pdf_kb import PDFKnowledgeBase
 from ..knowledge_base.text_kb import TextKnowledgeBase
@@ -18,7 +18,7 @@ class AnalyticsInterpreter:
     AI-powered analytics interpreter with multi-backend support.
 
     Supports:
-    - Multiple AI backends (Claude, Gemini, Molmo)
+    - Multiple AI backends (Claude, Gemini, OpenAI)
     - Knowledge base grounding (text, PDFs, or none)
     - Multiple input types (figures, DataFrames, dicts)
     - Cost tracking and optimization
@@ -29,13 +29,13 @@ class AnalyticsInterpreter:
         "claude-sonnet-4.5": ClaudeBackend,
         "gemini": GeminiBackend,
         "gemini-3": GeminiBackend,
-        "molmo": MolmoBackend,
-        "molmo-7b": MolmoBackend,
+        "openai": OpenAIBackend,
+        "vllm": OpenAIBackend,
     }
 
     def __init__(
         self,
-        backend: Literal["claude", "gemini-3", "molmo"] = "gemini-3",
+        backend: Literal["claude", "gemini-3", "openai", "vllm"] = "gemini-3",
         kb_path: Optional[Union[str, Path]] = None,
         kb_content: Optional[str] = None,
         kb_type: Literal["text", "pdf", "auto"] = "auto",
@@ -49,7 +49,7 @@ class AnalyticsInterpreter:
         Initialize analytics interpreter.
 
         Args:
-            backend: AI backend to use ('claude', 'gemini-3', 'molmo')
+            backend: AI backend to use ('claude', 'gemini-3', 'openai')
             kb_path: Path to knowledge base directory
             kb_content: Pre-loaded knowledge base string
             kb_type: Knowledge base type ('text', 'pdf', 'auto')

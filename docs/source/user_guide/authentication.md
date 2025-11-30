@@ -16,7 +16,8 @@ export GOOGLE_API_KEY="your-google-api-key"
 export ANTHROPIC_API_KEY="your-anthropic-api-key"
 
 # Molmo (Local) - No API key needed!
-export MOLMO_MODEL_PATH="/path/to/molmo/model"  # Optional
+# Models stored in ~/.cache/kanoa/models/molmo/ by default
+export MOLMO_MODEL_PATH="$HOME/.cache/kanoa/models/molmo"  # Optional override
 ```
 
 ### Using `.env` Files (Local Development)
@@ -166,30 +167,68 @@ env:
 
 Molmo runs entirely locally - **no API key required**!
 
+#### Default Model Location
+
+kanoa stores Molmo models in:
+
+```bash
+~/.cache/kanoa/models/molmo/
+```
+
+This follows the XDG Base Directory Specification, consistent with Hugging Face and other tools.
+
 #### Download Model
 
+##### Option 1: Download to default location (recommended)
+
 ```bash
-# Option 1: Using Hugging Face CLI
+# Set the default XDG-compliant path
+export MOLMO_MODEL_PATH="$HOME/.cache/kanoa/models/molmo"
+
+# 1. Install CLI
 pip install huggingface_hub
-huggingface-cli download allenai/Molmo-7B-D --local-dir ./models/molmo-7b
 
-# Option 2: Using Python
-from huggingface_hub import snapshot_download
-snapshot_download(repo_id="allenai/Molmo-7B-D", local_dir="./models/molmo-7b")
+# 2. Login (Required for gated models like Molmo)
+# Get token at: https://huggingface.co/settings/tokens
+huggingface-cli login
+
+# 3. Download model
+huggingface-cli download allenai/Molmo-7B-D-0924 --local-dir "$MOLMO_MODEL_PATH"
 ```
 
-#### Set Model Path
+##### Option 2: Custom location
 
 ```bash
-export MOLMO_MODEL_PATH="./models/molmo-7b"
+# Set custom path
+export MOLMO_MODEL_PATH="/path/to/your/models"
+
+# Download to custom location
+huggingface-cli download allenai/Molmo-7B-D-0924 --local-dir "$MOLMO_MODEL_PATH"
 ```
+
+##### Option 3: Using Python
+
+```python
+from huggingface_hub import snapshot_download
+from pathlib import Path
+
+# Download to default XDG location
+model_path = Path.home() / ".cache" / "kanoa" / "models" / "molmo"
+snapshot_download(repo_id="allenai/Molmo-7B-D", local_dir=str(model_path))
+```
+
+#### Environment Variables
+
+- `MOLMO_MODEL_PATH`: Override default model directory (optional)
+- `XDG_CACHE_HOME`: Change XDG cache root (defaults to `~/.cache`)
 
 #### Requirements
 
 - Python 3.11+
 - PyTorch (install for your hardware)
-- ~14GB disk space for Molmo-7B
 - GPU recommended (but CPU works)
+
+⚠️ **Disk Space**: Molmo-7B requires ~14GB
 
 ---
 
@@ -363,7 +402,8 @@ gcloud auth application-default login
    # .env
    GOOGLE_API_KEY=your-google-api-key
    ANTHROPIC_API_KEY=your-anthropic-api-key
-   MOLMO_MODEL_PATH=/path/to/molmo/model  # Optional
+   # Molmo models stored in ~/.cache/kanoa/models/molmo/ by default
+   # MOLMO_MODEL_PATH=/custom/path  # Optional override
    ```
 
 3. **Install development dependencies**:

@@ -16,6 +16,7 @@ setup(
         "google-genai>=0.3.0",
         "anthropic>=0.8.0",
         "pydantic>=2.0.0",
+        "openai>=1.0.0",
     ],
     extras_require={
         "dev": [
@@ -29,6 +30,7 @@ setup(
             "autoflake>=2.0.0",
             "pre-commit>=3.0.0",
             "types-setuptools",
+            "detect-secrets>=1.4.0",
         ],
     },
     classifiers=[

@@ -78,16 +78,43 @@ interpreter = AnalyticsInterpreter(
 - Input: $3.00 per 1M tokens
 - Output: $15.00 per 1M tokens
 
-## Molmo (`molmo`)
+## OpenAI / vLLM (`openai`)
 
-**Best for**: Privacy-sensitive data, local inference
+**Best for**: Local inference (Gemma 3, Molmo), Azure OpenAI, or GPT-4
 
-### Status
+### Features
 
-⚠️ **Experimental**: Stub implementation, not yet functional.
+- **Generic Compatibility**: Works with any OpenAI-compatible API
+- **Local Inference**: Connect to local vLLM servers (via `kanoa-mlops`)
+- **Vision Support**: Supports image inputs (if underlying model supports it)
 
-### Planned Features
+### Usage
 
-- Local inference (no API calls)
-- GPU acceleration
-- Text knowledge base support
+#### Local vLLM (Gemma 3)
+
+```python
+interpreter = AnalyticsInterpreter(
+    backend='openai',
+    api_base='http://localhost:8000/v1',
+    model='google/gemma-3-12b-it'
+)
+```
+
+#### OpenAI (GPT-4)
+
+```python
+interpreter = AnalyticsInterpreter(
+    backend='openai',
+    api_key='sk-...'
+)
+```
+
+#### Azure OpenAI
+
+```python
+interpreter = AnalyticsInterpreter(
+    backend='openai',
+    api_base='https://your-resource.openai.azure.com/...',
+    api_key='your-azure-key'
+)
+```

@@ -10,7 +10,7 @@
 
 ## Features
 
-- **Multi-Backend Support**: Seamlessly switch between Gemini, Claude Sonnet/Opus, and others.
+- **Multi-Backend Support**: Seamlessly switch between Gemini, Claude, and OpenAI (including local vLLM).
 - **Provider-Native Grounding**: Offloads knowledge retrieval to best-in-breed provider solutions.
 - **Native Vision**: Uses multimodal capabilities to "see" complex plots and diagrams.
 - **Cost Optimized**: Intelligent context caching and token usage tracking.
@@ -32,7 +32,7 @@ pip install -e .
 
 ## Quick Start
 
-Check out [10 Minutes to kanoa](./examples/quickstart_10min.ipynb) for a comprehensive introduction.
+Check out [10 Minutes to kanoa](./examples/quickstart_10min.ipynb) for a comprehensive introduction, including local inference with Gemma 3.
 
 ### Basic Usage
 
@@ -88,13 +88,31 @@ result = interpreter.interpret(
 )
 ```
 
+### Local Inference (vLLM / Gemma 3)
+
+Use `kanoa-mlops` to host local models like Gemma 3 or Molmo:
+
+```python
+# Connect to local vLLM server (see kanoa-mlops repo)
+interpreter = AnalyticsInterpreter(
+    backend='openai',
+    api_base='http://localhost:8000/v1',
+    model='google/gemma-3-12b-it'
+)
+
+result = interpreter.interpret(
+    fig=plt.gcf(),
+    context="Local analysis"
+)
+```
+
 ## Supported Backends
 
 | Backend | Key Features | Best For |
 | :--- | :--- | :--- |
 | `gemini-3` | Native PDF support, 1M context, caching | Complex analysis with PDF references |
 | `claude` | Strong reasoning, vision support | General analysis, text-heavy KBs |
-| `molmo` | Local inference (coming soon) | Privacy-sensitive data |
+| `openai` | Generic OpenAI support (GPT-4, vLLM) | Local inference (Gemma 3), Azure OpenAI |
 
 ## API Keys
 

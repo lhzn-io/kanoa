@@ -12,6 +12,7 @@ markers = [
   "gemini: marks tests that use the Gemini backend",
   "claude: marks tests that use the Claude backend",
   "openai: marks tests that use the OpenAI backend",
+  "molmo: marks tests that use the Molmo backend",
 ]
 
 [tool.black]

@@ -17,6 +17,9 @@ install:
 	pip install -e ".[dev]"
 	pre-commit install
 
+install-molmo:
+	pip install -e ".[dev,molmo]"
+
 test:
 	pytest tests/ -m "not integration"
 
@@ -31,6 +34,9 @@ test-gemini-integration:
 
 test-claude-integration:
 	pytest tests/ -m "integration and claude" -s
+
+test-molmo-integration:
+	pytest tests/ -m "integration and molmo" -s
 
 lint:
 	python -m mypy .

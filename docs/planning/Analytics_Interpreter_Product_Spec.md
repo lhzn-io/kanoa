@@ -18,7 +18,7 @@
 6. [Technical Specifications](#technical-specifications)
 7. [API Reference](#api-reference)
 8. [Testing Requirements](#testing-requirements)
-9. [Open Source Strategy](#open-source-strategy)
+9. [Open Source Strategy & Philosophy](#open-source-strategy-philosophy)
 10. [Implementation Checklist](#implementation-checklist)
 
 ---
@@ -33,7 +33,9 @@ Build a **standalone, open-source Python package** that provides AI-powered inte
 
 1. **Standalone Package**: `kanoa` - Fully independent, pip-installable
 2. **Multi-Project Support**: Import into any data science project
-3. **Multi-Backend Support**: Claude Sonnet 4.5, Gemini 3 Pro, OpenAI GPT 5.1, Ai2 Molmo-7B
+3. **Multi-Backend Support**:
+    - **Open Source First**: vLLM integration for Ai2 Molmo (Priority #1), Gemma 3 (Priority #2), and others.
+    - **Proprietary**: Gemini 3 Pro, Claude Opus 4.5 (Thinking Mode), OpenAI GPT-4o.
 4. **Provider-Native Grounding**: Leverage Gemini Context Caching, OpenAI Vector Stores, etc.
 5. **Multimodal Knowledge Base**: Native PDF, Code, Audio, and Video processing (Gemini)
 6. **Open Source**: MIT/Apache 2.0 license, community-friendly
@@ -2581,5 +2583,31 @@ PDFs typically contain:
 ## Contact
 
 **Questions?** Open an issue on GitHub or contact project maintainers.
+
+## Open Source Strategy & Philosophy
+
+`kanoa` is committed to an **Open Source First** philosophy. We believe that powerful AI interpretation should not be locked behind proprietary APIs.
+
+### Core Principles
+
+1. **Equal Weight**: Open-source models (via vLLM) are treated as first-class citizens, equal in weight and support to proprietary models like Gemini and Claude.
+2. **Infrastructure Freedom**: We provide the tools (`kanoa-mlops`) to host your own inference infrastructure, ensuring data privacy and sovereignty.
+3. **Community Driven**: We prioritize models and features requested by the open-source community.
+
+### Model Priorities
+
+Our integration roadmap prioritizes high-capability open weights models:
+
+1. **Ai2 Molmo**: The premier open multimodal model.
+2. **Gemma 3**: Google's state-of-the-art open model.
+3. **Llama 3 / Mistral**: Strong text reasoning models.
+
+### Proprietary Models
+
+We continue to support best-in-class proprietary models for users who prefer managed services:
+
+- **Gemini 3 Pro**: For massive context and native PDF understanding.
+- **Claude Opus 4.5**: For superior reasoning and "thinking" capabilities.
+- **OpenAI GPT-4o**: For general-purpose excellence.
 
 **Ready to implement?** Follow the checklist and let's build this! 🚀
