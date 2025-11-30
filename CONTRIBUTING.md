@@ -155,6 +155,18 @@ If you are an AI assistant (GitHub Copilot, Antigravity, etc.):
 
 - Type hints are required for all function signatures.
 
+#### Configuration Files
+
+- **Black & isort**: See `[tool.black]` and `[tool.isort]` in `pyproject.toml`
+  - Line length: 88 characters (black default)
+  - Target: Python 3.11
+- **Flake8**: See `.flake8` in project root
+  - Max line length: 88
+  - Extends ignore: E203 (whitespace before ':' - conflicts with black)
+- **Mypy**: See `[tool.mypy]` in `pyproject.toml`
+  - Strict mode with pandas-level rigor
+  - Disallows untyped definitions in library code
+
 ### Type Annotations
 
 `kanoa` enforces a strict type annotation policy to ensure code quality and maintainability.

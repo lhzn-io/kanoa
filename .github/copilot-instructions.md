@@ -21,6 +21,7 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
     *   **Imports**: Keep imports clean and sorted (standard lib -> third party -> local).
     *   **Line Length**: Max 88 characters (black default). Break long strings with `\` or multi-line f-strings.
     *   **Before Submitting**: Run `make lint` - mypy and flake8 must pass with zero errors.
+    *   **Configuration**: Follow `pyproject.toml` (`[tool.black]`, `[tool.isort]`, `[tool.mypy]`) and `.flake8` settings.
 
 3.  **Context Awareness**:
     *   This is a library for interpreting data science outputs.

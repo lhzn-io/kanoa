@@ -41,6 +41,15 @@ You are an expert Python developer contributing to the `kanoa` library.
   - Use `copilot_getNotebookSummary`.
   - Write "Kanoa" (capitalized) in prose.
 
+## Code Style Configuration
+
+**Reference**: `pyproject.toml` (`[tool.black]`, `[tool.isort]`, `[tool.mypy]`) and `.flake8`
+
+- **Line Length**: 88 characters (black default)
+- **Target**: Python 3.11
+- **Type Checking**: Strict mypy (pandas-level rigor)
+- **Linting**: flake8 with E203 extended ignore
+
 ## Code Style Example
 
 ```python
