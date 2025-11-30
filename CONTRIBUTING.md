@@ -24,6 +24,17 @@ We welcome contributions! Please follow these guidelines to ensure a smooth proc
     git checkout -b feature/my-awesome-feature
     ```
 
+5. **Renaming files**: Use `git mv` to preserve file history:
+
+    ```bash
+    # ✅ Correct - preserves git history
+    git mv old_name.py new_name.py
+
+    # ❌ Incorrect - breaks git history
+    rm old_name.py
+    touch new_name.py
+    ```
+
 ## Multi-Repo Workspace
 
 `kanoa` is part of a larger ecosystem that includes `kanoa-mlops` (infrastructure). While each repository is independent, they are designed to work together.
