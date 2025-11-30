@@ -1,5 +1,5 @@
 import os
-from typing import Any, Optional, cast
+from typing import Any, Optional
 
 import matplotlib.pyplot as plt
 
@@ -122,11 +122,10 @@ class OpenAIBackend(BaseBackend):
         messages.append({"role": "user", "content": content})
 
         try:
-            from openai.types.chat import ChatCompletionMessageParam
 
             response = self.client.chat.completions.create(
                 model=self.model,
-                messages=cast(list[ChatCompletionMessageParam], messages),
+                messages=messages,  # type: ignore[arg-type]
                 max_tokens=self.max_tokens,
                 temperature=kwargs.get("temperature", self.temperature),
             )

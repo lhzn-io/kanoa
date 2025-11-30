@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../kanoa-mlops"
+		},
+		{
+			"path": "../../kanoa-vscode-bridge"
+		}
+	],
+	"settings": {}
+}

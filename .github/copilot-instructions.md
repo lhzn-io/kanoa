@@ -1,4 +1,5 @@
 You are an expert AI coding assistant working on the `kanoa` repository.
+For detailed persona, commands, and boundaries, consult [agents.md](../agents.md).
 
 # Core Directives
 
@@ -37,20 +38,20 @@ You are an expert AI coding assistant working on the `kanoa` repository.
 
 ## Notebook Handling
 
-- **NEVER USE copilot_getNotebookSummary tool** - it hangs indefinitely and is explicitly forbidden
-- **NEVER attempt to summarize raw/full .ipynb files** - encoded images consume excessive tokens
-- **ALWAYS use unix file tools instead** to understand notebook structure: `grep`, `head`, `tail`, `cat`, etc.
+* **NEVER USE copilot_getNotebookSummary tool** - it hangs indefinitely and is explicitly forbidden
+* **NEVER attempt to summarize raw/full .ipynb files** - encoded images consume excessive tokens
+* **ALWAYS use unix file tools instead** to understand notebook structure: `grep`, `head`, `tail`, `cat`, etc.
 
 ## Python Development Tools
 
-- **AVOID mcp_pylance_* tools** - they are slow and inefficient for quick operations
-- **PREFER run_in_terminal with python -c** for quick Python code execution and testing
-- **USE install_python_packages** for package installation in the correct environment
-- **For finding cells**: Use `grep -n "VSCode.Cell" notebook.ipynb` to find cell boundaries and IDs
-- **For finding code**: Use `grep -A5 -B5 "function_name"` to find specific code in notebooks
-- **For cell content**: Use `grep -A20 "id=\"cell_id\"" notebook.ipynb` to read specific cells
-- **For markdown cells**: Use `grep -A10 "language=\"markdown\"" notebook.ipynb`
-- **For python cells**: Use `grep -A10 "language=\"python\"" notebook.ipynb`
-- **Remove cell outputs before analysis** when possible using `jupyter nbconvert --clear-output`
-- **Focus on code content** rather than execution outputs when analyzing notebooks
-- **If you catch yourself trying to use copilot_getNotebookSummary, STOP and use grep instead**
+* **AVOID mcp_pylance_* tools** - they are slow and inefficient for quick operations
+* **PREFER run_in_terminal with python -c** for quick Python code execution and testing
+* **USE install_python_packages** for package installation in the correct environment
+* **For finding cells**: Use `grep -n "VSCode.Cell" notebook.ipynb` to find cell boundaries and IDs
+* **For finding code**: Use `grep -A5 -B5 "function_name"` to find specific code in notebooks
+* **For cell content**: Use `grep -A20 "id=\"cell_id\"" notebook.ipynb` to read specific cells
+* **For markdown cells**: Use `grep -A10 "language=\"markdown\"" notebook.ipynb`
+* **For python cells**: Use `grep -A10 "language=\"python\"" notebook.ipynb`
+* **Remove cell outputs before analysis** when possible using `jupyter nbconvert --clear-output`
+* **Focus on code content** rather than execution outputs when analyzing notebooks
+* **If you catch yourself trying to use copilot_getNotebookSummary, STOP and use grep instead**

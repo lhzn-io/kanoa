@@ -24,6 +24,28 @@ We welcome contributions! Please follow these guidelines to ensure a smooth proc
     git checkout -b feature/my-awesome-feature
     ```
 
+## Multi-Repo Workspace
+
+`kanoa` is part of a larger ecosystem that includes `kanoa-mlops` (infrastructure). While each repository is independent, they are designed to work together.
+
+### Workspace Setup
+
+For the best development experience, we recommend cloning `kanoa-mlops` as a sibling directory to `kanoa`:
+
+```bash
+~/Projects/lhzn-io/
+├── kanoa/
+└── kanoa-mlops/
+```
+
+You can then open the provided workspace file in VS Code:
+
+1. Open VS Code.
+2. **File** > **Open Workspace from File...**
+3. Select `kanoa/.vscode/kanoa.code-workspace`.
+
+This will open both repositories in a single window, allowing you to work across the library and infrastructure simultaneously.
+
 ## Style Guide
 
 This section outlines the coding, documentation, and aesthetic standards for the `kanoa` repository. All contributors (human and AI) are expected to adhere to these guidelines.
