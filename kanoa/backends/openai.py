@@ -59,13 +59,7 @@ class OpenAIBackend(BaseBackend):
         """
         super().__init__(api_key, max_tokens, **kwargs)
 
-        try:
-            from openai import OpenAI
-        except ImportError as e:
-            raise ImportError(
-                "OpenAI backend requires openai package. "
-                "Install with: pip install -e .[openai]"
-            ) from e
+        from openai import OpenAI
 
         self.api_base = api_base
         self.model = model

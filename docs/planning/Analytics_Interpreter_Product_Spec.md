@@ -18,7 +18,7 @@
 6. [Technical Specifications](#technical-specifications)
 7. [API Reference](#api-reference)
 8. [Testing Requirements](#testing-requirements)
-9. [Open Source Strategy & Philosophy](#open-source-strategy-philosophy)
+9. [Open Source Strategy & Philosophy](#open-source-strategy--philosophy)
 10. [Implementation Checklist](#implementation-checklist)
 
 ---
@@ -1848,7 +1848,29 @@ def test_gemini_end_to_end():
 
 ---
 
-## Open Source Strategy
+## Open Source Strategy & Philosophy
+
+`kanoa` is committed to an **Open Source First** philosophy. We believe that powerful AI interpretation should not be locked behind proprietary APIs.
+
+### Core Principles
+
+1. **Equal Weight**: Open-source models (via vLLM) are treated as first-class citizens, equal in weight and support to proprietary models like Gemini and Claude.
+2. **Infrastructure Freedom**: We provide the tools (`kanoa-mlops`) to host your own inference infrastructure, ensuring data privacy and sovereignty.
+3. **Community Driven**: We prioritize models and features requested by the open-source community.
+
+### Model Priorities
+
+Our integration roadmap prioritizes high-capability open weights models:
+
+1. **Ai2 Molmo**: The premier open multimodal model.
+2. **Gemma 3**: Google's state-of-the-art open model.
+3. **Llama 3 / Mistral**: Strong text reasoning models.
+
+We continue to support best-in-class proprietary models for users who prefer managed services:
+
+- **Gemini 3 Pro**: For massive context and native PDF understanding.
+- **Claude Opus 4.5**: For superior reasoning and "thinking" capabilities.
+- **OpenAI GPT-4o**: For general-purpose excellence.
 
 ### Why Open Source?
 
@@ -2583,31 +2605,3 @@ PDFs typically contain:
 ## Contact
 
 **Questions?** Open an issue on GitHub or contact project maintainers.
-
-## Open Source Strategy & Philosophy
-
-`kanoa` is committed to an **Open Source First** philosophy. We believe that powerful AI interpretation should not be locked behind proprietary APIs.
-
-### Core Principles
-
-1. **Equal Weight**: Open-source models (via vLLM) are treated as first-class citizens, equal in weight and support to proprietary models like Gemini and Claude.
-2. **Infrastructure Freedom**: We provide the tools (`kanoa-mlops`) to host your own inference infrastructure, ensuring data privacy and sovereignty.
-3. **Community Driven**: We prioritize models and features requested by the open-source community.
-
-### Model Priorities
-
-Our integration roadmap prioritizes high-capability open weights models:
-
-1. **Ai2 Molmo**: The premier open multimodal model.
-2. **Gemma 3**: Google's state-of-the-art open model.
-3. **Llama 3 / Mistral**: Strong text reasoning models.
-
-### Proprietary Models
-
-We continue to support best-in-class proprietary models for users who prefer managed services:
-
-- **Gemini 3 Pro**: For massive context and native PDF understanding.
-- **Claude Opus 4.5**: For superior reasoning and "thinking" capabilities.
-- **OpenAI GPT-4o**: For general-purpose excellence.
-
-**Ready to implement?** Follow the checklist and let's build this! 🚀

@@ -85,7 +85,7 @@ kanoa backends automatically detect environment variables, so you don't need to 
 
 #### Local Development
 
-**Option 1: API Key (Simplest)**
+##### Option 1: API Key (Simplest)
 
 ```bash
 export GOOGLE_API_KEY="your-api-key"
@@ -98,7 +98,7 @@ interpreter = AnalyticsInterpreter(backend='gemini-3')
 # Automatically uses GOOGLE_API_KEY
 ```
 
-**Option 2: Application Default Credentials (ADC)**
+##### Option 2: Application Default Credentials (ADC)
 
 For Google Cloud projects:
 
@@ -117,13 +117,13 @@ interpreter = AnalyticsInterpreter(backend='gemini-3')
 
 #### Production / CI/CD
 
-**Service Account with Workload Identity Federation (Recommended)**
+##### Service Account with Workload Identity Federation (Recommended)
 
 1. Create a Service Account with `roles/aiplatform.user`
 2. Configure Workload Identity Federation for GitHub Actions
 3. Use the `google-github-actions/auth` action
 
-**Service Account Key (Less Secure)**
+##### Service Account Key (Less Secure)
 
 1. Create a Service Account
 2. Generate a JSON key
