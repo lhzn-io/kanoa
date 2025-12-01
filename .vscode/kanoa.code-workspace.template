@@ -1,0 +1,23 @@
+{
+	// Template workspace for kanoa multi-repo development
+	// Copy to kanoa.code-workspace and customize for your setup:
+	//   cp kanoa.code-workspace.template kanoa.code-workspace
+	//
+	// The .code-workspace file is gitignored so you can add/remove repos as needed.
+	"folders": [
+		{
+			"name": "kanoa",
+			"path": ".."
+		},
+		{
+			"name": "kanoa-mlops",
+			"path": "../../kanoa-mlops"
+		}
+	],
+	"settings": {
+		"python.defaultInterpreterPath": "~/miniconda3/envs/kanoa-dev/bin/python",
+		"[python]": {
+			"editor.defaultFormatter": "ms-python.black-formatter"
+		}
+	}
+}

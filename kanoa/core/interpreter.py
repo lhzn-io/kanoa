@@ -1,16 +1,41 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Union
+from typing import Any, Dict, Literal, Optional, Type, Union
 
 import matplotlib.pyplot as plt
 
 from ..backends.base import BaseBackend
-from ..backends.claude import ClaudeBackend
-from ..backends.gemini import GeminiBackend
-from ..backends.openai import OpenAIBackend
 from ..knowledge_base.base import BaseKnowledgeBase
 from ..knowledge_base.pdf_kb import PDFKnowledgeBase
 from ..knowledge_base.text_kb import TextKnowledgeBase
 from .types import InterpretationResult
+
+
+def _get_backend_class(name: str) -> Type[BaseBackend]:
+    """
+    Lazily import backend classes to handle missing dependencies.
+
+    Raises:
+        ImportError: If backend dependencies are not installed
+        ValueError: If backend name is unknown
+    """
+    # Import from package __init__ which handles lazy loading
+    from ..backends import ClaudeBackend, GeminiBackend, OpenAIBackend
+
+    backends: Dict[str, Type[BaseBackend]] = {
+        "claude": ClaudeBackend,
+        "claude-sonnet-4.5": ClaudeBackend,
+        "gemini": GeminiBackend,
+        "gemini-3": GeminiBackend,
+        "openai": OpenAIBackend,
+        "vllm": OpenAIBackend,
+    }
+
+    if name not in backends:
+        raise ValueError(
+            f"Unknown backend: {name}. " f"Available: {list(backends.keys())}"
+        )
+
+    return backends[name]
 
 
 class AnalyticsInterpreter:
@@ -22,16 +47,13 @@ class AnalyticsInterpreter:
     - Knowledge base grounding (text, PDFs, or none)
     - Multiple input types (figures, DataFrames, dicts)
     - Cost tracking and optimization
-    """
 
-    BACKENDS = {
-        "claude": ClaudeBackend,
-        "claude-sonnet-4.5": ClaudeBackend,
-        "gemini": GeminiBackend,
-        "gemini-3": GeminiBackend,
-        "openai": OpenAIBackend,
-        "vllm": OpenAIBackend,
-    }
+    Install backends with:
+        pip install kanoa[gemini]   # Google Gemini
+        pip install kanoa[claude]   # Anthropic Claude
+        pip install kanoa[openai]   # OpenAI / vLLM
+        pip install kanoa[all]      # All backends
+    """
 
     def __init__(
         self,
@@ -58,13 +80,13 @@ class AnalyticsInterpreter:
             enable_caching: Enable context caching for cost savings
             track_costs: Track token usage and costs
             **backend_kwargs: Additional backend-specific arguments
+
+        Raises:
+            ImportError: If the requested backend's dependencies aren't installed
+            ValueError: If the backend name is unknown
         """
-        # Initialize backend
-        backend_class = self.BACKENDS.get(backend)
-        if not backend_class:
-            raise ValueError(
-                f"Unknown backend: {backend}. Choose from {list(self.BACKENDS.keys())}"
-            )
+        # Initialize backend (lazy import handles missing deps)
+        backend_class = _get_backend_class(backend)
 
         self.backend_name = backend
         self.backend: BaseBackend = backend_class(
@@ -175,10 +197,29 @@ class AnalyticsInterpreter:
 
         # Auto-display
         if display_result:
-            # Import IPython display lazily; type checking only
-            if TYPE_CHECKING:
-                from IPython.display import Markdown, display  # pragma: no cover
-            else:
+            try:
+                from ..utils.notebook import display_interpretation
+
+                # Extract cache and model info from metadata
+                cached = (
+                    result.metadata.get("cache_used", False)
+                    if result.metadata
+                    else False
+                )
+                model_name = (
+                    result.metadata.get("model", self.backend_name)
+                    if result.metadata
+                    else self.backend_name
+                )
+                display_interpretation(
+                    text=result.text,
+                    backend=self.backend_name,
+                    model=model_name,
+                    usage=result.usage,
+                    cached=cached,
+                )
+            except ImportError:
+                # Fallback to plain markdown display
                 try:
                     from IPython.display import Markdown, display
 

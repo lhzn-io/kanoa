@@ -58,16 +58,40 @@ For the best development experience, we recommend cloning `kanoa-mlops` as a sib
 ```bash
 ~/Projects/lhzn-io/
 ├── kanoa/
-└── kanoa-mlops/
+├── kanoa-mlops/
+└── kanoa-vscode-bridge/  # (optional)
 ```
 
-You can then open the provided workspace file in VS Code:
+#### VS Code Multi-Root Workspace
 
-1. Open VS Code.
-2. **File** > **Open Workspace from File...**
-3. Select `kanoa/.vscode/kanoa.code-workspace`.
+1. Copy the workspace template:
 
-This will open both repositories in a single window, allowing you to work across the library and infrastructure simultaneously.
+    ```bash
+    cd kanoa/.vscode
+    cp kanoa.code-workspace.template kanoa.code-workspace
+    ```
+
+2. Open VS Code: **File** > **Open Workspace from File...** > select `kanoa.code-workspace`
+
+The workspace file is gitignored, so you can customize it (add/remove repos) without affecting others.
+
+#### Local Development Dependencies
+
+When developing `kanoa-mlops` alongside `kanoa`, use editable installs instead of git URLs:
+
+```bash
+# In kanoa-mlops directory, install kanoa as editable
+cd ~/Projects/lhzn-io/kanoa-mlops
+pip install -e ../kanoa[gemini,notebook]
+```
+
+Or create a `requirements-local.txt` for local dev:
+
+```txt
+# requirements-local.txt (gitignored)
+-e ../kanoa[gemini,notebook]
+-r requirements-dev.txt
+```
 
 ## Style Guide
 
@@ -213,6 +237,42 @@ make check-any-usage
 ```
 
 For detailed guidelines, examples, and migration strategies, see the full [Type Annotation Policy](docs/TYPE_ANNOTATION_POLICY.md).
+
+## Managing API Costs During Development
+
+When running integration tests or developing features that hit live APIs, costs can accumulate. kanoa provides the `TokenGuard` system to help manage this.
+
+### Token Guard for Pre-flight Checks
+
+Use `TokenGuard` to check token counts before making API calls:
+
+```python
+from kanoa.backends.gemini import GeminiTokenCounter
+from kanoa.core.token_guard import TokenGuard
+
+counter = GeminiTokenCounter(client, model="gemini-3-pro-preview")
+guard = TokenGuard(counter, warn_threshold=5000)  # Conservative for dev
+
+result = guard.check(your_content)
+print(f"Tokens: {result.token_count:,}, Cost: ${result.estimated_cost:.4f}")
+```
+
+### Environment Variables for CI/CD
+
+In automated environments, configure thresholds via environment variables:
+
+```bash
+export KANOA_TOKEN_WARN_THRESHOLD=10000
+export KANOA_TOKEN_APPROVAL_THRESHOLD=50000
+export KANOA_TOKEN_REJECT_THRESHOLD=200000
+export KANOA_AUTO_APPROVE=1  # Skip interactive prompts in CI
+```
+
+### Integration Test Cost Tracking
+
+The integration test suite includes a `CostTracker` that summarizes API costs at the end of each session. Check `tests/integration/conftest.py` for the implementation pattern.
+
+For detailed documentation, see [Cost Management](docs/source/user_guide/cost_management.md).
 
 ## Testing
 

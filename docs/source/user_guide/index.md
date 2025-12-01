@@ -7,6 +7,7 @@ This section provides detailed guides for using kanoa in various scenarios.
 
 backends
 knowledge_bases
+cost_management
 vertex_ai_integration
 authentication
 ```

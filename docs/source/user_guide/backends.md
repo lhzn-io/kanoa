@@ -180,3 +180,36 @@ interpreter = AnalyticsInterpreter(
     api_key='your-azure-key'
 )
 ```
+
+---
+
+## Enterprise Considerations
+
+### Current: Google AI Studio (`google-genai`)
+
+kanoa currently uses the `google-genai` SDK, which connects to Google AI Studio.
+This is the recommended approach for most users:
+
+- ✅ Simple API key authentication
+- ✅ Application Default Credentials (ADC) support
+- ✅ Low friction setup
+- ✅ Full Gemini feature support (context caching, multimodal)
+
+### Future: Vertex AI Backend
+
+For enterprise users requiring advanced compliance and security features,
+a dedicated Vertex AI backend is on the roadmap.
+
+| Feature | Google AI (`google-genai`) | Vertex AI (roadmap) |
+|---------|---------------------------|---------------------|
+| Auth | API key / ADC | Service account / ADC |
+| VPC Service Controls | ❌ | ✅ |
+| Audit Logs | ❌ | ✅ (Cloud Logging) |
+| CMEK (Customer-Managed Keys) | ❌ | ✅ |
+| Private Endpoints | ❌ | ✅ |
+| Model Registry | Limited | Full access |
+| SLA | Consumer | Enterprise |
+
+**Interested in enterprise features?**
+Open an issue on [GitHub](https://github.com/lhzn-io/kanoa/issues)
+to discuss your requirements and help prioritize the Vertex AI backend.

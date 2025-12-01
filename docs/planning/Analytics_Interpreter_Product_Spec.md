@@ -2329,6 +2329,21 @@ setup(
 
 ### Phase 5: Advanced Integrations (Future)
 
+- [ ] **Vertex AI Enterprise Backend**
+  - [ ] Create `VertexAIBackend` class using `google-cloud-aiplatform` SDK
+  - [ ] Service account authentication
+  - [ ] VPC Service Controls support
+  - [ ] Cloud Audit Logs integration
+  - [ ] CMEK (Customer-Managed Encryption Keys)
+  - [ ] Private endpoint configuration
+  - [ ] Add `kanoa[vertexai]` package extra
+  - [ ] Enterprise deployment documentation
+
+- [ ] **Agent Development Kit (ADK) Integration** (contingent on demand)
+  - [ ] Evaluate ADK for agentic interpretation workflows
+  - [ ] Multi-step reasoning with tool use
+  - [ ] Integration with Vertex AI Agent Builder
+
 - [ ] **Streamlit Reference Implementation**
   - [ ] Build demo app `examples/app.py`
   - [ ] Demonstrate interactive KB querying
@@ -2588,6 +2603,13 @@ PDFs typically contain:
 ---
 
 ## Changelog
+
+### v1.3 (2025-12-01)
+
+- Added Vertex AI Enterprise Backend to Phase 5 roadmap
+- Added Agent Development Kit (ADK) integration as future consideration
+- Documented Google Python SDK landscape (`google-genai` vs `vertexai` vs ADK)
+- Updated backends documentation with enterprise considerations section
 
 ### v1.2 (2025-11-30)
 

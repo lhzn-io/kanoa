@@ -19,6 +19,12 @@ and configuration across test files in pytest. This particular conftest provides
    - Environment variable: `KANOA_SKIP_RATE_LIMIT=1`
    - Manual: Remove lock file at `~/.config/kanoa/.integration_test_lock`
 
+**Authentication Features:**
+- **Lazy Auth Checking**: Instead of checking file existence upfront, we attempt
+  to initialize the backend and skip remaining tests if auth fails.
+- **Shared State**: Auth failures are tracked per-backend so a failure in one
+  test skips subsequent tests for that backend.
+
 **User Experience Features:**
 - **Helpful Skip Reasons**: Tests skip with concise messages that link to
   the authentication documentation for setup instructions.
@@ -37,6 +43,7 @@ import json
 import os
 import time
 from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 import pytest
 
@@ -46,6 +53,96 @@ MAX_RUNS_PER_DAY = 20
 
 # Lock file to track test runs
 LOCK_FILE = Path.home() / ".config" / "kanoa" / ".integration_test_lock"
+
+
+# Shared state for tracking auth failures across tests
+class AuthState:
+    """Track authentication state for backends to enable lazy auth checking."""
+
+    def __init__(self) -> None:
+        # Maps backend name -> error message (None = not checked, "" = OK)
+        self._failures: Dict[str, Optional[str]] = {}
+
+    def mark_auth_failed(self, backend: str, error: str) -> None:
+        """Record an auth failure for a backend."""
+        self._failures[backend] = error
+
+    def mark_auth_ok(self, backend: str) -> None:
+        """Record successful auth for a backend."""
+        self._failures[backend] = ""
+
+    def should_skip(self, backend: str) -> Optional[str]:
+        """
+        Check if tests for this backend should be skipped.
+
+        Returns:
+            None if auth hasn't been checked yet or succeeded.
+            Error message string if auth has failed.
+        """
+        error = self._failures.get(backend)
+        if error:  # Non-empty string means failure
+            return error
+        return None
+
+    def is_checked(self, backend: str) -> bool:
+        """Check if auth has been verified for this backend."""
+        return backend in self._failures
+
+
+# Global auth state instance
+_auth_state = AuthState()
+
+
+def get_auth_state() -> AuthState:
+    """Get the global auth state tracker."""
+    return _auth_state
+
+
+# Cost tracking for integration tests
+class CostTracker:
+    """Track API costs across integration tests for reporting."""
+
+    def __init__(self) -> None:
+        self._costs: List[Tuple[str, float]] = []  # (test_name, cost)
+        self._total: float = 0.0
+
+    def record(self, test_name: str, cost: float) -> None:
+        """Record a cost for a test."""
+        self._costs.append((test_name, cost))
+        self._total += cost
+
+    def get_total(self) -> float:
+        """Get total cost across all tests."""
+        return self._total
+
+    def get_all(self) -> List[Tuple[str, float]]:
+        """Get all recorded costs."""
+        return self._costs.copy()
+
+    def print_summary(self) -> None:
+        """Print a summary of all costs."""
+        if not self._costs:
+            return
+
+        print("\n" + "=" * 60)
+        print("💰 INTEGRATION TEST COST SUMMARY")
+        print("=" * 60)
+        for test_name, cost in self._costs:
+            # Shorten test name for display
+            short_name = test_name.split("::")[-1] if "::" in test_name else test_name
+            print(f"  {short_name}: ${cost:.6f}")
+        print("-" * 60)
+        print(f"  TOTAL: ${self._total:.6f}")
+        print("=" * 60)
+
+
+# Global cost tracker instance
+_cost_tracker = CostTracker()
+
+
+def get_cost_tracker() -> CostTracker:
+    """Get the global cost tracker."""
+    return _cost_tracker
 
 
 def check_rate_limit() -> None:
@@ -158,3 +255,6 @@ def integration_test_safety(request):
             # Update only if we had actual executions
             if passed + failed > 0:
                 update_rate_limit()
+
+        # Print cost summary at the end of the session
+        _cost_tracker.print_summary()

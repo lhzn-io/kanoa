@@ -4,8 +4,79 @@ from typing import Any, Dict, List, Optional, cast
 import matplotlib.pyplot as plt
 from anthropic import Anthropic
 
+from ..core.token_guard import BaseTokenCounter
 from ..core.types import InterpretationResult, UsageInfo
 from .base import BaseBackend
+
+
+class ClaudeTokenCounter(BaseTokenCounter):
+    """Token counter for Anthropic Claude models."""
+
+    def __init__(
+        self,
+        client: Any,
+        model: str = "claude-sonnet-4-5",
+        system: Optional[str] = None,
+    ):
+        """
+        Initialize Claude token counter.
+
+        Args:
+            client: anthropic.Anthropic instance
+            model: Model name for token counting
+            system: Optional system prompt (counted separately)
+        """
+        self._client = client
+        self._model = model
+        self._system = system
+
+    @property
+    def backend_name(self) -> str:
+        return "claude"
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    def count_tokens(self, contents: Any) -> int:
+        """
+        Count tokens using Claude API.
+
+        Args:
+            contents: Messages to count (list of message dicts)
+                Expected format: [{"role": "user", "content": "..."}]
+
+        Returns:
+            Token count
+        """
+        try:
+            # Claude expects messages in specific format
+            messages = self._normalize_messages(contents)
+
+            kwargs: Dict[str, Any] = {
+                "model": self._model,
+                "messages": messages,
+            }
+            if self._system:
+                kwargs["system"] = self._system
+
+            result = self._client.messages.count_tokens(**kwargs)
+            return int(result.input_tokens)
+        except Exception as e:
+            print(f"⚠️ Claude token counting failed, using estimate: {e}")
+            return self.estimate_tokens(contents)
+
+    def _normalize_messages(self, contents: Any) -> List[Dict[str, Any]]:
+        """Normalize contents to Claude message format."""
+        if isinstance(contents, str):
+            return [{"role": "user", "content": contents}]
+        if isinstance(contents, list):
+            # Already a list of messages
+            if contents and isinstance(contents[0], dict) and "role" in contents[0]:
+                return contents
+            # List of strings - treat as user messages
+            return [{"role": "user", "content": str(item)} for item in contents]
+        return [{"role": "user", "content": str(contents)}]
 
 
 class ClaudeBackend(BaseBackend):

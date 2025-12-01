@@ -9,40 +9,48 @@ from dotenv import load_dotenv
 
 from kanoa.core.interpreter import AnalyticsInterpreter
 
+from .conftest import get_auth_state, get_cost_tracker
+
 # Load API keys from user config directory
 config_dir = Path.home() / ".config" / "kanoa"
 if (config_dir / ".env").exists():
     load_dotenv(config_dir / ".env")
 
 
-# Check if we can run integration tests
-def has_credentials() -> bool:
+def has_potential_credentials() -> bool:
     """
-    Check if credentials are available.
+    Quick check if credentials might be available.
 
-    We only check for explicit environment variables to avoid issues with
-    stale ADC tokens. The Google SDK will handle ADC refresh automatically
-    when actually making API calls.
+    This is a fast, non-blocking check that looks for credential files/env vars.
+    It does NOT validate that credentials are working - that happens lazily
+    when the first test actually runs.
     """
-    # Check for API key (most common for development)
+    # Check for API key
     if os.environ.get("GOOGLE_API_KEY"):
         return True
 
-    # Check for explicit ADC path (service account key file)
+    # Check for service account key file
     if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+        return True
+
+    # Check for ADC credentials file (from gcloud auth application-default login)
+    adc_path = (
+        Path.home() / ".config" / "gcloud" / "application_default_credentials.json"
+    )
+    if adc_path.exists():
         return True
 
     return False
 
 
-# Module-level skip condition - evaluated at collection time
+# Module-level skip - only skip if NO credentials exist at all
 pytestmark = [
     pytest.mark.integration,
     pytest.mark.gemini,
     pytest.mark.skipif(
-        not has_credentials(),
+        not has_potential_credentials(),
         reason=(
-            "Missing Gemini credentials. See: "
+            "No Gemini credentials found. See: "
             "https://github.com/lhzn-io/kanoa/blob/main/docs/source/user_guide/"
             "authentication.md"
         ),
@@ -50,31 +58,56 @@ pytestmark = [
 ]
 
 
+def _is_auth_error(error_msg: str) -> bool:
+    """Check if an error message indicates an authentication failure."""
+    auth_keywords = ["401", "403", "auth", "credential", "permission", "token"]
+    return any(kw in error_msg.lower() for kw in auth_keywords)
+
+
 class TestGeminiIntegration:
+    """Integration tests for Gemini backend (no caching)."""
+
     @pytest.fixture(scope="class")
     def interpreter(self) -> Any:
         """
-        Initialize Gemini backend.
+        Initialize Gemini backend with lazy auth validation.
 
-        Requires one of:
-        - GOOGLE_API_KEY environment variable
-        - Application Default Credentials (run: gcloud auth application-default login)
+        If initialization fails due to auth issues, we mark the backend
+        as failed so subsequent tests skip immediately.
         """
+        auth_state = get_auth_state()
+
+        # Check if we already know auth is broken
+        error = auth_state.should_skip("gemini")
+        if error:
+            pytest.skip(f"Gemini auth previously failed: {error}")
+
         try:
-            # Try to initialize with configured credentials
-            return AnalyticsInterpreter(backend="gemini-3")
+            interp = AnalyticsInterpreter(backend="gemini-3")
+            auth_state.mark_auth_ok("gemini")
+            return interp
         except Exception as e:
-            pytest.skip(
-                f"Could not initialize Gemini backend: {e}\n"
-                "Your credentials may be expired or invalid. "
-                "Try: gcloud auth application-default login"
-            )
+            error_msg = str(e)
+            if _is_auth_error(error_msg):
+                auth_state.mark_auth_failed("gemini", error_msg)
+                pytest.skip(
+                    f"Gemini auth failed: {error_msg}\n"
+                    "Try: gcloud auth application-default login"
+                )
+            else:
+                # Non-auth error, let it fail normally
+                pytest.fail(f"Could not initialize Gemini backend: {e}")
 
     def test_hello_world_generation(self, interpreter: Any) -> None:
         """
         Simple 'Golden Set' test:
         Verify that Gemini can see a sine wave and identify it.
         """
+        auth_state = get_auth_state()
+        error = auth_state.should_skip("gemini")
+        if error:
+            pytest.skip(f"Skipping due to previous auth failure: {error}")
+
         print("\n" + "=" * 50)
         print("📐 TEST: Hello World (Vision)")
         print("=" * 50)
@@ -90,12 +123,17 @@ class TestGeminiIntegration:
         context = "Verification test run"
         focus = "Identify the waveform shape"
 
-        print(f"\n� User: {context} | {focus}")
+        print(f"\n🔍 User: {context} | {focus}")
 
         try:
             result = interpreter.interpret(fig=plt.gcf(), context=context, focus=focus)
         except Exception as e:
-            pytest.fail(f"Gemini API call failed: {e}")
+            error_msg = str(e)
+            # Check if this is an auth error (could happen on first actual API call)
+            if _is_auth_error(error_msg):
+                auth_state.mark_auth_failed("gemini", error_msg)
+                pytest.skip(f"Gemini auth failed on API call: {error_msg}")
+            raise
 
         # 3. Assertions (Golden Set check)
         print(
@@ -113,12 +151,20 @@ class TestGeminiIntegration:
         assert result.usage is not None
         assert result.usage.cost > 0
 
-        print(f"\n💰 Cost: ${result.usage.cost:.6f}")
+        # Record and print cost
+        cost = result.usage.cost
+        get_cost_tracker().record("test_hello_world_generation", cost)
+        print(f"\n💰 Cost: ${cost:.6f}")
 
     def test_text_only_reasoning(self, interpreter: Any) -> None:
         """
         Verify text-only reasoning capabilities.
         """
+        auth_state = get_auth_state()
+        error = auth_state.should_skip("gemini")
+        if error:
+            pytest.skip(f"Skipping due to previous auth failure: {error}")
+
         print("\n" + "=" * 50)
         print("📐 TEST: Text Reasoning")
         print("=" * 50)
@@ -127,9 +173,16 @@ class TestGeminiIntegration:
         context = "Quarterly revenue report"
         focus = "Identify the trend"
 
-        print(f"\n� User: {context} | {focus}")
+        print(f"\n🔍 User: {context} | {focus}")
 
-        result = interpreter.interpret(data=data, context=context, focus=focus)
+        try:
+            result = interpreter.interpret(data=data, context=context, focus=focus)
+        except Exception as e:
+            error_msg = str(e)
+            if _is_auth_error(error_msg):
+                auth_state.mark_auth_failed("gemini", error_msg)
+                pytest.skip(f"Gemini auth failed on API call: {error_msg}")
+            raise
 
         print(
             f"🎓 {result.metadata.get('model', 'AI')}: "
@@ -139,4 +192,7 @@ class TestGeminiIntegration:
         assert "increase" in result.text.lower() or "growth" in result.text.lower()
         assert "Q3" in result.text
 
-        print(f"\n💰 Cost: ${result.usage.cost:.6f}")
+        # Record and print cost
+        cost = result.usage.cost
+        get_cost_tracker().record("test_text_only_reasoning", cost)
+        print(f"\n💰 Cost: ${cost:.6f}")

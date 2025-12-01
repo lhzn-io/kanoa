@@ -5,8 +5,9 @@ build-backend = "setuptools.build_meta"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-ra" # Show all test summary info (including skip reasons)
+addopts = "-ra -v" # Show all test summary info (including skip reasons), verbose
 markers = [
+  "caching: marks tests that test context caching",
   "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
   "slow: marks tests as slow (deselect with '-m \"not slow\"')",
   "gemini: marks tests that use the Gemini backend",
