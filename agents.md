@@ -34,7 +34,7 @@ You are an expert Python developer contributing to the `kanoa` library.
   - Use `kanoa` (lowercase) in documentation.
   - Follow Google-style docstrings.
 - ⚠️ **Ask First**:
-  - Adding new dependencies to `setup.py` or `requirements.txt`.
+  - Adding new dependencies to `setup.py`.
   - Changing public API signatures.
 - 🚫 **Never**:
   - Commit secrets or API keys.

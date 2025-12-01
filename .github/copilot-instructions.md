@@ -35,7 +35,7 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
 
 # Project Specifics
 
-- **Setup**: Activate the development environment with `conda activate kanoa` before running any commands.
+- **Setup**: Activate the development environment with `conda activate kanoa-dev` before running any commands.
 
 ## Notebook Handling
 
