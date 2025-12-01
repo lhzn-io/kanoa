@@ -162,4 +162,4 @@ class TestAnalyticsInterpreter:
             interpreter = AnalyticsInterpreter(backend="gemini-3")
             interpreter.kb = MagicMock()
             interpreter.reload_knowledge_base()
-            cast(Any, interpreter.kb).reload.assert_called_once()
+            cast("Any", interpreter.kb).reload.assert_called_once()

@@ -39,7 +39,6 @@ class BaseBackend(ABC):
 
         Must be implemented by subclasses.
         """
-        pass
 
     @abstractmethod
     def _build_prompt(
@@ -50,7 +49,6 @@ class BaseBackend(ABC):
         custom_prompt: Optional[str],
     ) -> str:
         """Build prompt for the backend."""
-        pass
 
     def _fig_to_base64(self, fig: plt.Figure) -> str:
         """Convert matplotlib figure to base64."""

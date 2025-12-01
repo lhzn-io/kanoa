@@ -20,11 +20,8 @@ DEV_DEPS = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "python-dotenv>=1.0.0",
-    "black[jupyter]>=23.0.0",
-    "isort>=5.12.0",
-    "flake8>=6.0.0",
+    "ruff>=0.8.0",
     "mypy>=1.0.0",
-    "autoflake>=2.0.0",
     "pre-commit>=3.0.0",
     "types-setuptools",
     "detect-secrets>=1.4.0",
@@ -41,8 +38,7 @@ setup(
     name="kanoa",
     version="0.1.0",
     description=(
-        "AI-powered interpretation of data science outputs "
-        "with multi-backend support"
+        "AI-powered interpretation of data science outputs with multi-backend support"
     ),
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",

@@ -27,7 +27,7 @@ class TestClaudeBackend:
         mock_response.usage.input_tokens = 100
         mock_response.usage.output_tokens = 50
 
-        cast(Any, backend.client.messages.create).return_value = mock_response
+        cast("Any", backend.client.messages.create).return_value = mock_response
 
         result = backend.interpret(
             fig=None,
@@ -53,7 +53,7 @@ class TestClaudeBackend:
         mock_response.usage.input_tokens = 200
         mock_response.usage.output_tokens = 50
 
-        cast(Any, backend.client.messages.create).return_value = mock_response
+        cast("Any", backend.client.messages.create).return_value = mock_response
 
         fig = plt.figure()
         result = backend.interpret(
@@ -68,7 +68,7 @@ class TestClaudeBackend:
         assert "Figure interpretation" in result.text
 
         # Verify image was sent
-        call_args = cast(Any, backend.client.messages.create).call_args
+        call_args = cast("Any", backend.client.messages.create).call_args
         assert call_args is not None
         messages = call_args.kwargs["messages"]
         content = messages[0]["content"]
@@ -76,7 +76,7 @@ class TestClaudeBackend:
 
     def test_error_handling(self, mock_anthropic: Any) -> None:
         backend = ClaudeBackend(api_key="test_key")
-        cast(Any, backend.client.messages.create).side_effect = Exception("API Error")
+        cast("Any", backend.client.messages.create).side_effect = Exception("API Error")
 
         result = backend.interpret(
             fig=None,

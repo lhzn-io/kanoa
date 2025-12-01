@@ -31,7 +31,7 @@ class TestGeminiBackend:
         mock_response.usage_metadata.candidates_token_count = 20
         mock_response.usage_metadata.cached_content_token_count = 0
 
-        cast(Any, backend.client.models.generate_content).return_value = mock_response
+        cast("Any", backend.client.models.generate_content).return_value = mock_response
 
         result = backend.interpret(
             fig=None,
@@ -61,7 +61,7 @@ class TestGeminiBackend:
         mock_response.usage_metadata.candidates_token_count = 50
         mock_response.usage_metadata.cached_content_token_count = 0
 
-        cast(Any, backend.client.models.generate_content).return_value = mock_response
+        cast("Any", backend.client.models.generate_content).return_value = mock_response
 
         fig = plt.figure()
         result = backend.interpret(
@@ -75,14 +75,14 @@ class TestGeminiBackend:
 
         assert "Figure interpretation" in result.text
         # Check that content parts included image
-        call_args = cast(Any, backend.client.models.generate_content).call_args
+        call_args = cast("Any", backend.client.models.generate_content).call_args
         assert call_args is not None
         # Inspect contents structure if needed, but basic call
         # verification is good for now
 
     def test_error_handling(self, mock_genai: Any) -> None:
         backend = GeminiBackend(api_key="test_key")
-        cast(Any, backend.client.models.generate_content).side_effect = Exception(
+        cast("Any", backend.client.models.generate_content).side_effect = Exception(
             "API Error"
         )
 
@@ -111,11 +111,11 @@ class TestGeminiBackend:
         mock_file.state = "ACTIVE"
         mock_file.uri = "https://file_uri"
 
-        cast(Any, backend.client.files.upload).return_value = mock_file
-        cast(Any, backend.client.files.get).return_value = mock_file
+        cast("Any", backend.client.files.upload).return_value = mock_file
+        cast("Any", backend.client.files.get).return_value = mock_file
 
         uploaded = backend.load_pdfs([pdf_path])
 
         assert len(uploaded) == 1
         assert uploaded[pdf_path] == mock_file
-        cast(Any, backend.client.files.upload).assert_called_once()
+        cast("Any", backend.client.files.upload).assert_called_once()

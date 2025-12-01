@@ -116,7 +116,6 @@ class OpenAIBackend(BaseBackend):
         messages.append({"role": "user", "content": content})
 
         try:
-
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,  # type: ignore[arg-type]
@@ -142,7 +141,7 @@ class OpenAIBackend(BaseBackend):
 
         except Exception as e:
             return InterpretationResult(
-                text=f"❌ **Error**: {str(e)}", backend="openai", usage=None
+                text=f"❌ **Error**: {e!s}", backend="openai", usage=None
             )
 
     def _build_prompt(

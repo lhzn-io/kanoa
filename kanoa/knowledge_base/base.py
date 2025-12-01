@@ -12,9 +12,7 @@ class BaseKnowledgeBase(ABC):
     @abstractmethod
     def get_context(self) -> str:
         """Get knowledge base context as string."""
-        pass
 
     @abstractmethod
     def reload(self) -> None:
         """Reload knowledge base content."""
-        pass

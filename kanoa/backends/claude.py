@@ -152,7 +152,7 @@ class ClaudeBackend(BaseBackend):
         messages.append({"role": "user", "content": content_blocks})
 
         try:
-            response = cast(Any, self.client.messages.create)(
+            response = cast("Any", self.client.messages.create)(
                 model=self.model, max_tokens=self.max_tokens, messages=messages
             )
 
@@ -172,7 +172,7 @@ class ClaudeBackend(BaseBackend):
 
         except Exception as e:
             return InterpretationResult(
-                text=f"❌ **Error**: {str(e)}", backend="claude", usage=None
+                text=f"❌ **Error**: {e!s}", backend="claude", usage=None
             )
 
     def _build_prompt(

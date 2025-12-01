@@ -31,9 +31,7 @@ def _get_backend_class(name: str) -> Type[BaseBackend]:
     }
 
     if name not in backends:
-        raise ValueError(
-            f"Unknown backend: {name}. " f"Available: {list(backends.keys())}"
-        )
+        raise ValueError(f"Unknown backend: {name}. Available: {list(backends.keys())}")
 
     return backends[name]
 

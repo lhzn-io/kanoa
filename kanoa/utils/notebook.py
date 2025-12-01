@@ -109,7 +109,7 @@ def set_color_palette(palette: Union[str, Dict[str, RGBColor]]) -> None:
     if isinstance(palette, str):
         if palette not in _PALETTES:
             raise ValueError(
-                f"Unknown palette: {palette}. " f"Choose from: {list(_PALETTES.keys())}"
+                f"Unknown palette: {palette}. Choose from: {list(_PALETTES.keys())}"
             )
         _current_palette = _PALETTES[palette].copy()
     elif isinstance(palette, dict):
@@ -218,9 +218,9 @@ def display_result(
 
     # Wrap content in styled div, let Jupyter render the markdown
     styled_markdown = f"""
-<div style="background: {color['bg']};
-            border: 1px solid {color['border']};
-            border-left: 4px solid {color['accent']};
+<div style="background: {color["bg"]};
+            border: 1px solid {color["border"]};
+            border-left: 4px solid {color["accent"]};
             padding: 15px;
             margin: 10px 0;
             border-radius: 8px;
@@ -301,9 +301,9 @@ def display_interpretation(
     color = _get_style_colors("ai")
 
     styled_markdown = f"""
-<div style="background: {color['bg']};
-            border: 1px solid {color['border']};
-            border-left: 4px solid {color['accent']};
+<div style="background: {color["bg"]};
+            border: 1px solid {color["border"]};
+            border-left: 4px solid {color["accent"]};
             padding: 16px 20px;
             margin: 10px 0;
             border-radius: 8px;
@@ -369,12 +369,12 @@ def format_cost_summary(summary: Dict[str, Any]) -> str:
     tokens = summary.get("total_tokens", {})
     return f"""| Metric | Value |
 |:-------|------:|
-| **Backend** | {summary.get('backend', 'unknown')} |
-| **Total Calls** | {summary.get('total_calls', 0)} |
-| **Input Tokens** | {tokens.get('input', 0):,} |
-| **Output Tokens** | {tokens.get('output', 0):,} |
-| **Total Cost** | ${summary.get('total_cost_usd', 0):.4f} |
-| **Avg Cost/Call** | ${summary.get('avg_cost_per_call', 0):.4f} |"""
+| **Backend** | {summary.get("backend", "unknown")} |
+| **Total Calls** | {summary.get("total_calls", 0)} |
+| **Input Tokens** | {tokens.get("input", 0):,} |
+| **Output Tokens** | {tokens.get("output", 0):,} |
+| **Total Cost** | ${summary.get("total_cost_usd", 0):.4f} |
+| **Avg Cost/Call** | ${summary.get("avg_cost_per_call", 0):.4f} |"""
 
 
 __all__ = [

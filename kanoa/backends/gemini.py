@@ -254,7 +254,7 @@ class GeminiBackend(BaseBackend):
         # Cast contents to Any for SDK compatibility
         cache_config = types.CreateCachedContentConfig(
             display_name=display_name or f"kanoa-kb-{content_hash}",
-            contents=cast(Any, cache_contents),
+            contents=cast("Any", cache_contents),
             ttl=f"{self.cache_ttl_seconds}s",
         )
 
@@ -411,7 +411,7 @@ class GeminiBackend(BaseBackend):
 
             response = self.client.models.generate_content(
                 model=self.model,
-                contents=cast(Any, content_parts),
+                contents=cast("Any", content_parts),
                 config=generate_config,
             )
 
@@ -434,7 +434,7 @@ class GeminiBackend(BaseBackend):
             )
 
         except Exception as e:
-            error_msg = f"❌ **Error**: {str(e)}"
+            error_msg = f"❌ **Error**: {e!s}"
             return InterpretationResult(text=error_msg, backend="gemini-3", usage=None)
 
     def _build_prompt(

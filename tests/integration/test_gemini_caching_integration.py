@@ -45,9 +45,7 @@ def has_potential_credentials() -> bool:
     adc_path = (
         Path.home() / ".config" / "gcloud" / "application_default_credentials.json"
     )
-    if adc_path.exists():
-        return True
-    return False
+    return adc_path.exists()
 
 
 pytestmark = [

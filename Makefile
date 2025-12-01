@@ -8,8 +8,8 @@ help:
 	@echo "  make test-integration         - Run all integration tests"
 	@echo "  make test-gemini-integration  - Run Gemini integration tests only"
 	@echo "  make test-claude-integration  - Run Claude integration tests only"
-	@echo "  make lint                     - Run all linters (black, isort, flake8, mypy)"
-	@echo "  make format                   - Auto-format code (black, isort)"
+	@echo "  make lint                     - Run all linters (ruff, mypy)"
+	@echo "  make format                   - Auto-format code (ruff)"
 	@echo "  make check-any-usage          - Check Any usage in codebase"
 	@echo "  make clean                    - Remove build artifacts and cache"
 
@@ -39,15 +39,14 @@ test-molmo-integration:
 	pytest tests/ -m "integration and molmo" -s
 
 lint:
+	ruff check .
+	ruff format --check .
 	python -m mypy .
-	flake8
-	isort . --check-only
-	black . --check
 	npx -y markdownlint-cli@latest . --config .markdownlint.json
 
 format:
-	black .
-	isort .
+	ruff check --fix .
+	ruff format .
 
 check-any-usage:
 	@echo "Checking Any usage in codebase..."
@@ -66,5 +65,6 @@ clean:
 	find . -name '*.pyc' -exec rm -rf {} +
 	rm -rf .pytest_cache
 	rm -rf .mypy_cache
+	rm -rf .ruff_cache
 	rm -rf .coverage
 	rm -rf coverage.xml

@@ -178,11 +178,17 @@ If you are an AI assistant (GitHub Copilot, Antigravity, etc.):
 
 ### 5. Tooling
 
-- We use **black**, **isort**, **flake8**, and **mypy** as pre‑commit hooks.
-- Run all linting checks with:
+- We use **Ruff** for linting and formatting, and **mypy** for type checking.
+- Run all checks with:
 
     ```bash
     make lint
+    ```
+
+- Auto-format code with:
+
+    ```bash
+    make format
     ```
 
 - **Markdown lint**: Although not part of the pre‑commit hooks, run
@@ -193,12 +199,10 @@ If you are an AI assistant (GitHub Copilot, Antigravity, etc.):
 
 #### Configuration Files
 
-- **Black & isort**: See `[tool.black]` and `[tool.isort]` in `pyproject.toml`
-  - Line length: 88 characters (black default)
+- **Ruff**: See `[tool.ruff]` in `pyproject.toml`
+  - Line length: 88 characters (black-compatible)
   - Target: Python 3.11
-- **Flake8**: See `.flake8` in project root
-  - Max line length: 88
-  - Extends ignore: E203 (whitespace before ':' - conflicts with black)
+  - Replaces black, isort, and flake8
 - **Mypy**: See `[tool.mypy]` in `pyproject.toml`
   - Strict mode with pandas-level rigor
   - Disallows untyped definitions in library code
