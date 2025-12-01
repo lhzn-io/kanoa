@@ -1,0 +1,13 @@
+name: kanoa-dev
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  # Jupyter/notebook dependencies for running examples
+  - ipykernel
+  - jupyter
+  - notebook
+  # Development tools
+  - pip:
+    - -e .[dev]

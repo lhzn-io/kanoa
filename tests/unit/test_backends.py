@@ -23,11 +23,13 @@ class TestGeminiBackend:
     def test_interpret_text_only(self, mock_genai: Any) -> None:
         backend = GeminiBackend(api_key="test_key")
 
-        # Mock response
+        # Mock response with properly configured usage metadata
         mock_response = MagicMock()
         mock_response.text = "Interpretation result"
+        mock_response.usage_metadata = MagicMock()
         mock_response.usage_metadata.prompt_token_count = 10
         mock_response.usage_metadata.candidates_token_count = 20
+        mock_response.usage_metadata.cached_content_token_count = 0
 
         cast(Any, backend.client.models.generate_content).return_value = mock_response
 
@@ -51,11 +53,13 @@ class TestGeminiBackend:
     def test_interpret_with_figure(self, mock_genai: Any) -> None:
         backend = GeminiBackend(api_key="test_key")
 
-        # Mock response
+        # Mock response with properly configured usage metadata
         mock_response = MagicMock()
         mock_response.text = "Figure interpretation"
+        mock_response.usage_metadata = MagicMock()
         mock_response.usage_metadata.prompt_token_count = 100
         mock_response.usage_metadata.candidates_token_count = 50
+        mock_response.usage_metadata.cached_content_token_count = 0
 
         cast(Any, backend.client.models.generate_content).return_value = mock_response
 

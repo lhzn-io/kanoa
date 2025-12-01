@@ -44,9 +44,71 @@ interpreter = AnalyticsInterpreter(
 
 ### Pricing
 
-- Input: $2.00 per 1M tokens (<200K context)
-- Output: $12.00 per 1M tokens
-- Cached: $0.20 per 1M tokens
+| Token Type | Price (per 1M tokens) | Notes |
+| --- | --- | --- |
+| Standard Input | $2.00 | For context <200K tokens |
+| Cached Input | $0.50 | 75% savings |
+| Cache Storage | $0.20/hour | Per million cached tokens |
+| Output | $12.00 | All output tokens |
+
+### Context Caching
+
+Gemini supports **explicit context caching** for knowledge bases, providing significant
+cost savings when making multiple queries against the same content.
+
+#### How It Works
+
+1. **First Query**: kanoa uploads your KB and creates a cache (billed at standard rate)
+2. **Subsequent Queries**: Cached content is reused (billed at $0.50/1M vs $2.00/1M)
+3. **Content Hashing**: kanoa detects KB changes and refreshes the cache automatically
+
+#### Enabling Context Caching
+
+```python
+interpreter = AnalyticsInterpreter(
+    backend='gemini-3',
+    kb_path='./docs',
+    cache_ttl=3600,  # Cache valid for 1 hour (default)
+)
+```
+
+#### Usage Tracking
+
+The `UsageInfo` object includes caching metrics:
+
+```python
+result = interpreter.interpret(prompt="Analyze this data")
+
+print(f"Cached tokens: {result.usage.cached_tokens}")
+print(f"Cache savings: ${result.usage.cache_savings:.4f}")
+```
+
+#### Minimum Token Requirements
+
+Context caching requires a minimum number of tokens to be beneficial:
+
+| Model | Minimum Tokens |
+| --- | --- |
+| gemini-2.5-flash | 1,024 |
+| gemini-3-pro-preview | 2,048 |
+| gemini-2.5-pro | 4,096 |
+
+#### Cache Management
+
+```python
+# Clear cache manually (e.g., after updating KB files)
+interpreter.clear_cache()
+
+# Cache is also cleared automatically when KB content hash changes
+```
+
+#### Best Practices
+
+- ✅ Use for interactive sessions with multiple queries
+- ✅ Set `cache_ttl` based on your session length
+- ✅ Monitor `cache_savings` to track ROI
+- ❌ Avoid for single-shot queries (cache creation overhead)
+- ❌ Avoid for KBs < 2,048 tokens (no caching benefit)
 
 ## Claude (`claude`)
 

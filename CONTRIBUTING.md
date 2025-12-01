@@ -5,11 +5,23 @@ We welcome contributions! Please follow these guidelines to ensure a smooth proc
 ## Getting Started
 
 1. **Fork the repository** and clone it locally.
-2. **Install dependencies**:
+2. **Set up your development environment**:
+
+    **Option A: Conda (recommended for contributors)**
+
+    ```bash
+    # Full dev environment with Jupyter support
+    conda env create -f environment-dev.yml
+    conda activate kanoa-dev
+    ```
+
+    **Option B: pip only**
 
     ```bash
     pip install -e ".[dev]"
     ```
+
+    ⚠️ The pip-only option does not include Jupyter/notebook support for running examples.
 
 3. **Install pre-commit hooks**:
     This sets up git hooks to automatically lint and format your code before each commit.

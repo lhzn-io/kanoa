@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from kanoa.core.interpreter import AnalyticsInterpreter
+from kanoa.core.types import InterpretationResult
 
 
 class TestInterpreterKB:
@@ -37,13 +38,18 @@ class TestInterpreterKB:
 
         MockBackendClass = MagicMock()
         backend_instance = MockBackendClass.return_value
-        backend_instance.interpret.return_value = MagicMock()
+        # Return a proper InterpretationResult instead of a MagicMock
+        backend_instance.interpret.return_value = InterpretationResult(
+            text="Test interpretation",
+            backend="gemini-3",
+            usage=None,
+        )
 
         with patch.dict(AnalyticsInterpreter.BACKENDS, {"gemini-3": MockBackendClass}):
             interpreter = AnalyticsInterpreter(
                 backend="gemini-3", kb_path=tmp_path, kb_type="text"
             )
-            interpreter.interpret(data="test")
+            interpreter.interpret(data="test", display_result=False)
 
             # Verify kb_context was passed to backend
             call_args = backend_instance.interpret.call_args

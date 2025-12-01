@@ -6,14 +6,14 @@ This directory contains example notebooks and scripts demonstrating kanoa's capa
 
 ### quickstart_10min.ipynb
 
-10 Minutes to kanoa - Comprehensive Introduction
+**10 Minutes to kanoa** - Comprehensive Introduction
 
 This notebook showcases kanoa's core capabilities:
 
 1. **Multi-Backend Support**
    - Gemini (Google) - with native PDF vision
    - Claude (Anthropic) - text-based analysis
-   - Molmo (Local) - privacy-preserving inference
+   - OpenAI/vLLM (Local) - privacy-preserving inference
 
 2. **Knowledge Base Integration**
    - Text/Markdown knowledge bases
@@ -35,7 +35,41 @@ This notebook showcases kanoa's core capabilities:
    - Cost comparison across backends
    - Optimization insights
 
-**Prerequisites:**
+---
+
+### knowledge_base_demo/kb_climate_science.ipynb
+
+Knowledge Base Integration: Climate Science Example
+
+A deep-dive into using kanoa's knowledge base feature with domain-specific
+context. This example demonstrates:
+
+1. **Text Knowledge Base Setup**
+   - Loading markdown files as context
+   - Climate science methodology references
+   - Academic literature context (IPCC, Keeling, etc.)
+
+2. **Domain-Specific Visualizations**
+   - Global temperature anomaly time series
+   - CO2 Keeling Curve with seasonal patterns
+   - Temperature-CO2 correlation analysis
+
+3. **With/Without KB Comparison**
+   - See how context enhances interpretation quality
+   - Cost analysis of KB overhead
+   - When to use knowledge bases
+
+4. **PDF Knowledge Base Preview**
+   - How to load actual academic papers (Gemini only)
+   - Native PDF vision for figures and tables
+
+**Knowledge Base Files Included:**
+
+- `climate_methodology.md` - Analysis standards and methods
+- `ocean_temperature.md` - SST research context
+- `co2_emissions.md` - Carbon budget literature
+
+---
 
 - `conda activate kanoa` (or your environment)
 - Set `GOOGLE_API_KEY` for Gemini backend
@@ -111,9 +145,10 @@ export ANTHROPIC_API_KEY="your-api-key-here"
 
 Get your key at: <https://console.anthropic.com/>
 
-### Molmo (Local - No API Key Required)
+### vLLM (Local - No API Key Required)
 
-Molmo runs locally and requires no API key, but may need additional model setup.
+vLLM can host open-source models (Ai2 Molmo, Google Gemma 3) locally.
+No API key required, but requires GPU infrastructure setup (see `kanoa-mlops`).
 
 ---
 
@@ -121,11 +156,11 @@ Molmo runs locally and requires no API key, but may need additional model setup.
 
 Based on typical usage in the demo notebook:
 
-| Backend | Approximate Cost per Run |
-|---------|--------------------------|
-| Gemini  | $0.01 - $0.05            |
-| Claude  | $0.02 - $0.08            |
-| Molmo   | $0.00 (local)            |
+| Backend      | Approximate Cost per Run |
+| ------------ | ------------------------ |
+| Gemini       | $0.01 - $0.05            |
+| Claude       | $0.02 - $0.08            |
+| vLLM (local) | $0.00 (local)            |
 
 *Actual costs depend on input size and response length.*
 

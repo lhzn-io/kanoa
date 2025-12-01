@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
 
@@ -9,7 +9,21 @@ class UsageInfo:
     input_tokens: int
     output_tokens: int
     cost: float
-    cached_tokens: int = 0
+    cached_tokens: Optional[int] = field(default=None)
+
+    @property
+    def cache_savings(self) -> Optional[float]:
+        """
+        Calculate estimated cost savings from caching.
+
+        Returns approximate savings based on 75% reduced rate for cached tokens.
+        """
+        if not self.cached_tokens:
+            return None
+        # Assuming ~$2/1M standard vs ~$0.50/1M cached
+        full_price = self.cached_tokens / 1_000_000 * 2.00
+        cached_price = self.cached_tokens / 1_000_000 * 0.50
+        return full_price - cached_price
 
 
 @dataclass

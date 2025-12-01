@@ -1,7 +1,7 @@
 # Analytics Interpreter - Product Specification
 
-**Version:** 1.1
-**Date:** November 20, 2025
+**Version:** 1.2
+**Date:** November 30, 2025
 **Status:** Ready for Implementation
 **Target:** GitHub Coding Agent Implementation
 **Repository:** `lhzn-io/kanoa` (Standalone, Open-Source)
@@ -34,11 +34,11 @@ Build a **standalone, open-source Python package** that provides AI-powered inte
 1. **Standalone Package**: `kanoa` - Fully independent, pip-installable
 2. **Multi-Project Support**: Import into any data science project
 3. **Multi-Backend Support**:
-    - **Open Source First**: vLLM integration for Ai2 Molmo (Priority #1), Gemma 3 (Priority #2), and others.
-    - **Proprietary**: Gemini 3 Pro, Claude Opus 4.5 (Thinking Mode), OpenAI GPT-5.1.
+    - **Cloud Providers**: Gemini 3 Pro, Claude Sonnet 4.5, OpenAI GPT-5.1
+    - **Self-Hosted (vLLM)**: Ai2 Molmo, Google Gemma 3
 4. **Provider-Native Grounding**: Leverage Gemini Context Caching, OpenAI Vector Stores, etc.
 5. **Multimodal Knowledge Base**: Native PDF, Code, Audio, and Video processing (Gemini)
-6. **Open Source**: MIT/Apache 2.0 license, community-friendly
+6. **Open Source**: MIT license, community-friendly
 7. **Cost Optimization**: Context caching, efficient token usage
 
 ### Success Metrics
@@ -136,9 +136,7 @@ graph TD
 
     Gemini[Gemini Backend<br/>Google<br/>• Full PDF vision<br/>• $2/$12 per 1M<br/>• 2M context (Gemini 3 Pro)]
 
-    Molmo[Molmo Backend<br/>Local<br/>• Text KB<br/>• $0 local<br/>• 128K ctx]
-
-    OpenAI[OpenAI Backend<br/>GPT 5.1<br/>• Vector Stores<br/>• Assistants API]
+    OpenAI[OpenAI Backend<br/>GPT 5.1 / vLLM<br/>• OpenAI-compatible API<br/>• Molmo, Gemma 3<br/>• Local or Cloud]
 
     KB[Knowledge Base Layer<br/>• Pre-integrated Content<br/>• Provider-Specific Adapters<br/>• (Gemini Cache, OpenAI Vector Store)]
 
@@ -146,11 +144,9 @@ graph TD
     API --> Claude
     API --> Gemini
     API --> OpenAI
-    API --> Molmo
     Claude --> KB
     Gemini --> KB
     OpenAI --> KB
-    Molmo --> KB
 ```
 
 ### Design Principles
@@ -158,7 +154,7 @@ graph TD
 1. **Backend Agnostic**: Unified interface, swappable backends
 2. **Knowledge Base Flexible**: Works with/without KB, supports text and PDFs
 3. **Cost Optimized**: Context caching, smart token usage
-4. **Privacy Aware**: Local inference option (Molmo)
+4. **Privacy Aware**: Local inference option via vLLM (Molmo, Gemma 3)
 5. **Extensible**: Easy to add new backends, input types, KB formats
 
 ---
@@ -185,7 +181,7 @@ kanoa/
 │   │   ├── base.py                  # BaseBackend abstract class
 │   │   ├── claude.py                # ClaudeBackend implementation
 │   │   ├── gemini.py                # GeminiBackend implementation
-│   │   └── molmo.py                 # MolmoBackend implementation
+│   │   └── openai.py                # OpenAIBackend (GPT/vLLM)
 │   ├── knowledge_base/
 │   │   ├── __init__.py
 │   │   ├── base.py                  # BaseKnowledgeBase
@@ -210,7 +206,7 @@ kanoa/
 │   ├── integration/
 │   │   ├── test_claude_integration.py
 │   │   ├── test_gemini_integration.py
-│   │   └── test_molmo_integration.py
+│   │   └── test_openai_integration.py
 │   └── fixtures/
 │       ├── sample_plots.py
 │       ├── sample_data.py
@@ -250,7 +246,7 @@ from .types import InterpretationResult
 from ..backends.base import BaseBackend
 from ..backends.claude import ClaudeBackend
 from ..backends.gemini import GeminiBackend
-from ..backends.molmo import MolmoBackend
+from ..backends.openai import OpenAIBackend
 from ..knowledge_base.base import BaseKnowledgeBase
 from ..knowledge_base.text_kb import TextKnowledgeBase
 from ..knowledge_base.pdf_kb import PDFKnowledgeBase
@@ -261,7 +257,7 @@ class AnalyticsInterpreter:
     AI-powered analytics interpreter with multi-backend support.
 
     Supports:
-    - Multiple AI backends (Claude, Gemini, Molmo)
+    - Multiple AI backends (Claude, Gemini, OpenAI/vLLM)
     - Knowledge base grounding (text, PDFs, or none)
     - Multiple input types (figures, DataFrames, dicts)
     - Cost tracking and optimization
@@ -285,13 +281,13 @@ class AnalyticsInterpreter:
         'claude-sonnet-4.5': ClaudeBackend,
         'gemini': GeminiBackend,
         'gemini-3': GeminiBackend,
-        'molmo': MolmoBackend,
-        'molmo-7b': MolmoBackend,
+        'openai': OpenAIBackend,
+        'vllm': OpenAIBackend,
     }
 
     def __init__(
         self,
-        backend: Literal['claude', 'gemini-3', 'molmo'] = 'gemini-3',
+        backend: Literal['claude', 'gemini-3', 'openai', 'vllm'] = 'gemini-3',
         kb_path: Optional[Union[str, Path]] = None,
         kb_content: Optional[str] = None,
         kb_type: Literal['text', 'pdf', 'auto'] = 'auto',
@@ -305,7 +301,7 @@ class AnalyticsInterpreter:
         Initialize analytics interpreter.
 
         Args:
-            backend: AI backend to use ('claude', 'gemini-3', 'molmo')
+            backend: AI backend to use ('claude', 'gemini-3', 'openai', 'vllm')
             kb_path: Path to knowledge base directory
             kb_content: Pre-loaded knowledge base string
             kb_type: Knowledge base type ('text', 'pdf', 'auto')
@@ -1494,8 +1490,8 @@ from analytics_interpreter import AnalyticsInterpreter
 # Public data - use cloud backend
 public_interpreter = AnalyticsInterpreter(backend='gemini-3')
 
-# Proprietary data - use local backend
-private_interpreter = AnalyticsInterpreter(backend='molmo')
+# Proprietary data - use local backend (vLLM with Molmo/Gemma 3)
+private_interpreter = AnalyticsInterpreter(backend='vllm')
 
 # Cost-optimized for high volume
 bulk_interpreter = AnalyticsInterpreter(
@@ -1707,8 +1703,9 @@ analytics_interpretation:
       model: gemini-3-pro-preview
       thinking_level: high
       media_resolution: medium
-    molmo:
-      model: allenai/Molmo-7B-O-0924
+    vllm:
+      base_url: http://localhost:8000/v1
+      model: google/gemma-3-12b-it
 ```
 
 ---
@@ -1747,7 +1744,7 @@ interpret(
 | :------- | :------- | :--- | :--- |
 | **gemini-3** | Default, PDF KB | 1M context, PDF vision, cheaper with caching | Preview status |
 | **claude** | Proven stability | Reliable, excellent quality | Smaller context, text KB only |
-| **molmo** | Privacy required | Local, $0 cost, fine-tunable | Needs GPU, lower quality |
+| **openai/vllm** | Privacy / flexibility | OpenAI-compatible, local or cloud | Requires setup for local |
 
 ---
 
@@ -1765,7 +1762,7 @@ tests/
 │   ├── test_backends/
 │   │   ├── test_claude.py            # Claude backend
 │   │   ├── test_gemini.py            # Gemini backend
-│   │   └── test_molmo.py             # Molmo backend
+│   │   └── test_openai.py            # OpenAI/vLLM backend
 │   ├── test_knowledge_base/
 │   │   ├── test_text_kb.py           # Text KB
 │   │   └── test_pdf_kb.py            # PDF KB
@@ -1860,17 +1857,18 @@ def test_gemini_end_to_end():
 
 ### Model Priorities
 
-Our integration roadmap prioritizes high-capability open weights models:
+Our integration roadmap supports both cloud and self-hosted options:
 
-1. **Ai2 Molmo**: The premier open multimodal model.
-2. **Gemma 3**: Google's state-of-the-art open model.
-3. **Llama 3 / Mistral**: Strong text reasoning models.
+**Self-Hosted (via vLLM)**:
 
-We continue to support best-in-class proprietary models for users who prefer managed services:
+1. **Ai2 Molmo**: Premier open multimodal model (7B-72B parameters).
+2. **Google Gemma 3**: State-of-the-art open model (12B-27B parameters).
+
+**Cloud Providers** (for users who prefer managed services):
 
 - **Gemini 3 Pro**: For massive context and native PDF understanding.
-- **Claude Opus 4.5**: For superior reasoning and "thinking" capabilities.
-- **OpenAI GPT-4o**: For general-purpose excellence.
+- **Claude Sonnet 4.5**: For superior reasoning and "thinking" capabilities.
+- **OpenAI GPT-5.1**: For general-purpose excellence.
 
 ### Why Open Source?
 
@@ -2047,9 +2045,8 @@ setup(
             "flake8>=6.0.0",
             "mypy>=1.4.0",
         ],
-        "molmo": [
-            "transformers>=4.40.0",
-            "torch>=2.0.0",
+        "openai": [
+            "openai>=1.0.0",
         ],
     },
 )
@@ -2067,7 +2064,7 @@ setup(
 
 #### Version 0.2.0 (Beta Release)
 
-- Molmo backend implementation
+- OpenAI backend with vLLM support (Molmo, Gemma 3)
 - Advanced caching
 - Performance optimizations
 - Community feedback incorporated
@@ -2190,7 +2187,7 @@ setup(
 - [x] **Backends**
   - [x] Claude (Anthropic)
   - [x] Gemini (Google) - Native PDF support
-  - [x] Molmo (Local) - Stub/Initial implementation
+  - [x] OpenAI (GPT/vLLM) - OpenAI-compatible
 
 - [x] **Knowledge Base**
   - [x] Text/Markdown support
@@ -2210,8 +2207,8 @@ setup(
   - [ ] Hybrid retrieval strategies
 
 - [ ] **Enhanced Backends**
-  - [ ] OpenAI Backend (GPT 5.1)
-  - [ ] Molmo local inference optimization
+  - [x] OpenAI Backend (GPT 5.1)
+  - [ ] vLLM local inference optimization
 
 - [ ] **Documentation**
   - [x] Sphinx setup
@@ -2394,10 +2391,10 @@ setup(
 
 ### COULD IMPLEMENT (P2)
 
-1. ⚠️ **Molmo local backend** (defer to Phase 2)
-    - Local inference
-    - GPU support
-    - Text KB only
+1. ⚠️ **vLLM optimization** (defer to Phase 2)
+    - Local inference tuning for Molmo/Gemma 3
+    - GPU optimization
+    - Model selection guide
 
 2. ⚠️ **Advanced caching** (defer)
     - Persistent cache (Redis/disk)
@@ -2416,7 +2413,7 @@ setup(
 ### Functional
 
 - [ ] Interprets matplotlib figures accurately
-- [ ] Supports Claude, Gemini, and Molmo backends
+- [ ] Supports Claude, Gemini, and OpenAI/vLLM backends
 - [ ] Processes full PDFs with Gemini (sees figures/tables)
 - [ ] Loads text knowledge bases (markdown)
 - [ ] Tracks costs and token usage
@@ -2464,7 +2461,7 @@ setup(
 
 - Gemini-3 is default (best for PDFs, cost-effective)
 - Claude is fallback (proven, reliable)
-- Molmo is future (privacy, local inference)
+- OpenAI/vLLM for flexibility (privacy, OpenAI-compatible)
 
 #### Knowledge Base
 
@@ -2535,7 +2532,7 @@ result = interpreter.interpret(
 #### Backend Comparison
 
 ```python
-backends = ['claude', 'gemini-3', 'molmo']
+backends = ['claude', 'gemini-3', 'vllm']
 results = {}
 
 for backend in backends:
@@ -2591,6 +2588,19 @@ PDFs typically contain:
 ---
 
 ## Changelog
+
+### v1.2 (2025-11-30)
+
+- Replaced Molmo backend strategy with OpenAI-compatible backend (vLLM)
+- Updated model priorities to focus on Ai2 Molmo and Google Gemma 3 for self-hosted
+- Aligned with current codebase implementation (OpenAIBackend)
+- Updated all examples and configuration to use `vllm` instead of `molmo`
+
+### v1.1 (2025-11-20)
+
+- Added OpenAI backend to multi-backend architecture
+- Updated GPT model references to GPT-5.1
+- Raised minimum Python version to 3.11
 
 ### v1.0 (2025-11-20)
 
