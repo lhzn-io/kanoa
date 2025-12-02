@@ -3,6 +3,15 @@ from typing import Any, Dict, Optional
 
 
 @dataclass
+class CacheCreationResult:
+    """Result from cache creation operation."""
+
+    name: Optional[str]
+    created: bool
+    token_count: int = 0
+
+
+@dataclass
 class UsageInfo:
     """Token usage and cost information."""
 
@@ -10,20 +19,17 @@ class UsageInfo:
     output_tokens: int
     cost: float
     cached_tokens: Optional[int] = field(default=None)
+    cache_created: bool = field(default=False)
+    savings: Optional[float] = field(default=None)
 
     @property
     def cache_savings(self) -> Optional[float]:
         """
         Calculate estimated cost savings from caching.
 
-        Returns approximate savings based on 75% reduced rate for cached tokens.
+        Returns the savings amount if available.
         """
-        if not self.cached_tokens:
-            return None
-        # Assuming ~$2/1M standard vs ~$0.50/1M cached
-        full_price = self.cached_tokens / 1_000_000 * 2.00
-        cached_price = self.cached_tokens / 1_000_000 * 0.50
-        return full_price - cached_price
+        return self.savings
 
 
 @dataclass

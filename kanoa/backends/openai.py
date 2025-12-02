@@ -37,6 +37,11 @@ class OpenAIBackend(BaseBackend):
         ... )
     """
 
+    @property
+    def backend_name(self) -> str:
+        """Return the backend name."""
+        return "openai"
+
     def __init__(
         self,
         api_base: Optional[str] = None,

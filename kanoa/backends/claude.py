@@ -96,6 +96,11 @@ class ClaudeBackend(BaseBackend):
         "claude-opus-4-5-20251101": {"input": 5.00, "output": 25.00},
     }
 
+    @property
+    def backend_name(self) -> str:
+        """Return the backend name."""
+        return "claude"
+
     def __init__(
         self,
         api_key: Optional[str] = None,
@@ -174,6 +179,12 @@ class ClaudeBackend(BaseBackend):
             return InterpretationResult(
                 text=f"❌ **Error**: {e!s}", backend="claude", usage=None
             )
+        finally:
+            # Update shared cost tracking
+            if "usage" in locals() and usage:
+                self.total_tokens["input"] += usage.input_tokens
+                self.total_tokens["output"] += usage.output_tokens
+                self.total_cost += usage.cost
 
     def _build_prompt(
         self,

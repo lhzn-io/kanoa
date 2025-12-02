@@ -113,7 +113,7 @@ This section outlines the coding, documentation, and aesthetic standards for the
 
 ### 2. Emoji Policy
 
-We use emojis sparingly to highlight important information without creating visual clutter.
+We use emojis sparingly to highlight important information without creating visual clutter. We prefer a "classy", structured aesthetic over a "cartoony" one.
 
 #### Allowed Contexts
 
@@ -121,6 +121,10 @@ We use emojis sparingly to highlight important information without creating visu
 - **Errors**: ❌ for error messages or failed states
 - **Checklists**: Use `[✓]` for completed items and `[ ]` for planned/incomplete items in planning documents
 - **Marketing docs (README only)**: To distinguish key features in bullet points (e.g., "- 🔒 **Privacy First**")
+- **Agent Layer / CLI Output**:
+  - **Allowed**: Structural symbols and minimal emojis that enhance readability (e.g., `•`, `→`, `📦` for blobs, `📄` for files).
+  - **Style**: Prefer bracketed tags (e.g., `[Blob]`, `[Text]`) over heavy emoji usage.
+  - **Goal**: "Classy" and "Technical", not "Playful".
 
 #### Prohibited Contexts
 
@@ -130,6 +134,7 @@ We use emojis sparingly to highlight important information without creating visu
 - **Commit messages**: Use conventional commits (e.g., `feat:`, `fix:`) without emojis
 - **Mid-sentence**: Do not put emojis in the middle of a sentence
 - **Excessive decoration**: Do not use emojis as visual flair or decoration
+- **"Cartoony" Emojis**: Avoid emojis that look too informal or "cute" (e.g., 🧠, 🚀, 🤖) in technical logs.
 
 #### Checklist Convention
 

@@ -23,6 +23,10 @@ class BaseBackend(ABC):
         self.enable_caching = enable_caching
         self.call_count = 0
 
+        # Cost tracking state (moved from Interpreter to allow sharing)
+        self.total_cost = 0.0
+        self.total_tokens = {"input": 0, "output": 0}
+
     @abstractmethod
     def interpret(
         self,
@@ -57,3 +61,27 @@ class BaseBackend(ABC):
     def _data_to_text(self, data: Any) -> str:
         """Convert data to text representation."""
         return data_to_text(data)
+
+    def get_cost_summary(self) -> dict[str, Any]:
+        """Get summary of token usage and costs."""
+        return {
+            "backend": self.backend_name,  # Abstract property
+            "total_calls": self.call_count,
+            "total_tokens": self.total_tokens,
+            "total_cost_usd": self.total_cost,
+            "avg_cost_per_call": self.total_cost / max(self.call_count, 1),
+        }
+
+    @property
+    @abstractmethod
+    def backend_name(self) -> str:
+        """Name of the backend."""
+
+    def check_kb_cost(self) -> Any:
+        """
+        Check the cost/token count of the current knowledge base.
+
+        Returns:
+            TokenCheckResult or None if not supported.
+        """
+        return None

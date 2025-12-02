@@ -22,11 +22,21 @@ class TestAnalyticsInterpreter:
     def test_interpret_figure(self) -> None:
         MockBackendClass = MagicMock()
         backend_instance = MockBackendClass.return_value
-        backend_instance.interpret.return_value = InterpretationResult(
-            text="Test interpretation",
-            backend="gemini-3",
-            usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
-        )
+
+        # Configure side effect to simulate cost updates
+        def interpret_side_effect(*args, **kwargs):
+            backend_instance.total_cost += 0.01
+            backend_instance.total_tokens["input"] += 10
+            backend_instance.total_tokens["output"] += 20
+            return InterpretationResult(
+                text="Test interpretation",
+                backend="gemini-3",
+                usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
+            )
+
+        backend_instance.interpret.side_effect = interpret_side_effect
+        backend_instance.total_cost = 0.0
+        backend_instance.total_tokens = {"input": 0, "output": 0}
         backend_instance.call_count = 0  # Initialize call_count
 
         with patch(
@@ -39,9 +49,9 @@ class TestAnalyticsInterpreter:
 
             assert result.text == "Test interpretation"
             backend_instance.interpret.assert_called_once()
-            assert interpreter.total_cost == 0.01
-            assert interpreter.total_tokens["input"] == 10
-            assert interpreter.total_tokens["output"] == 20
+            assert interpreter.backend.total_cost == 0.01
+            assert interpreter.backend.total_tokens["input"] == 10
+            assert interpreter.backend.total_tokens["output"] == 20
 
     def test_interpret_data(self) -> None:
         MockBackendClass = MagicMock()
@@ -76,11 +86,21 @@ class TestAnalyticsInterpreter:
     def test_cost_tracking(self) -> None:
         MockBackendClass = MagicMock()
         backend_instance = MockBackendClass.return_value
-        backend_instance.interpret.return_value = InterpretationResult(
-            text="Test interpretation",
-            backend="gemini-3",
-            usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
-        )
+
+        # Configure side effect to simulate cost updates
+        def interpret_side_effect(*args, **kwargs):
+            backend_instance.total_cost += 0.01
+            backend_instance.total_tokens["input"] += 10
+            backend_instance.total_tokens["output"] += 20
+            return InterpretationResult(
+                text="Test interpretation",
+                backend="gemini-3",
+                usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
+            )
+
+        backend_instance.interpret.side_effect = interpret_side_effect
+        backend_instance.total_cost = 0.0
+        backend_instance.total_tokens = {"input": 0, "output": 0}
         backend_instance.call_count = 0
 
         with patch(
@@ -92,9 +112,9 @@ class TestAnalyticsInterpreter:
             interpreter.interpret(fig=fig)
             interpreter.interpret(fig=fig)
 
-            assert interpreter.total_cost == 0.02
-            assert interpreter.total_tokens["input"] == 20
-            assert interpreter.total_tokens["output"] == 40
+            assert interpreter.backend.total_cost == 0.02
+            assert interpreter.backend.total_tokens["input"] == 20
+            assert interpreter.backend.total_tokens["output"] == 40
 
     def test_interpret_figure_convenience(self) -> None:
         MockBackendClass = MagicMock()
@@ -139,6 +159,10 @@ class TestAnalyticsInterpreter:
             backend="gemini-3",
             usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
         )
+        backend_instance.get_cost_summary.return_value = {
+            "backend": "gemini-3",
+            "total_cost_usd": 0.01,
+        }
         backend_instance.call_count = 1
 
         with patch(

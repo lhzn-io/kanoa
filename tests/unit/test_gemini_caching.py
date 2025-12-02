@@ -37,9 +37,10 @@ class TestGeminiContextCaching:
         # (~4 chars per token, so ~8192 chars needed)
         large_kb = "Test content with some words. " * 400  # ~12000 chars, ~3000 tokens
 
-        cache_name = backend.create_kb_cache(large_kb)
+        result = backend.create_kb_cache(large_kb)
 
-        assert cache_name == "caches/test-cache-123"
+        assert result.name == "caches/test-cache-123"
+        assert result.created is True
         assert backend._cached_content_name == "caches/test-cache-123"
         cast("Any", backend.client.caches.create).assert_called_once()
 
@@ -50,9 +51,10 @@ class TestGeminiContextCaching:
         # Small KB content (< 1024 tokens)
         small_kb = "Short content."
 
-        cache_name = backend.create_kb_cache(small_kb)
+        result = backend.create_kb_cache(small_kb)
 
-        assert cache_name is None
+        assert result.name is None
+        assert result.created is False
         cast("Any", backend.client.caches.create).assert_not_called()
 
     def test_cache_disabled(self, mock_genai: Any) -> None:
@@ -61,9 +63,10 @@ class TestGeminiContextCaching:
 
         large_kb = "Test content. " * 500
 
-        cache_name = backend.create_kb_cache(large_kb)
+        result = backend.create_kb_cache(large_kb)
 
-        assert cache_name is None
+        assert result.name is None
+        assert result.created is False
         cast("Any", backend.client.caches.create).assert_not_called()
 
     def test_cache_reused_for_same_content(self, mock_genai: Any) -> None:
@@ -79,13 +82,15 @@ class TestGeminiContextCaching:
         large_kb = "Test content with some words. " * 400
 
         # First call - creates cache
-        cache_name1 = backend.create_kb_cache(large_kb)
-        assert cache_name1 == "caches/test-cache-123"
+        result1 = backend.create_kb_cache(large_kb)
+        assert result1.name == "caches/test-cache-123"
+        assert result1.created is True
         assert cast("Any", backend.client.caches.create).call_count == 1
 
         # Second call with same content - reuses cache (updates TTL)
-        cache_name2 = backend.create_kb_cache(large_kb)
-        assert cache_name2 == "caches/test-cache-123"
+        result2 = backend.create_kb_cache(large_kb)
+        assert result2.name == "caches/test-cache-123"
+        assert result2.created is False
         # Cache should be updated, not created again
         assert cast("Any", backend.client.caches.create).call_count == 1
         cast("Any", backend.client.caches.update).assert_called()
@@ -109,8 +114,9 @@ class TestGeminiContextCaching:
         kb2 = "Different content with other words here. " * 400
 
         # First call
-        cache_name1 = backend.create_kb_cache(kb1)
-        assert cache_name1 == "caches/cache-1"
+        result1 = backend.create_kb_cache(kb1)
+        assert result1.name == "caches/cache-1"
+        assert result1.created is True
 
         # Simulate cache update failure (expired cache)
         cast("Any", backend.client.caches.update).side_effect = Exception(
@@ -118,8 +124,9 @@ class TestGeminiContextCaching:
         )
 
         # Second call with different content
-        cache_name2 = backend.create_kb_cache(kb2)
-        assert cache_name2 == "caches/cache-2"
+        result2 = backend.create_kb_cache(kb2)
+        assert result2.name == "caches/cache-2"
+        assert result2.created is True
         assert cast("Any", backend.client.caches.create).call_count == 2
 
     def test_clear_cache(self, mock_genai: Any) -> None:
@@ -173,6 +180,7 @@ class TestGeminiContextCaching:
         assert "Cached interpretation" in result.text
         assert result.metadata is not None
         assert result.metadata["cache_used"] is True
+        assert result.metadata["cache_created"] is True  # First usage creates cache
         assert result.metadata["cache_name"] == "caches/kb-cache"
 
     def test_usage_with_cached_tokens(self, mock_genai: Any) -> None:
@@ -185,17 +193,33 @@ class TestGeminiContextCaching:
         mock_response.usage_metadata.candidates_token_count = 500
         mock_response.usage_metadata.cached_content_token_count = 8000
 
-        usage = backend._calculate_usage(mock_response, cache_used=True)
+        # Scenario 1: Cache Hit (discounted)
+        usage_hit = backend._calculate_usage(
+            mock_response, cache_used=True, cache_created=False
+        )
 
-        assert usage is not None
-        assert usage.input_tokens == 10000
-        assert usage.output_tokens == 500
-        assert usage.cached_tokens == 8000
+        assert usage_hit is not None
+        assert usage_hit.input_tokens == 10000
+        assert usage_hit.output_tokens == 500
+        assert usage_hit.cached_tokens == 8000
         # Cost should be reduced due to cached tokens
         # 8000 cached @ $0.50/1M + 2000 non-cached @ $2.00/1M + 500 output @ $12/1M
-        expected_cost = (
+        expected_cost_hit = (
             (8000 / 1_000_000 * 0.50)
             + (2000 / 1_000_000 * 2.00)
             + (500 / 1_000_000 * 12.00)
         )
-        assert abs(usage.cost - expected_cost) < 0.0001
+        assert abs(usage_hit.cost - expected_cost_hit) < 0.0001
+
+        # Scenario 2: Cache Creation (full price)
+        usage_creation = backend._calculate_usage(
+            mock_response, cache_used=True, cache_created=True
+        )
+
+        assert usage_creation is not None
+        assert usage_creation.input_tokens == 10000
+        assert usage_creation.cached_tokens == 8000
+        # Cost should be FULL price for all input tokens
+        # 10000 input @ $2.00/1M + 500 output @ $12/1M
+        expected_cost_creation = (10000 / 1_000_000 * 2.00) + (500 / 1_000_000 * 12.00)
+        assert abs(usage_creation.cost - expected_cost_creation) < 0.0001

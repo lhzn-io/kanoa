@@ -61,3 +61,6 @@ docs/build/
 .claude/
 .anthropic/
 .openai/
+
+# knowledge base files
+*.pdf

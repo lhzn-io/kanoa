@@ -157,6 +157,11 @@ graph TD
 4. **Privacy Aware**: Local inference option via vLLM (Molmo, Gemma 3)
 5. **Extensible**: Easy to add new backends, input types, KB formats
 
+### Future Enhancements
+
+- **Multi-Turn Memory**: Currently, the system is stateless (single-turn analysis). Future versions will include a `ChatSession` class to support multi-turn conversations and memory retention across requests.
+- **Structured Logging**: Evaluate `structlog` to replace the current custom logging implementation for better observability and structured output handling.
+
 ---
 
 ## Standalone Package Implementation
@@ -2257,9 +2262,14 @@ setup(
 
 - [ ] **Grounding with Google Search**
   - [ ] Add `enable_google_search_grounding` parameter
-  - [ ] Implement dynamic retrieval (model decides when to ground)
+  - [ ] Implement dynamic retrieval via `tools=[{'google_search': {}}]` (model decides when to ground)
   - [ ] Parse and include grounding metadata with source citations
   - [ ] Support for third-party data sources (Moody's, MSCI, etc.)
+
+#### Efficient GCS Integration
+
+- [ ] **Direct GCS URI Support**: Enable `gs://` URIs in `add_resource` to pass directly to Gemini Context Caching without local download (using `file_uri` in `types.Part`).
+- [ ] **Virtual File Handling**: Abstract GCS objects as virtual files in `BaseKnowledgeBase` to support cloud-native workflows.
 
 #### Implementation Details
 

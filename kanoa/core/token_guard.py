@@ -36,8 +36,11 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Protocol
 
+from ..config import options
+
 # Default thresholds (tokens)
-DEFAULT_WARN_THRESHOLD = 10_000
+# Now controlled via kanoa.options
+DEFAULT_WARN_THRESHOLD = 2048
 DEFAULT_APPROVAL_THRESHOLD = 50_000
 DEFAULT_REJECT_THRESHOLD = 200_000
 
@@ -227,19 +230,29 @@ class TokenGuard:
         """
         self.counter = counter
 
-        # Load thresholds from env vars or use defaults
-        self.warn_threshold = warn_threshold or int(
-            os.environ.get("KANOA_TOKEN_WARN_THRESHOLD", DEFAULT_WARN_THRESHOLD)
+        # Load thresholds from args, env vars, or kanoa.options
+        self.warn_threshold = (
+            warn_threshold
+            or int(os.environ.get("KANOA_TOKEN_WARN_THRESHOLD", 0))
+            or options.token_warn_threshold
         )
-        self.approval_threshold = approval_threshold or int(
-            os.environ.get("KANOA_TOKEN_APPROVAL_THRESHOLD", DEFAULT_APPROVAL_THRESHOLD)
+        self.approval_threshold = (
+            approval_threshold
+            or int(os.environ.get("KANOA_TOKEN_APPROVAL_THRESHOLD", 0))
+            or options.token_approval_threshold
         )
-        self.reject_threshold = reject_threshold or int(
-            os.environ.get("KANOA_TOKEN_REJECT_THRESHOLD", DEFAULT_REJECT_THRESHOLD)
+        self.reject_threshold = (
+            reject_threshold
+            or int(os.environ.get("KANOA_TOKEN_REJECT_THRESHOLD", 0))
+            or options.token_reject_threshold
         )
 
-        # Auto-approve can be set via env var
-        self.auto_approve = auto_approve or os.environ.get("KANOA_AUTO_APPROVE") == "1"
+        # Auto-approve can be set via env var or options
+        self.auto_approve = (
+            auto_approve
+            or os.environ.get("KANOA_AUTO_APPROVE") == "1"
+            or options.auto_approve
+        )
 
     # Expose counter properties for convenience
     @property
@@ -318,7 +331,7 @@ class TokenGuard:
                 approved=False,
                 requires_approval=True,
                 message=(
-                    f"❌ Request rejected: {token_count:,} tokens exceeds "
+                    f"Request rejected: {token_count:,} tokens exceeds "
                     f"limit of {self.reject_threshold:,}. "
                     f"Estimated cost: ${estimated_cost:.4f}"
                 ),
@@ -334,7 +347,7 @@ class TokenGuard:
                     approved=True,
                     requires_approval=False,
                     message=(
-                        f"⚠️ Large request auto-approved: {token_count:,} tokens, "
+                        f"Large request auto-approved: {token_count:,} tokens, "
                         f"~${estimated_cost:.4f}"
                     ),
                 )
@@ -348,7 +361,6 @@ class TokenGuard:
                     approved=approved,
                     requires_approval=True,
                     message=(
-                        f"{'✅' if approved else '❌'} "
                         f"Large request {'approved' if approved else 'denied'}: "
                         f"{token_count:,} tokens, ~${estimated_cost:.4f}"
                     ),
@@ -361,10 +373,7 @@ class TokenGuard:
                 level="warn",
                 approved=True,
                 requires_approval=False,
-                message=(
-                    f"⚠️ Moderate token count: {token_count:,} tokens, "
-                    f"~${estimated_cost:.4f}"
-                ),
+                message=f"{token_count:,} tokens, ~${estimated_cost:.4f}",
             )
 
         # OK - under all thresholds
@@ -374,7 +383,7 @@ class TokenGuard:
             level="ok",
             approved=True,
             requires_approval=False,
-            message=f"✓ {token_count:,} tokens, ~${estimated_cost:.4f}",
+            message=f"{token_count:,} tokens, ~${estimated_cost:.4f}",
         )
 
     def _request_approval(self, token_count: int, estimated_cost: float) -> bool:
@@ -391,7 +400,7 @@ class TokenGuard:
             True if approved, False otherwise
         """
         print("\n" + "=" * 60)
-        print("⚠️  LARGE TOKEN REQUEST - APPROVAL REQUIRED")
+        print("LARGE TOKEN REQUEST - APPROVAL REQUIRED")
         print("=" * 60)
         print(f"   Token count:    {token_count:,}")
         print(f"   Estimated cost: ${estimated_cost:.4f}")

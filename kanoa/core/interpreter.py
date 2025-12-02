@@ -101,10 +101,8 @@ class AnalyticsInterpreter:
                 kb_path=kb_path, kb_content=kb_content, kb_type=kb_type, backend=backend
             )
 
-        # Cost tracking
+        # Cost tracking - delegated to backend
         self.track_costs = track_costs
-        self.total_cost = 0.0
-        self.total_tokens = {"input": 0, "output": 0}
 
     def _initialize_knowledge_base(
         self,
@@ -137,6 +135,46 @@ class AnalyticsInterpreter:
         else:
             return TextKnowledgeBase(kb_path=kb_path, kb_content=kb_content)
 
+    def with_kb(
+        self,
+        kb_path: Optional[Union[str, Path]] = None,
+        kb_content: Optional[str] = None,
+        kb_type: Literal["text", "pdf", "auto"] = "auto",
+    ) -> "AnalyticsInterpreter":
+        """
+        Create a new interpreter instance with a specific knowledge base,
+        sharing the same backend and cost tracking state.
+
+        Behavior:
+            - REPLACES any existing knowledge base.
+            - Shares the underlying backend instance (and thus cost stats).
+            - Returns a new AnalyticsInterpreter instance.
+
+        Example:
+            # Base interpreter (no KB)
+            interp = AnalyticsInterpreter()
+
+            # Specialized interpreter (shares costs with base)
+            finance_interp = interp.with_kb("kbs/finance")
+        """
+        import copy
+
+        # Create a shallow copy
+        new_interpreter = copy.copy(self)
+
+        # Initialize the new KB (Replaces existing)
+        if kb_path or kb_content:
+            new_interpreter.kb = self._initialize_knowledge_base(
+                kb_path=kb_path,
+                kb_content=kb_content,
+                kb_type=kb_type,
+                backend=self.backend_name,
+            )
+        else:
+            new_interpreter.kb = None
+
+        return new_interpreter
+
     def interpret(
         self,
         fig: Optional[plt.Figure] = None,
@@ -168,8 +206,10 @@ class AnalyticsInterpreter:
             ValueError: If neither fig nor data provided
         """
         # Validate input
-        if fig is None and data is None:
-            raise ValueError("Must provide either 'fig' or 'data' to interpret")
+        if fig is None and data is None and custom_prompt is None:
+            raise ValueError(
+                "Must provide either 'fig', 'data', or 'custom_prompt' to interpret"
+            )
 
         # Get knowledge base context
         kb_context = None
@@ -187,12 +227,6 @@ class AnalyticsInterpreter:
             **kwargs,
         )
 
-        # Track costs
-        if self.track_costs and result.usage:
-            self.total_tokens["input"] += result.usage.input_tokens
-            self.total_tokens["output"] += result.usage.output_tokens
-            self.total_cost += result.usage.cost
-
         # Auto-display
         if display_result:
             try:
@@ -201,6 +235,11 @@ class AnalyticsInterpreter:
                 # Extract cache and model info from metadata
                 cached = (
                     result.metadata.get("cache_used", False)
+                    if result.metadata
+                    else False
+                )
+                cache_created = (
+                    result.metadata.get("cache_created", False)
                     if result.metadata
                     else False
                 )
@@ -215,6 +254,7 @@ class AnalyticsInterpreter:
                     model=model_name,
                     usage=result.usage,
                     cached=cached,
+                    cache_created=cache_created,
                 )
             except ImportError:
                 # Fallback to plain markdown display
@@ -241,15 +281,66 @@ class AnalyticsInterpreter:
 
     def get_cost_summary(self) -> Dict[str, Any]:
         """Get summary of token usage and costs."""
-        return {
-            "backend": self.backend_name,
-            "total_calls": self.backend.call_count,
-            "total_tokens": self.total_tokens,
-            "total_cost_usd": self.total_cost,
-            "avg_cost_per_call": self.total_cost / max(self.backend.call_count, 1),
-        }
+        return self.backend.get_cost_summary()
+
+    def get_kb(self) -> BaseKnowledgeBase:
+        """
+        Get the active knowledge base.
+
+        Returns:
+            The active KnowledgeBase instance.
+
+        Raises:
+            RuntimeError: If no knowledge base has been configured.
+        """
+        if self.kb is None:
+            raise RuntimeError(
+                "No knowledge base configured. "
+                "Initialize with 'kb_path' or use '.with_kb()'."
+            )
+        return self.kb
 
     def reload_knowledge_base(self) -> None:
         """Reload knowledge base from source."""
         if self.kb:
             self.kb.reload()
+
+    def check_kb_cost(self) -> Any:
+        """
+        Check the cost/token count of the current knowledge base.
+
+        Returns:
+            TokenCheckResult or None if not supported/empty.
+        """
+        # Ensure KB is loaded/uploaded
+        if self.kb:
+            self.kb.get_context()
+
+        return self.backend.check_kb_cost()
+
+    def get_cache_status(self) -> Dict[str, Any]:
+        """
+        Check the status of the context cache for the current KB.
+
+        Returns:
+            Dict with cache status details (exists, source, tokens, etc.)
+            or {'exists': False, 'reason': ...} if not supported/found.
+        """
+        if not hasattr(self.backend, "get_cache_status"):
+            return {
+                "exists": False,
+                "reason": f"Backend '{self.backend_name}' does not support caching",
+            }
+
+        kb_context = None
+        if self.kb:
+            kb_context = self.kb.get_context()
+
+        if not kb_context:
+            return {"exists": False, "reason": "No knowledge base loaded"}
+
+        from typing import cast
+
+        return cast(
+            "Dict[str, Any]", cast("Any", self.backend).get_cache_status(kb_context)
+        )
