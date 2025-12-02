@@ -4,6 +4,8 @@ kanoa supports multiple AI backends, each with different strengths and use cases
 
 ## Gemini (`gemini-3`)
 
+> For detailed documentation, see [Gemini Backend Reference](../backends/gemini.md).
+
 **Best for**: PDF knowledge bases, large context windows, cost optimization
 
 ### Features
@@ -95,11 +97,19 @@ Context caching requires a minimum number of tokens to be beneficial:
 
 #### Cache Management
 
+You can manage caches programmatically or via the CLI:
+
 ```python
 # Clear cache manually (e.g., after updating KB files)
 interpreter.clear_cache()
 
 # Cache is also cleared automatically when KB content hash changes
+```
+
+For CLI usage:
+
+```bash
+python -m kanoa.tools.gemini_cache list
 ```
 
 #### Best Practices
@@ -111,6 +121,8 @@ interpreter.clear_cache()
 - ❌ Avoid for KBs < 2,048 tokens (no caching benefit)
 
 ## Claude (`claude`)
+
+> For detailed documentation, see [Claude Backend Reference](../backends/claude.md).
 
 **Best for**: Strong reasoning, text-heavy analysis (Claude Sonnet 4.5)
 
@@ -141,6 +153,8 @@ interpreter = AnalyticsInterpreter(
 - Output: $15.00 per 1M tokens
 
 ## OpenAI / vLLM (`openai`)
+
+> For detailed documentation, see [OpenAI Backend Reference](../backends/openai.md) and [vLLM Backend Reference](../backends/vllm.md).
 
 **Best for**: Local inference (Gemma 3, Molmo), Azure OpenAI, or GPT-5.1
 

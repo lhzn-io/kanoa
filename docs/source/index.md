@@ -10,6 +10,7 @@ Welcome to the **kanoa** documentation!
 
 quickstart
 user_guide/index
+backends/index
 api
 ```
 

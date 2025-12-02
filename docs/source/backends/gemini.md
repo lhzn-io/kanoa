@@ -27,6 +27,15 @@ For production datasets on Vertex AI, we recommend using **Google Cloud Storage 
 interpreter.kb.add_resource("gs://my-bucket/my-doc.pdf")
 ```
 
+## Pricing
+
+| Token Type | Price (per 1M tokens) | Notes |
+| --- | --- | --- |
+| Standard Input | $2.00 | For context <200K tokens |
+| Cached Input | $0.50 | 75% savings |
+| Cache Storage | $0.20/hour | Per million cached tokens |
+| Output | $12.00 | All output tokens |
+
 ## Context Caching
 
 Gemini supports **Context Caching**, which allows you to cache large prompts (like knowledge bases) to reduce costs and latency for subsequent requests.
@@ -36,3 +45,31 @@ Gemini supports **Context Caching**, which allows you to cache large prompts (li
 * **Cost Savings**: Cached input tokens are significantly cheaper than standard input tokens.
 
 See the [Gemini Context Caching Demo](../../examples/gemini_context_caching_demo.ipynb) for a working example.
+
+## Cache Management CLI
+
+`kanoa` includes a command-line tool to manage your Gemini context caches.
+
+### Listing Caches
+
+List all active caches, their token counts, and expiration times:
+
+```bash
+python -m kanoa.tools.gemini_cache list
+```
+
+### Deleting a Cache
+
+Delete a specific cache by name or ID:
+
+```bash
+python -m kanoa.tools.gemini_cache delete <cache_name>
+```
+
+### Pruning Caches
+
+Delete ALL active caches (useful for cleanup):
+
+```bash
+python -m kanoa.tools.gemini_cache prune
+```
