@@ -64,3 +64,6 @@ docs/build/
 
 # knowledge base files
 *.pdf
+
+# Jupyter Notebooks
+**/.ipynb_checkpoints
