@@ -76,6 +76,10 @@ setup(
     author_email="dfry@lhzn.io",
     url="https://github.com/lhzn-io/kanoa",
     packages=find_packages(exclude=["tests", "tests.*", "examples"]),
+    include_package_data=True,
+    package_data={
+        "kanoa": ["*.json"],
+    },
     python_requires=">=3.11",
     install_requires=CORE_DEPS,
     extras_require={

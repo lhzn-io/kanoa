@@ -4,6 +4,7 @@ include CONTRIBUTING.md
 include requirements.txt
 
 recursive-include kanoa *.py
+recursive-include kanoa *.json
 recursive-include docs *.md
 
 exclude .gitignore
