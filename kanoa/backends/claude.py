@@ -7,7 +7,7 @@ from anthropic import Anthropic
 from ..core.token_guard import BaseTokenCounter
 from ..core.types import InterpretationResult, UsageInfo
 from ..pricing import get_model_pricing
-from ..utils.logging import log_debug, log_info, log_warning
+from ..utils.logging import ilog_debug, ilog_info, ilog_warning
 from .base import BaseBackend
 
 
@@ -68,10 +68,10 @@ class ClaudeTokenCounter(BaseTokenCounter):
             result = self._client.messages.count_tokens(**kwargs)
             token_count = int(result.input_tokens)
             if self.verbose >= 2:
-                log_debug(f"Token count: {token_count}", title="Claude")
+                ilog_debug(f"Token count: {token_count}", title="Claude")
             return token_count
         except Exception as e:
-            log_warning(f"Token counting failed, using estimate: {e}", title="Claude")
+            ilog_warning(f"Token counting failed, using estimate: {e}", title="Claude")
             return self.estimate_tokens(contents)
 
     def _normalize_messages(self, contents: Any) -> List[Dict[str, Any]]:
@@ -118,7 +118,7 @@ class ClaudeBackend(BaseBackend):
         self.verbose = verbose
 
         if self.verbose >= 1:
-            log_info(f"Initialized with model: {self.model}", title="Claude")
+            ilog_info(f"Initialized with model: {self.model}", title="Claude")
 
     def interpret(
         self,
@@ -134,7 +134,7 @@ class ClaudeBackend(BaseBackend):
         self.call_count += 1
 
         if self.verbose >= 1:
-            log_info(f"Calling {self.model} (call #{self.call_count})", title="Claude")
+            ilog_info(f"Calling {self.model} (call #{self.call_count})", title="Claude")
 
         messages: List[Dict[str, Any]] = []
         content_blocks: List[Dict[str, Any]] = []
@@ -153,7 +153,7 @@ class ClaudeBackend(BaseBackend):
                 }
             )
             if self.verbose >= 2:
-                log_debug("Attached figure as base64 image", title="Claude")
+                ilog_debug("Attached figure as base64 image", title="Claude")
 
         # Add data
         if data is not None:
@@ -162,16 +162,16 @@ class ClaudeBackend(BaseBackend):
                 {"type": "text", "text": f"Data to analyze:\n```\n{data_text}\n```"}
             )
             if self.verbose >= 2:
-                log_debug(f"Attached data ({len(data_text)} chars)", title="Claude")
+                ilog_debug(f"Attached data ({len(data_text)} chars)", title="Claude")
 
         # Add prompt
         prompt = self._build_prompt(context, focus, kb_context, custom_prompt)
         content_blocks.append({"type": "text", "text": prompt})
 
         if self.verbose >= 2:
-            log_debug(f"Prompt length: {len(prompt)} chars", title="Request")
+            ilog_debug(f"Prompt length: {len(prompt)} chars", title="Request")
             if kb_context:
-                log_debug(
+                ilog_debug(
                     f"Knowledge base context: {len(kb_context)} chars", title="Request"
                 )
 
@@ -190,13 +190,13 @@ class ClaudeBackend(BaseBackend):
             usage = self._calculate_usage(response.usage)
 
             if self.verbose >= 1:
-                log_info(
+                ilog_info(
                     f"Tokens: {usage.input_tokens} in / {usage.output_tokens} out "
                     f"(${usage.cost:.4f})",
                     title="Claude",
                 )
             if self.verbose >= 2:
-                log_debug(
+                ilog_debug(
                     f"Response length: {len(interpretation)} chars", title="Response"
                 )
 
@@ -208,7 +208,7 @@ class ClaudeBackend(BaseBackend):
             )
 
         except Exception as e:
-            log_warning(f"API call failed: {e}", title="Claude")
+            ilog_warning(f"API call failed: {e}", title="Claude")
             return InterpretationResult(
                 text=f"❌ **Error**: {e!s}", backend="claude", usage=None
             )

@@ -27,12 +27,22 @@ class Options:
             "styled": Notebook-aware styled markdown boxes (default)
             "plain": Plain text output for all environments
 
-        log_bg_color (Tuple[int, int, int]): RGB color for log background.
+        log_bg_color (Tuple[int, int, int]): RGB color for internal log background.
             Default: (186, 164, 217) - Lavender
+            Used by kanoa internals (ilog_* functions).
 
-        default_log_stream (str): Default stream title for auto-collecting logs.
-            Default: "kanoa" - All logs go to one unified "kanoa" stream in notebooks.
-            Set to "" to disable auto-streaming (each log creates its own box).
+        user_log_bg_color (Tuple[int, int, int]): RGB color for user log background.
+            Default: (128, 128, 128) - Gray
+            Used by user-facing logs (log_* functions).
+
+        user_log_opacity (float): Opacity for user log backgrounds.
+            Default: 0.04 - Very translucent/clear
+            Set higher (e.g., 0.12) for more visible user logs.
+
+        default_log_stream (bool | str): Enable auto-collecting user logs in a stream.
+            Default: True - User logs collected with no title, clear background.
+            False: Disable auto-streaming.
+            String: Use as stream title (e.g., "My App").
 
         backend_colors (Dict[str, Tuple[int, int, int]]): Optional per-backend colors.
             Example: {"gemini-3": (186, 164, 217), "claude": (170, 200, 180)}
@@ -57,11 +67,18 @@ class Options:
         # Display Options
         self.display_result: bool = True
         self.log_style: str = "styled"  # "styled" or "plain"
-        self.log_bg_color: Tuple[int, int, int] = (186, 164, 217)  # Lavender
+        self.log_bg_color: Tuple[int, int, int] = (186, 164, 217)  # Lavender (internal)
+        self.user_log_bg_color: Tuple[int, int, int] = (128, 128, 128)  # Gray (user)
+        self.user_log_opacity: float = 0.04  # Very translucent for user logs
         self.backend_colors: Dict[str, Tuple[int, int, int]] = {}
 
+        # Stream-specific colors (by stream title)
+        # Example: {"kanoa": (186, 164, 217), "notebook": (255, 255, 255)}
+        self.stream_colors: Dict[str, Tuple[int, int, int]] = {}
+
         # Default log stream (auto-created, collects all logs)
-        self.default_log_stream: str = "kanoa"  # Set to "" to disable
+        # Set to True for untitled stream, string for titled, False to disable
+        self.default_log_stream: bool | str = True  # Enabled with no title
 
         # File Logging
         self.log_to_file: bool = False

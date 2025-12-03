@@ -12,7 +12,7 @@ from ..config import options
 from ..core.token_guard import BaseTokenCounter, TokenCheckResult, TokenGuard
 from ..core.types import CacheCreationResult, InterpretationResult, UsageInfo
 from ..pricing import get_model_pricing
-from ..utils.logging import log_debug, log_info, log_warning
+from ..utils.logging import ilog_debug, ilog_info, ilog_warning
 from .base import BaseBackend
 
 
@@ -55,7 +55,7 @@ class GeminiTokenCounter(BaseTokenCounter):
             )
             return int(result.total_tokens)
         except Exception as e:
-            log_warning(
+            ilog_warning(
                 f"Gemini token counting failed, using estimate: {e}",
                 source="kanoa.backends.gemini",
             )
@@ -124,7 +124,7 @@ class GeminiBackend(BaseBackend):
         else:
             self.verbose = int(_v)
 
-        log_info(
+        ilog_info(
             f"Authenticating with Google Cloud (Model: {model})...",
             source="kanoa.backends.gemini",
             context={"model": model, "backend": "gemini"},
@@ -168,7 +168,7 @@ class GeminiBackend(BaseBackend):
         Returns:
             Dict mapping filename to uploaded file object or inline data
         """
-        log_info(
+        ilog_info(
             f"Found {len(pdf_paths)} PDFs to process...",
             source="kanoa.backends.gemini",
             context={"pdf_count": len(pdf_paths)},
@@ -176,7 +176,7 @@ class GeminiBackend(BaseBackend):
 
         for pdf_path in pdf_paths:
             if pdf_path in self.uploaded_pdfs:
-                log_info(
+                ilog_info(
                     f"PDF already loaded: {pdf_path.name}",
                     source="kanoa.backends.gemini",
                     context={"file": str(pdf_path.name)},
@@ -184,7 +184,7 @@ class GeminiBackend(BaseBackend):
                 continue
 
             file_size_mb = os.path.getsize(pdf_path) / (1024 * 1024)
-            log_info(
+            ilog_info(
                 f"Processing PDF: {pdf_path.name} ({file_size_mb:.2f} MB)",
                 source="kanoa.backends.gemini",
                 context={"file": str(pdf_path.name), "size_mb": round(file_size_mb, 2)},
@@ -192,7 +192,7 @@ class GeminiBackend(BaseBackend):
 
             # If using Vertex AI, skip File API and go straight to inline
             if self.is_vertex:
-                log_info(
+                ilog_info(
                     "Using inline transfer (Vertex AI)...",
                     source="kanoa.backends.gemini",
                 )
@@ -206,7 +206,7 @@ class GeminiBackend(BaseBackend):
                 continue
 
             try:
-                log_info(
+                ilog_info(
                     "Attempting upload via File API...",
                     source="kanoa.backends.gemini",
                 )
@@ -221,7 +221,7 @@ class GeminiBackend(BaseBackend):
 
                 # Wait for processing
                 while uploaded.state == "PROCESSING":
-                    log_info(
+                    ilog_info(
                         "Waiting for remote processing...",
                         source="kanoa.backends.gemini",
                     )
@@ -230,7 +230,7 @@ class GeminiBackend(BaseBackend):
                         uploaded = self.client.files.get(name=uploaded.name)
 
                 if uploaded.state == "ACTIVE":
-                    log_info(
+                    ilog_info(
                         f"Upload complete: {uploaded.name}",
                         source="kanoa.backends.gemini",
                         context={"file_id": uploaded.name},
@@ -239,7 +239,7 @@ class GeminiBackend(BaseBackend):
 
             except ValueError as e:
                 if "Gemini Developer client" in str(e):
-                    log_warning(
+                    ilog_warning(
                         "AI Studio File API unavailable (Consumer). "
                         "Switching to Vertex AI inline strategy (Enterprise).",
                         title="File API Fallback",
@@ -254,7 +254,7 @@ class GeminiBackend(BaseBackend):
                         "data": data,
                         "inline": True,
                     }
-                    log_info(
+                    ilog_info(
                         f"Loaded {len(data)} bytes for inline transfer.",
                         source="kanoa.backends.gemini",
                         context={"bytes": len(data)},
@@ -414,7 +414,7 @@ class GeminiBackend(BaseBackend):
         # (PDFs are usually > 2048 tokens)
         if estimated_tokens < min_tokens and not self.uploaded_pdfs:
             # Content too small for caching benefit
-            log_info(
+            ilog_info(
                 f"Content too small for caching (~{estimated_tokens} tokens < {min_tokens})",
                 source="kanoa.backends.gemini",
                 context={
@@ -428,7 +428,7 @@ class GeminiBackend(BaseBackend):
         content_hash = self._compute_cache_hash(kb_context)
         target_display_name = display_name or f"kanoa-kb-{content_hash}"
 
-        log_info(
+        ilog_info(
             f"Checking context cache (Hash: {content_hash})",
             title="Cache Check",
             source="kanoa.backends.gemini",
@@ -439,7 +439,7 @@ class GeminiBackend(BaseBackend):
         if self._cached_content_name and self._cached_content_hash == content_hash:
             # Try to refresh TTL on existing cache
             try:
-                log_info(
+                ilog_info(
                     f"Cache hit (Memory)! Refreshing TTL for {self._cached_content_name}",
                     title="Cache Hit",
                     source="kanoa.backends.gemini",
@@ -461,7 +461,7 @@ class GeminiBackend(BaseBackend):
                 )
             except Exception:
                 # Cache expired or invalid, will recreate
-                log_warning(
+                ilog_warning(
                     "Cache expired or invalid. Recreating...",
                     title="Cache Miss",
                     source="kanoa.backends.gemini",
@@ -471,7 +471,7 @@ class GeminiBackend(BaseBackend):
         # 2. Check server-side for existing cache (Resilient Caching)
         # This allows reusing cache across kernel restarts
         try:
-            log_info(
+            ilog_info(
                 f"Checking server for existing cache: {target_display_name}...",
                 source="kanoa.backends.gemini",
             )
@@ -483,7 +483,7 @@ class GeminiBackend(BaseBackend):
                     if not cache.name:
                         continue
 
-                    log_info(
+                    ilog_info(
                         f"Cache hit (Server)! Recovered {cache.name}",
                         title="Cache Hit",
                         source="kanoa.backends.gemini",
@@ -512,7 +512,7 @@ class GeminiBackend(BaseBackend):
                         token_count=self._cache_token_count,
                     )
         except Exception as e:
-            log_warning(
+            ilog_warning(
                 f"Failed to check server caches: {e}",
                 source="kanoa.backends.gemini",
                 context={"error": str(e)},
@@ -565,7 +565,7 @@ class GeminiBackend(BaseBackend):
             # Create the cached content
             # Note: Model must use explicit version for caching
             cache_model = self._get_cache_model_name()
-            log_info(
+            ilog_info(
                 f"Creating new cache on {cache_model}...",
                 source="kanoa.backends.gemini",
                 context={"model": cache_model},
@@ -585,7 +585,7 @@ class GeminiBackend(BaseBackend):
                     cache.usage_metadata, "total_token_count", 0
                 )
 
-            log_info(
+            ilog_info(
                 f"Cache created: {cache.name} ({self._cache_token_count:,} tokens)",
                 title="✓ Cache Created",
                 source="kanoa.backends.gemini",
@@ -601,7 +601,7 @@ class GeminiBackend(BaseBackend):
 
         except Exception as e:
             # Caching failed, fall back to non-cached
-            log_warning(
+            ilog_warning(
                 f"Context caching unavailable: {e}",
                 source="kanoa.backends.gemini",
                 context={"error": str(e)},
@@ -733,7 +733,7 @@ class GeminiBackend(BaseBackend):
         # Call API
         try:
             if self.verbose >= 1:
-                log_info(f"Generating content with {self.model}...")
+                ilog_info(f"Generating content with {self.model}...")
 
             # Build generation config
             generate_config = types.GenerateContentConfig(
@@ -743,14 +743,14 @@ class GeminiBackend(BaseBackend):
             # Use cached content if available
             if cache_name:
                 if self.verbose >= 1:
-                    log_info(f"Using cached context: {cache_name}", title="Cache")
+                    ilog_info(f"Using cached context: {cache_name}", title="Cache")
                 generate_config.cached_content = cache_name
 
             # Level 2: Full Request Logging
             if self.verbose >= 2:
-                log_debug(f"Model: {self.model}", title="Request")
-                log_debug(f"Config: {generate_config}")
-                log_debug(f"Contents: {len(content_parts)} parts")
+                ilog_debug(f"Model: {self.model}", title="Request")
+                ilog_debug(f"Config: {generate_config}")
+                ilog_debug(f"Contents: {len(content_parts)} parts")
                 for _i, content in enumerate(content_parts):
                     if not content.parts:
                         continue
@@ -762,7 +762,7 @@ class GeminiBackend(BaseBackend):
                                 if len(part.text) > 100
                                 else f'Text: "{text_preview}"'
                             )
-                            log_debug(preview_msg)
+                            ilog_debug(preview_msg)
                         elif part.inline_data and part.inline_data.data:
                             data_bytes = part.inline_data.data
                             data_len = len(data_bytes)
@@ -771,11 +771,11 @@ class GeminiBackend(BaseBackend):
                                 if data_len > 1024 * 1024
                                 else f"{data_len / 1024:.2f} KB"
                             )
-                            log_debug(
+                            ilog_debug(
                                 f"Blob: {part.inline_data.mime_type} | {size_str}"
                             )
                         elif part.file_data:
-                            log_debug(
+                            ilog_debug(
                                 f"File: {part.file_data.file_uri} ({part.file_data.mime_type})"
                             )
 
@@ -814,14 +814,14 @@ class GeminiBackend(BaseBackend):
 
             # Level 2: Full Response Logging
             if self.verbose >= 2:
-                log_debug("Response received", title="Response")
+                ilog_debug("Response received", title="Response")
                 # Try to dump full JSON if available, else string repr
                 try:
                     # Pydantic v2 style
                     response_json = response.model_dump_json(indent=2)
-                    log_debug(f"Payload: {response_json[:500]}...")
+                    ilog_debug(f"Payload: {response_json[:500]}...")
                 except AttributeError:
-                    log_debug(f"Payload: {str(response)[:500]}...")
+                    ilog_debug(f"Payload: {str(response)[:500]}...")
 
             # Extract text
             interpretation = response.text or ""
@@ -832,11 +832,11 @@ class GeminiBackend(BaseBackend):
             )
 
             if self.verbose >= 1 and usage:
-                log_info(
+                ilog_info(
                     f"Usage: {usage.input_tokens:,} in / {usage.output_tokens:,} out"
                 )
                 if usage.cached_tokens:
-                    log_info(f"Cached tokens: {usage.cached_tokens:,}")
+                    ilog_info(f"Cached tokens: {usage.cached_tokens:,}")
 
             return InterpretationResult(
                 text=interpretation,

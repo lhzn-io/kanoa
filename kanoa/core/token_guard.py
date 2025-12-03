@@ -233,17 +233,17 @@ class TokenGuard:
         # Load thresholds from args, env vars, or kanoa.options
         self.warn_threshold = (
             warn_threshold
-            or int(os.environ.get("KANOA_TOKEN_WARN_THRESHOLD", 0))
+            or int(os.environ.get("KANOA_TOKEN_WARN_THRESHOLD", "0"))
             or options.token_warn_threshold
         )
         self.approval_threshold = (
             approval_threshold
-            or int(os.environ.get("KANOA_TOKEN_APPROVAL_THRESHOLD", 0))
+            or int(os.environ.get("KANOA_TOKEN_APPROVAL_THRESHOLD", "0"))
             or options.token_approval_threshold
         )
         self.reject_threshold = (
             reject_threshold
-            or int(os.environ.get("KANOA_TOKEN_REJECT_THRESHOLD", 0))
+            or int(os.environ.get("KANOA_TOKEN_REJECT_THRESHOLD", "0"))
             or options.token_reject_threshold
         )
 

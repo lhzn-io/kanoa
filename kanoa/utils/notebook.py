@@ -185,8 +185,8 @@ def display_result(
     """
     Display formatted result with theme-adaptive styling in Jupyter notebooks.
 
-    Uses semi-transparent backgrounds that work in both light and dark themes.
-    Content is rendered as native Markdown by Jupyter.
+    DEPRECATED: This function now delegates to the logging infrastructure.
+    Consider using log_info(), log_success(), log_warning(), or log_error() directly.
 
     Args:
         content: The content to display (supports full markdown)
@@ -197,43 +197,23 @@ def display_result(
         >>> display_result("Analysis complete.", "Summary", "success")
         >>> display_result("Found anomalies.", "⚠️ Warning", "warning")
     """
-    if not _check_ipython():
-        # Fallback to print
-        if title:
-            print(f"[{style.upper()}] {title}")
-        print(content)
-        return
+    # Delegate to logging infrastructure for consistency
+    from ..utils.logging import log_info, log_warning
 
-    from IPython.display import Markdown, display
+    # Map style to appropriate log function
+    # Note: We use log_info for most cases since the logging system
+    # uses color configuration from kanoa.options
+    if style == "error":
+        from ..utils.logging import log_error
 
-    # Get colors from current palette
-    color = _get_style_colors(style)
-
-    # Build title line if provided
-    title_line = ""
-    if title:
-        title_line = (
-            f'**<span style="color: {color["title"]}; '
-            f'font-size: 1.1em;">{title}</span>**\n\n'
-        )
-
-    # Wrap content in styled div, let Jupyter render the markdown
-    styled_markdown = f"""
-<div style="background: {color["bg"]};
-            border: 1px solid {color["border"]};
-            border-left: 4px solid {color["accent"]};
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-            backdrop-filter: blur(5px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-
-{title_line}{content}
-
-</div>
-"""
-
-    display(Markdown(styled_markdown))
+        log_error(content, title=title)
+    elif style == "warning":
+        log_warning(content, title=title)
+    elif style == "success":
+        # Success messages are just info with a different semantic meaning
+        log_info(content, title=title)
+    else:  # "info" or "ai" or any other
+        log_info(content, title=title)
 
 
 def _strip_generated_coda(text: str) -> str:
@@ -400,7 +380,7 @@ def display_interpretation(
     # Add title with backend name (monospace font)
     title_line = ""
     if backend:
-        title_line = f"<div style=\"font-weight: 600; margin-bottom: 12px; opacity: 0.9; font-size: 1.05em; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;\">{backend}</div>\n\n"
+        title_line = f"<div style=\"font-weight: 600; margin-bottom: 12px; opacity: 0.9; font-size: 1.1em; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;\">{backend}</div>\n\n"
 
     styled_markdown = f"""
 <div style="background: {color["bg"]};

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 from ..config import options
-from ..utils.logging import log_error, log_info, log_warning
+from ..utils.logging import ilog_error, ilog_info, ilog_warning
 
 
 class BaseKnowledgeBase(ABC):
@@ -34,13 +34,13 @@ class BaseKnowledgeBase(ABC):
             # Use configured default home or fallback to temp
             if options.kb_home:
                 self.kb_path = options.kb_home
-                log_info(
+                ilog_info(
                     f"Using default knowledge base path: {self.kb_path}",
                     source="kanoa.knowledge_base",
                 )
             else:
                 self.kb_path = Path(tempfile.mkdtemp(prefix="kanoa_kb_"))
-                log_warning(
+                ilog_warning(
                     f"No kb_path set. Using temporary directory: {self.kb_path}",
                     source="kanoa.knowledge_base",
                 )
@@ -63,7 +63,7 @@ class BaseKnowledgeBase(ABC):
             # We preserve :/?=& to keep the URL structure intact
             uri = urllib.parse.quote(uri, safe=":/?=&")
 
-            log_info(
+            ilog_info(
                 f"Downloading {uri} to {dest_path}...",
                 source="kanoa.knowledge_base",
             )
@@ -76,7 +76,7 @@ class BaseKnowledgeBase(ABC):
                 ):
                     shutil.copyfileobj(response, out_file)
             except Exception as e:
-                log_error(
+                ilog_error(
                     f"Error downloading {uri}: {e}",
                     source="kanoa.knowledge_base",
                     context={"uri": uri, "error": str(e)},
@@ -84,7 +84,7 @@ class BaseKnowledgeBase(ABC):
                 raise e
 
         elif uri.startswith("gs://"):
-            log_info(
+            ilog_info(
                 f"Downloading {uri} to {dest_path}...",
                 source="kanoa.knowledge_base",
             )
@@ -112,7 +112,7 @@ class BaseKnowledgeBase(ABC):
                 pass
             except Exception as e:
                 # If library installed but fails (e.g. auth), try CLI
-                log_warning(
+                ilog_warning(
                     f"Google Cloud Storage API failed: {e}. "
                     f"Falling back to CLI tools...",
                     source="kanoa.knowledge_base",
@@ -135,7 +135,7 @@ class BaseKnowledgeBase(ABC):
                         capture_output=True,
                     )
                 except Exception as e:
-                    log_error(
+                    ilog_error(
                         f"Error downloading {uri}: {e}. "
                         "Ensure 'gcloud' or 'gsutil' is installed and authenticated. "
                         "Or install the Python client: pip install 'kanoa[gcloud]'",

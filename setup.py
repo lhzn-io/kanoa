@@ -28,6 +28,7 @@ DEV_DEPS = [
     "pre-commit>=3.0.0",
     "types-setuptools",
     "detect-secrets>=1.4.0",
+    "markitdown>=0.0.1",
 ]
 
 # Documentation dependencies

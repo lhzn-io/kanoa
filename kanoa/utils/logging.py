@@ -87,23 +87,26 @@ def _register_post_exec_hook() -> None:
 
 def _get_or_create_default_stream() -> Optional["LogStream"]:
     """
-    Get or create the default log stream if enabled.
+    Get or create the default log stream for user-facing logs.
 
     Auto-creates a fresh stream per cell execution in notebooks by using
     IPython's post-execute hook to mark streams as finalized after cell
     completion.
 
+    User logs use a clear/translucent background (configurable via
+    options.user_log_bg_color and options.user_log_opacity).
+
     Returns None if:
     - Not in notebook environment
-    - default_log_stream option is empty string
+    - default_log_stream option is False
     - User has explicitly created their own stream
     """
     global _default_stream
 
     from ..config import options
 
-    # Check if default streaming is disabled
-    if not options.default_log_stream:
+    # Check if default streaming is disabled (False disables, True or string enables)
+    if options.default_log_stream is False:
         return None
 
     # Check if we're in a notebook
@@ -124,9 +127,19 @@ def _get_or_create_default_stream() -> Optional["LogStream"]:
     ):
         _default_stream = None
 
-    # Create stream if needed
+    # Create stream if needed - use user log color (clear/translucent)
     if _default_stream is None:
-        _default_stream = LogStream(title=options.default_log_stream, auto_display=True)
+        # Title: None if True (untitled), otherwise use the string value
+        title = (
+            None if options.default_log_stream is True else options.default_log_stream
+        )
+        _default_stream = LogStream(
+            title=title,
+            bg_color=options.user_log_bg_color,
+            auto_display=True,
+        )
+        # Mark this as a user stream for special opacity handling
+        _default_stream._is_user_stream = True  # type: ignore[attr-defined]
         # Note: We intentionally do NOT call start() here because the default
         # stream should not be pushed onto the stack. Only explicit log_stream()
         # contexts use the stack. This allows _get_or_create_default_stream()
@@ -431,6 +444,13 @@ class LogStream:
         >>> stream.start()
         >>> log_info("Working...")
         >>> stream.stop()
+
+        >>> # Log rich objects like DataFrames
+        >>> import pandas as pd
+        >>> df = pd.DataFrame({"A": [1, 2], "B": [3, 4]})
+        >>> with log_stream(title="Data Analysis"):
+        ...     log_info("Loading data...")
+        ...     log_object(df, label="Dataset")  # Renders as styled table
     """
 
     def __init__(
@@ -495,6 +515,42 @@ class LogStream:
         if self.auto_display:
             self.render()
 
+    def add_html(self, html: str, label: Optional[str] = None) -> None:
+        """
+        Add raw HTML content to the stream (e.g., DataFrame tables).
+
+        Args:
+            html: Raw HTML content to embed
+            label: Optional label to display above the content
+        """
+        if label:
+            msg = f'<div style="margin: 8px 0;"><div style="opacity: 0.7; margin-bottom: 4px; font-weight: 500;">{label}</div>{html}</div>'
+        else:
+            msg = f'<div style="margin: 8px 0;">{html}</div>'
+
+        self.messages.append(msg)
+
+        if self.auto_display:
+            self.render()
+
+    def add_text(self, text: str, label: Optional[str] = None) -> None:
+        """
+        Add plain text content to the stream (fallback for console).
+
+        Args:
+            text: Plain text content
+            label: Optional label to display above the content
+        """
+        if label:
+            msg = f'<div style="margin: 8px 0;"><div style="opacity: 0.7; margin-bottom: 4px; font-weight: 500;">{label}</div><pre style="margin: 0; white-space: pre-wrap;">{text}</pre></div>'
+        else:
+            msg = f'<div style="margin: 8px 0;"><pre style="margin: 0; white-space: pre-wrap;">{text}</pre></div>'
+
+        self.messages.append(msg)
+
+        if self.auto_display:
+            self.render()
+
     def render(self) -> None:
         """Render accumulated messages to output."""
         if not self.messages:
@@ -514,14 +570,19 @@ class LogStream:
 
         # Get background color
         bg_rgb = self.bg_color or options.log_bg_color
-        bg_color = f"rgba({bg_rgb[0]}, {bg_rgb[1]}, {bg_rgb[2]}, 0.12)"
-        border_color = f"rgba({bg_rgb[0]}, {bg_rgb[1]}, {bg_rgb[2]}, 0.35)"
-        accent_color = f"rgba({bg_rgb[0]}, {bg_rgb[1]}, {bg_rgb[2]}, 0.75)"
+
+        # Check if this is a user stream (clear/translucent background)
+        is_user_stream = getattr(self, "_is_user_stream", False)
+        opacity = options.user_log_opacity if is_user_stream else 0.12
+
+        bg_color = f"rgba({bg_rgb[0]}, {bg_rgb[1]}, {bg_rgb[2]}, {opacity})"
+        border_color = f"rgba({bg_rgb[0]}, {bg_rgb[1]}, {bg_rgb[2]}, {0.35 if not is_user_stream else 0.15})"
+        accent_color = f"rgba({bg_rgb[0]}, {bg_rgb[1]}, {bg_rgb[2]}, {0.75 if not is_user_stream else 0.25})"
 
         # Build title line
         title_line = ""
         if self.title:
-            title_line = f'<div style="font-weight: 600; margin-bottom: 10px; font-size: 1.05em; opacity: 0.9;">{self.title}</div>\n'
+            title_line = f'<div style="font-weight: 600; margin-bottom: 10px; font-size: 1.1em; opacity: 0.9;">{self.title}</div>\n'
 
         # Combine messages (already wrapped in divs from add_message)
         content = "\n".join(self.messages)
@@ -552,6 +613,8 @@ class LogStream:
 
     def _render_console(self) -> None:
         """Render to console (print new messages only)."""
+        import re
+
         # Only print messages that haven't been printed yet
         # For console, we print progressively, not all at once
         if not self._started:
@@ -564,9 +627,13 @@ class LogStream:
         # Print only new messages since last render
         new_messages = self.messages[self._last_message_count :]
         for msg in new_messages:
-            # Strip markdown bold for console
-            clean_msg = msg.replace("**", "")
-            print(clean_msg)
+            # Strip HTML tags for console output
+            clean_msg = re.sub(r"<[^>]+>", "", msg)
+            # Also strip markdown bold
+            clean_msg = clean_msg.replace("**", "")
+            # Collapse multiple newlines
+            clean_msg = re.sub(r"\n{3,}", "\n\n", clean_msg)
+            print(clean_msg.strip())
 
         self._last_message_count = len(self.messages)
 
@@ -721,8 +788,13 @@ def _emit_log(
 # =============================================================================
 
 
+def _is_rich_object(obj: Any) -> bool:
+    """Check if object has rich HTML representation (DataFrame, Series, etc.)."""
+    return hasattr(obj, "_repr_html_") and callable(obj._repr_html_)
+
+
 def log_debug(
-    message: str,
+    message: Any,
     title: Optional[str] = None,
     context: Optional[Dict[str, Any]] = None,
     source: str = "kanoa",
@@ -732,24 +804,38 @@ def log_debug(
     Log debug message (verbose=2).
 
     Args:
-        message: Human-readable message
-        title: Optional title for styled display
+        message: Message string or rich object (DataFrame, Series, etc.)
+        title: Optional title/label for styled display
         context: Structured context dictionary
         source: Logger name
         stream: Optional specific stream to route to
 
     Example:
         >>> log_debug("Full request payload", context={"payload": {...}})
-        >>> with log_stream(title="Debug") as s:
-        ...     log_debug("Detailed info", stream=s)
+        >>> log_debug(df, title="Debug DataFrame")  # Rich objects supported
     """
+    # Detect rich objects (DataFrame, etc.) and delegate to log_object
+    if _is_rich_object(message):
+        from ..config import options
+
+        verbose_level = int(options.verbose) if options.verbose else 0
+        if verbose_level >= 2:  # DEBUG threshold
+            log_object(message, label=title, stream=stream)
+        return
+
     _emit_log(
-        "DEBUG", message, title, context, source, verbose_threshold=2, stream=stream
+        "DEBUG",
+        str(message),
+        title,
+        context,
+        source,
+        verbose_threshold=2,
+        stream=stream,
     )
 
 
 def log_info(
-    message: str,
+    message: Any,
     title: Optional[str] = None,
     context: Optional[Dict[str, Any]] = None,
     source: str = "kanoa",
@@ -759,25 +845,33 @@ def log_info(
     Log info message (verbose=1).
 
     Args:
-        message: Human-readable message
-        title: Optional title for styled display
+        message: Message string or rich object (DataFrame, Series, etc.)
+        title: Optional title/label for styled display
         context: Structured context dictionary
         source: Logger name
         stream: Optional specific stream to route to
 
     Example:
         >>> log_info("Found 3 PDFs to process", context={"pdf_count": 3})
-        >>> log_info("Upload complete", title="File API")
-        >>> with log_stream(title="Processing") as s:
-        ...     log_info("Step 1 complete", stream=s)
+        >>> log_info(df, title="Loaded Data")  # Rich objects supported
+        >>> log_info(df)  # DataFrames render as styled tables
     """
+    # Detect rich objects (DataFrame, etc.) and delegate to log_object
+    if _is_rich_object(message):
+        from ..config import options
+
+        verbose_level = int(options.verbose) if options.verbose else 0
+        if verbose_level >= 1:  # INFO threshold
+            log_object(message, label=title, stream=stream)
+        return
+
     _emit_log(
-        "INFO", message, title, context, source, verbose_threshold=1, stream=stream
+        "INFO", str(message), title, context, source, verbose_threshold=1, stream=stream
     )
 
 
 def log_warning(
-    message: str,
+    message: Any,
     title: Optional[str] = None,
     context: Optional[Dict[str, Any]] = None,
     source: str = "kanoa",
@@ -787,25 +881,38 @@ def log_warning(
     Log warning message (verbose=1).
 
     Args:
-        message: Human-readable message
-        title: Optional title for styled display
+        message: Message string or rich object (DataFrame, Series, etc.)
+        title: Optional title/label for styled display
         context: Structured context dictionary
         source: Logger name
         stream: Optional specific stream to route to
 
     Example:
         >>> log_warning("Cache expired, recreating", title="Cache Miss")
-        >>> log_warning("Token count estimation failed", context={"error": str(e)})
-        >>> with log_stream(title="Warnings") as s:
-        ...     log_warning("Issue detected", stream=s)
+        >>> log_warning(df, title="Problematic Data")  # Rich objects supported
     """
+    # Detect rich objects (DataFrame, etc.) and delegate to log_object
+    if _is_rich_object(message):
+        from ..config import options
+
+        verbose_level = int(options.verbose) if options.verbose else 0
+        if verbose_level >= 1:  # WARNING threshold
+            log_object(message, label=title, stream=stream)
+        return
+
     _emit_log(
-        "WARNING", message, title, context, source, verbose_threshold=1, stream=stream
+        "WARNING",
+        str(message),
+        title,
+        context,
+        source,
+        verbose_threshold=1,
+        stream=stream,
     )
 
 
 def log_error(
-    message: str,
+    message: Any,
     title: Optional[str] = None,
     context: Optional[Dict[str, Any]] = None,
     source: str = "kanoa",
@@ -815,23 +922,280 @@ def log_error(
     Log error message (always shown, ignores verbose).
 
     Args:
-        message: Human-readable message
-        title: Optional title for styled display
+        message: Message string or rich object (DataFrame, Series, etc.)
+        title: Optional title/label for styled display
         context: Structured context dictionary
         source: Logger name
         stream: Optional specific stream to route to
 
     Example:
-        >>> log_error(
-        ...     "Failed to upload PDF",
-        ...     context={"file": "report.pdf", "error": str(e)}
-        ... )
-        >>> with log_stream(title="Errors") as s:
-        ...     log_error("Critical failure", stream=s)
+        >>> log_error("Failed to upload PDF", context={"file": "report.pdf"})
+        >>> log_error(df, title="Error Data")  # Rich objects supported
     """
+    # Detect rich objects (DataFrame, etc.) and delegate to log_object
+    if _is_rich_object(message):
+        # Error always shows (threshold=0)
+        log_object(message, label=title, stream=stream, verbose_threshold=0)
+        return
+
     _emit_log(
-        "ERROR", message, title, context, source, verbose_threshold=0, stream=stream
+        "ERROR",
+        str(message),
+        title,
+        context,
+        source,
+        verbose_threshold=0,
+        stream=stream,
     )
+
+
+def log_object(
+    obj: Any,
+    label: Optional[str] = None,
+    stream: Optional["LogStream"] = None,
+    verbose_threshold: int = 1,
+) -> None:
+    """
+    Log a rich object (DataFrame, Series, etc.) with native rendering.
+
+    In notebooks, objects with `_repr_html_()` (like pandas DataFrames)
+    will be rendered as styled HTML tables within the log stream container.
+    Falls back to str() representation for other objects or console output.
+
+    Args:
+        obj: Object to display (DataFrame, Series, or any object)
+        label: Optional label to display above the object
+        stream: Optional specific stream to route to
+        verbose_threshold: Minimum verbose level (0=always, 1=info, 2=debug)
+
+    Example:
+        >>> import pandas as pd
+        >>> df = pd.DataFrame({"A": [1, 2, 3], "B": ["x", "y", "z"]})
+        >>> log_object(df, label="Sample Data")
+
+        >>> # Within a log stream
+        >>> with log_stream(title="Data Analysis"):
+        ...     log_info("Loading dataset...")
+        ...     log_object(df, label="Loaded DataFrame")
+        ...     log_info("Processing complete!")
+    """
+    from ..config import options
+
+    # Check verbose level
+    verbose_level = int(options.verbose) if options.verbose else 0
+    if verbose_level < verbose_threshold:
+        return
+
+    # Get target stream
+    target_stream = stream or _get_active_stream() or _get_or_create_default_stream()
+
+    if target_stream:
+        # Check if object has _repr_html_ (pandas DataFrame, Series, etc.)
+        if hasattr(obj, "_repr_html_") and target_stream._is_notebook:
+            html = obj._repr_html_()
+            target_stream.add_html(html, label=label)
+        else:
+            # Fallback to string representation
+            target_stream.add_text(str(obj), label=label)
+        return
+
+    # No stream - display directly
+    if _check_notebook_env():
+        from IPython.display import HTML, display
+
+        if hasattr(obj, "_repr_html_"):
+            html = obj._repr_html_()
+            if label:
+                html = f'<div style="opacity: 0.7; margin-bottom: 4px; font-weight: 500;">{label}</div>{html}'
+            display(HTML(html))
+        else:
+            if label:
+                print(f"{label}:")
+            print(obj)
+    else:
+        # Console fallback
+        if label:
+            print(f"{label}:")
+        print(obj)
+
+
+# =============================================================================
+# Internal Logging API (for kanoa internals - lavender background)
+# =============================================================================
+
+# Thread-local storage for internal stream
+_internal_stream: Optional["LogStream"] = None
+
+
+def _get_or_create_internal_stream() -> Optional["LogStream"]:
+    """
+    Get or create the internal log stream for kanoa internals.
+
+    This stream uses the lavender background color and is titled "kanoa".
+    It's separate from user-facing logs which use a clear/translucent background.
+    """
+    global _internal_stream
+
+    from ..config import options
+
+    # Check if we're in a notebook
+    if not _check_notebook_env():
+        return None
+
+    # Check if user has an explicit stream active
+    if _get_active_stream() is not None:
+        return None
+
+    # Register post-execute hook (idempotent)
+    _register_post_exec_hook()
+
+    # Detect new cell execution
+    if _internal_stream is not None and getattr(
+        _internal_stream, "_cell_finalized", False
+    ):
+        _internal_stream = None
+
+    # Create stream if needed - use lavender background
+    if _internal_stream is None:
+        _internal_stream = LogStream(
+            title="kanoa",
+            bg_color=options.log_bg_color,  # Lavender by default
+            auto_display=True,
+        )
+
+    return _internal_stream
+
+
+def _emit_internal_log(
+    level: str,
+    message: str,
+    title: Optional[str] = None,
+    context: Optional[Dict[str, Any]] = None,
+    source: str = "kanoa",
+    verbose_threshold: int = 1,
+) -> None:
+    """
+    Emit a log record for kanoa internal operations.
+
+    Always routes to the internal "kanoa" stream with lavender background.
+    """
+    from ..config import options
+
+    # Check verbose level
+    verbose_level = int(options.verbose) if options.verbose else 0
+    if verbose_level < verbose_threshold:
+        return
+
+    # Create log record
+    record = LogRecord(
+        timestamp=datetime.utcnow(),
+        level=level,
+        message=message,
+        context=context or {},
+        source=source,
+        title=title,
+    )
+
+    # Route to internal stream (lavender background)
+    target_stream = _get_active_stream() or _get_or_create_internal_stream()
+    if target_stream:
+        target_stream.add_message(record)
+        return
+
+    # No stream - emit to handlers normally
+    handlers = _get_handlers()
+    for handler in handlers:
+        try:
+            handler.emit(record)
+        except Exception as e:
+            print(
+                f"[kanoa] Log handler {type(handler).__name__} failed: {e}",
+                file=sys.stderr,
+            )
+
+
+def ilog_debug(
+    message: str,
+    title: Optional[str] = None,
+    context: Optional[Dict[str, Any]] = None,
+    source: str = "kanoa",
+) -> None:
+    """
+    Internal debug log (verbose=2) - for kanoa internals.
+
+    Uses lavender background in notebooks. Prefer this over log_debug()
+    for all kanoa library internal logging.
+
+    Args:
+        message: Human-readable message
+        title: Optional title for styled display
+        context: Structured context dictionary
+        source: Logger name
+    """
+    _emit_internal_log("DEBUG", message, title, context, source, verbose_threshold=2)
+
+
+def ilog_info(
+    message: str,
+    title: Optional[str] = None,
+    context: Optional[Dict[str, Any]] = None,
+    source: str = "kanoa",
+) -> None:
+    """
+    Internal info log (verbose=1) - for kanoa internals.
+
+    Uses lavender background in notebooks. Prefer this over log_info()
+    for all kanoa library internal logging.
+
+    Args:
+        message: Human-readable message
+        title: Optional title for styled display
+        context: Structured context dictionary
+        source: Logger name
+    """
+    _emit_internal_log("INFO", message, title, context, source, verbose_threshold=1)
+
+
+def ilog_warning(
+    message: str,
+    title: Optional[str] = None,
+    context: Optional[Dict[str, Any]] = None,
+    source: str = "kanoa",
+) -> None:
+    """
+    Internal warning log (verbose=1) - for kanoa internals.
+
+    Uses lavender background in notebooks. Prefer this over log_warning()
+    for all kanoa library internal logging.
+
+    Args:
+        message: Human-readable message
+        title: Optional title for styled display
+        context: Structured context dictionary
+        source: Logger name
+    """
+    _emit_internal_log("WARNING", message, title, context, source, verbose_threshold=1)
+
+
+def ilog_error(
+    message: str,
+    title: Optional[str] = None,
+    context: Optional[Dict[str, Any]] = None,
+    source: str = "kanoa",
+) -> None:
+    """
+    Internal error log (always shown) - for kanoa internals.
+
+    Uses lavender background in notebooks. Prefer this over log_error()
+    for all kanoa library internal logging.
+
+    Args:
+        message: Human-readable message
+        title: Optional title for styled display
+        context: Structured context dictionary
+        source: Logger name
+    """
+    _emit_internal_log("ERROR", message, title, context, source, verbose_threshold=0)
 
 
 __all__ = [
@@ -846,9 +1210,15 @@ __all__ = [
     # Streaming context
     "LogStream",
     "log_stream",
-    # Logging functions
+    # Logging functions (user-facing, clear background)
     "log_debug",
     "log_info",
     "log_warning",
     "log_error",
+    "log_object",
+    # Internal logging functions (kanoa internals, lavender background)
+    "ilog_debug",
+    "ilog_info",
+    "ilog_warning",
+    "ilog_error",
 ]

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from ..core.types import InterpretationResult, UsageInfo
 from ..pricing import get_model_pricing
-from ..utils.logging import log_debug, log_info, log_warning
+from ..utils.logging import ilog_debug, ilog_info, ilog_warning
 from .base import BaseBackend
 
 
@@ -84,8 +84,8 @@ class OpenAIBackend(BaseBackend):
 
         if self.verbose >= 1:
             endpoint = api_base or "api.openai.com"
-            log_info(f"Initialized with model: {self.model}", title="OpenAI")
-            log_info(f"Endpoint: {endpoint}", title="OpenAI")
+            ilog_info(f"Initialized with model: {self.model}", title="OpenAI")
+            ilog_info(f"Endpoint: {endpoint}", title="OpenAI")
 
     def interpret(
         self,
@@ -105,7 +105,7 @@ class OpenAIBackend(BaseBackend):
         self.call_count += 1
 
         if self.verbose >= 1:
-            log_info(f"Calling {self.model} (call #{self.call_count})", title="OpenAI")
+            ilog_info(f"Calling {self.model} (call #{self.call_count})", title="OpenAI")
 
         # Build prompt
         prompt = self._build_prompt(context, focus, kb_context, custom_prompt)
@@ -124,23 +124,23 @@ class OpenAIBackend(BaseBackend):
                 }
             )
             if self.verbose >= 2:
-                log_debug("Attached figure as base64 image", title="OpenAI")
+                ilog_debug("Attached figure as base64 image", title="OpenAI")
 
         # Add data if provided
         if data is not None:
             data_text = self._data_to_text(data)
             prompt = f"Data to analyze:\n```\n{data_text}\n```\n\n{prompt}"
             if self.verbose >= 2:
-                log_debug(f"Attached data ({len(data_text)} chars)", title="OpenAI")
+                ilog_debug(f"Attached data ({len(data_text)} chars)", title="OpenAI")
 
         # Add prompt text
         content.append({"type": "text", "text": prompt})
         messages.append({"role": "user", "content": content})
 
         if self.verbose >= 2:
-            log_debug(f"Prompt length: {len(prompt)} chars", title="Request")
+            ilog_debug(f"Prompt length: {len(prompt)} chars", title="Request")
             if kb_context:
-                log_debug(
+                ilog_debug(
                     f"Knowledge base context: {len(kb_context)} chars", title="Request"
                 )
 
@@ -159,13 +159,13 @@ class OpenAIBackend(BaseBackend):
             usage = self._calculate_usage(response.usage) if response.usage else None
 
             if self.verbose >= 1 and usage:
-                log_info(
+                ilog_info(
                     f"Tokens: {usage.input_tokens} in / {usage.output_tokens} out "
                     f"(${usage.cost:.4f})",
                     title="OpenAI",
                 )
             if self.verbose >= 2:
-                log_debug(
+                ilog_debug(
                     f"Response length: {len(interpretation)} chars", title="Response"
                 )
 
@@ -180,7 +180,7 @@ class OpenAIBackend(BaseBackend):
             )
 
         except Exception as e:
-            log_warning(f"API call failed: {e}", title="OpenAI")
+            ilog_warning(f"API call failed: {e}", title="OpenAI")
             return InterpretationResult(
                 text=f"❌ **Error**: {e!s}", backend="openai", usage=None
             )
