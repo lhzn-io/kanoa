@@ -172,6 +172,14 @@ For planning documents and task lists:
 - **Concise**: Avoid fluff. Get to the point.
 - **Active Voice**: "The interpreter analyzes the plot" (not "The plot is analyzed by...").
 
+#### Punctuation
+
+- **Em-dashes**: Use spaces around em-dashes for readability.
+  - ✓ `kanoa is modular — install only the backends you need`
+  - ❌ `kanoa is modular—install only the backends you need`
+- **Colons**: Use a colon (`:`) when introducing a list or explanation.
+- **Semicolons**: Prefer shorter sentences over semicolons.
+
 ### 4. AI Agent Instructions
 
 If you are an AI assistant (GitHub Copilot, Antigravity, etc.):
@@ -305,7 +313,7 @@ Run these to verify end-to-end functionality with live APIs (Gemini, Claude). Th
 pytest -m integration
 ```
 
-**Note**: Integration tests use the "Golden Set" strategy—running a small, fixed set of prompts to verify the pipeline without incurring high costs.
+**Note**: Integration tests use the "Golden Set" strategy — running a small, fixed set of prompts to verify the pipeline without incurring high costs.
 
 ### 3. Full Suite
 

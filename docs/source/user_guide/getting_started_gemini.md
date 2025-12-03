@@ -7,6 +7,48 @@ This guide will help you get started with kanoa using Google's Gemini models.
 - Python 3.11 or higher
 - kanoa installed (`pip install kanoa`)
 
+## Free Tier Overview
+
+Gemini offers a **free tier** that's perfect for learning and experimentation:
+
+| Feature | Free Tier | Paid Tier |
+|---------|-----------|-----------|
+| Input/Output tokens | **Free** | Pay-per-use |
+| Rate limits | 500 requests/day | Higher limits |
+| Context caching | ❌ | ✅ |
+| Batch API | ❌ | ✅ |
+| Data usage | Used to improve Google products | Not used for training |
+
+⚠️ **Privacy Note**: On the free tier, your prompts and responses may be used to improve Google's products. For sensitive data, consider upgrading to the paid tier or using Vertex AI.
+
+**Recommended models for the free tier**:
+
+- `gemini-2.5-flash` — Fast, efficient, great for most use cases
+- `gemini-2.0-flash` — Previous generation, still capable
+- `gemini-2.5-pro` — Most capable, for complex analysis (also free!)
+
+### Knowledge Base Limitations on Free Tier
+
+The free tier has a **reduced context window** which limits knowledge base capabilities:
+
+| Knowledge Base Type | Free Tier | Paid Tier (Gemini 3 Pro) |
+|---------------------|-----------|--------------------------|
+| Text (Markdown) | ✅ Works well | ✅ Full support |
+| PDF (multimodal) | ⚠️ Limited | ✅ Full support (1M+ tokens) |
+| Context caching | ❌ Not available | ✅ ~67% cost savings |
+
+For **serious knowledge-grounded analysis** (e.g., scientific papers, technical docs), the paid tier with context caching is surprisingly affordable:
+
+**Real-world example** (8.5 MB PDF — WMO Climate Report):
+
+| Operation | Cost |
+|-----------|------|
+| Cache creation (first query) | $0.02 |
+| Subsequent queries (cached) | < $0.01 each |
+| Cache savings per query | ~$0.014 (67% reduction) |
+
+See the [Context Caching Demo](../../../examples/gemini_context_caching_demo.ipynb) for a complete walkthrough.
+
 ## Step 1: Get Your API Key
 
 Visit [Google AI Studio](https://aistudio.google.com/apikey) and:

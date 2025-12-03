@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-**kanoa** brings the power of a dedicated AI research assistant directly into your **Python workflows—whether in Jupyter notebooks, Streamlit apps, or automated scripts**. It programmatically interprets visualizations, tables, and results using multimodal LLMs (Gemini, Claude, OpenAI, Molmo), grounded in your project's documentation and literature. It is designed to be dropped into any data science project to provide instant, context-aware analysis.
+**kanoa** brings the power of a dedicated AI research assistant directly into your **Python workflows — whether in Jupyter notebooks, Streamlit apps, or automated scripts**. It programmatically interprets visualizations, tables, and results using multimodal LLMs (Gemini, Claude, OpenAI, Molmo), grounded in your project's documentation and literature. It is designed to be dropped into any data science project to provide instant, context-aware analysis.
 
 ## Features
 
@@ -18,17 +18,35 @@
 
 ## Installation
 
+kanoa is modular — install only the backends you need:
+
 ```bash
-pip install kanoa
+# For Google Gemini (free tier; $$ → PDF grounding + context caching)
+pip install kanoa[gemini]
+
+# For local inference (vLLM, Ollama, Gemma 3, Molmo)
+pip install kanoa[local]
+
+# For Anthropic Claude (Opus 4.5, Sonnet 4.5)
+pip install kanoa[claude]
+
+# For OpenAI API (GPT 5 models, Azure OpenAI)
+pip install kanoa[openai]
+
+# Everything
+pip install kanoa[all]
 ```
 
-Or for development:
+<details>
+<summary>Development installation</summary>
 
 ```bash
 git clone https://github.com/lhzn-io/kanoa.git
 cd kanoa
-pip install -e .
+pip install -e ".[dev]"
 ```
+
+</details>
 
 ## Quick Start
 

@@ -7,6 +7,7 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
     *   **Branding**: The project name is `kanoa` (lowercase). Never write "Kanoa".
     *   **Emojis**: Use sparingly. ⚠️ for warnings (not "WARNING:"), ❌ for errors. Avoid ✅ checkmarks in prose. For checklists in planning docs, use `[✓]` for completed items and `[ ]` for planned items.
     *   **Agent Layer**: In CLI/Logs, prefer structured tags (`[Blob]`) or minimal symbols (`•`) over "cartoony" emojis (🧠, 🚀). Keep it "classy" and technical.
+    *   **Punctuation**: Use spaces around em-dashes (`word — word`, not `word—word`).
     *   **Markdown**: Ensure valid, lint-free markdown.
         *   **MD029**: Use sequential ordered list numbering (1, 2, 3, not 1, 1, 1).
         *   **MD036**: Use proper headings (`##`) instead of bold text for section titles.
