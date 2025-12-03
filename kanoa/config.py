@@ -45,7 +45,7 @@ class Options:
             String: Use as stream title (e.g., "My App").
 
         backend_colors (Dict[str, Tuple[int, int, int]]): Optional per-backend colors.
-            Example: {"gemini-3": (186, 164, 217), "claude": (170, 200, 180)}
+            Example: {"gemini": (186, 164, 217), "claude": (170, 200, 180)}
 
         log_to_file (bool): Enable JSON file logging.
             Default: False (opt-in for privacy)

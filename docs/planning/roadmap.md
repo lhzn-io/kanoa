@@ -152,7 +152,7 @@ graph TD
 **Components:**
 
 | Component | Description |
-|-----------|-------------|
+| ----------- | ------------- |
 | **User Application** | Jupyter Notebook, Streamlit App, or Python Script |
 | **AnalyticsInterpreter API** | `interpret(fig, context, focus)`, `interpret_dataframe(df)`, `load_knowledge_base(path)` |
 | **Claude Backend** | Anthropic - Text KB only, $3/$15 per 1M tokens, 200K context |
@@ -288,7 +288,7 @@ class AnalyticsInterpreter:
         >>> result = interpreter.interpret(fig, context="Analysis")
 
         >>> # Specific backend
-        >>> interpreter = AnalyticsInterpreter(backend='gemini-3')
+        >>> interpreter = AnalyticsInterpreter(backend='gemini')
         >>> result = interpreter.interpret(fig)
     """
 
@@ -296,14 +296,14 @@ class AnalyticsInterpreter:
         'claude': ClaudeBackend,
         'claude-sonnet-4.5': ClaudeBackend,
         'gemini': GeminiBackend,
-        'gemini-3': GeminiBackend,
+        'gemini': GeminiBackend,
         'openai': OpenAIBackend,
         'vllm': OpenAIBackend,
     }
 
     def __init__(
         self,
-        backend: Literal['claude', 'gemini-3', 'openai', 'vllm'] = 'gemini-3',
+        backend: Literal['claude', 'gemini', 'openai', 'vllm'] = 'gemini',
         kb_path: Optional[Union[str, Path]] = None,
         kb_content: Optional[str] = None,
         kb_type: Literal['text', 'pdf', 'auto'] = 'auto',
@@ -317,7 +317,7 @@ class AnalyticsInterpreter:
         Initialize analytics interpreter.
 
         Args:
-            backend: AI backend to use ('claude', 'gemini-3', 'openai', 'vllm')
+            backend: AI backend to use ('claude', 'gemini', 'openai', 'vllm')
             kb_path: Path to knowledge base directory
             kb_content: Pre-loaded knowledge base string
             kb_type: Knowledge base type ('text', 'pdf', 'auto')
@@ -378,7 +378,7 @@ class AnalyticsInterpreter:
             if 'gemini' not in backend.lower():
                 raise ValueError(
                     f"PDF knowledge base requires Gemini backend (for native vision). "
-                    f"Current backend: {backend}. Use kb_type='text' or switch to 'gemini-3'."
+                    f"Current backend: {backend}. Use kb_type='text' or switch to 'gemini'."
                 )
             return PDFKnowledgeBase(kb_path=kb_path, backend=self.backend)
         else:
@@ -745,7 +745,7 @@ class GeminiBackend(BaseBackend):
 
             return InterpretationResult(
                 text=interpretation,
-                backend='gemini-3',
+                backend='gemini',
                 usage=usage,
                 metadata={
                     'model': self.model,
@@ -757,7 +757,7 @@ class GeminiBackend(BaseBackend):
             error_msg = f"❌ **Error**: {str(e)}"
             return InterpretationResult(
                 text=error_msg,
-                backend='gemini-3',
+                backend='gemini',
                 usage=None
             )
 
@@ -1362,7 +1362,7 @@ from analytics_interpreter import AnalyticsInterpreter
 class MarineBioInterpreter:
     """Wrapper with marine biology defaults."""
 
-    def __init__(self, backend='gemini-3', **kwargs):
+    def __init__(self, backend='gemini', **kwargs):
         # Auto-detect project knowledge base
         project_root = Path(__file__).parent.parent.parent
         kb_path = project_root / "docs"
@@ -1436,7 +1436,7 @@ from analytics_interpreter import AnalyticsInterpreter
 class AquacultureInterpreter:
     """Wrapper with aquaculture defaults."""
 
-    def __init__(self, backend='gemini-3', **kwargs):
+    def __init__(self, backend='gemini', **kwargs):
         # Load aquaculture knowledge base
         project_root = Path(__file__).parent.parent
         kb_path = project_root / "knowledge_base"
@@ -1504,14 +1504,14 @@ interpret(species="Atlantic Salmon")
 from analytics_interpreter import AnalyticsInterpreter
 
 # Public data - use cloud backend
-public_interpreter = AnalyticsInterpreter(backend='gemini-3')
+public_interpreter = AnalyticsInterpreter(backend='gemini')
 
 # Proprietary data - use local backend (vLLM with Molmo/Gemma 3)
 private_interpreter = AnalyticsInterpreter(backend='vllm')
 
 # Cost-optimized for high volume
 bulk_interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     enable_caching=True  # Reuse KB across calls
 )
 
@@ -1558,7 +1558,7 @@ st.title("Research Assistant")
 @st.cache_resource
 def get_interpreter():
     return AnalyticsInterpreter(
-        backend='gemini-3',
+        backend='gemini',
         kb_path='./docs',
         kb_type='pdf'
     )
@@ -1693,7 +1693,7 @@ ANTHROPIC_API_KEY=your_claude_key
 GOOGLE_API_KEY=your_gemini_key
 
 # Optional
-ANALYTICS_INTERPRETER_BACKEND=gemini-3
+ANALYTICS_INTERPRETER_BACKEND=gemini
 ANALYTICS_INTERPRETER_MAX_TOKENS=3000
 ANALYTICS_INTERPRETER_ENABLE_CACHING=true
 ```
@@ -1702,7 +1702,7 @@ ANALYTICS_INTERPRETER_ENABLE_CACHING=true
 
 ```yaml
 analytics_interpretation:
-  backend: gemini-3
+  backend: gemini
   max_tokens: 3000
   enable_caching: true
   track_costs: true
@@ -1739,7 +1739,7 @@ result = interpreter.interpret(fig, context="Sales data")
 
 # With knowledge base
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs',
     kb_type='pdf'  # Use full PDFs
 )
@@ -1758,7 +1758,7 @@ interpret(
 
 | Backend | Use When | Pros | Cons |
 | :------- | :------- | :--- | :--- |
-| **gemini-3** | Default, PDF KB | 1M context, PDF vision, cheaper with caching | Preview status |
+| **gemini** | Default, PDF KB | 1M context, PDF vision, cheaper with caching | Preview status |
 | **claude** | Proven stability | Reliable, excellent quality | Smaller context, text KB only |
 | **openai/vllm** | Privacy / flexibility | OpenAI-compatible, local or cloud | Requires setup for local |
 
@@ -1835,7 +1835,7 @@ def test_gemini_end_to_end():
     ax.plot([1, 2, 3], [1, 4, 9])
 
     # Interpret
-    interpreter = AnalyticsInterpreter(backend='gemini-3')
+    interpreter = AnalyticsInterpreter(backend='gemini')
     result = interpreter.interpret(
         fig=fig,
         context="Test data",
@@ -2552,7 +2552,7 @@ interpret(context="Swordfish RED001", focus="dive patterns")
 
 ```python
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs/refs',  # Contains academic PDFs
     kb_type='pdf'
 )
@@ -2568,7 +2568,7 @@ result = interpreter.interpret(
 #### Backend Comparison
 
 ```python
-backends = ['claude', 'gemini-3', 'vllm']
+backends = ['claude', 'gemini', 'vllm']
 results = {}
 
 for backend in backends:

@@ -83,7 +83,7 @@ This document summarizes the knowledge base integration strategies for kanoa, co
 
 ### Implementation Plan
 
-- **Phase 2.5** added to `docs/planning/Analytics_Interpreter_Product_Spec.md`
+- **Phase 2.5** added to `docs/planning/roadmap.md`
 - Includes detailed checklist for RAG Engine and Google Search integration
 - Success metrics: 60%+ cost reduction, 85%+ retrieval precision
 
@@ -104,7 +104,7 @@ All strategies use the same `AnalyticsInterpreter` API:
 
 ```python
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     grounding_mode='rag_engine',  # or 'google_search', 'hybrid'
     rag_config={...},
     google_search_config={...}
@@ -178,5 +178,5 @@ Leverage Google's managed services rather than building custom RAG infrastructur
 
 ### kanoa Documentation
 
-- [Implementation Plan - Phase 2.5](file:///home/lhzn/Projects/lhzn-io/kanoa/docs/planning/Analytics_Interpreter_Product_Spec.md#phase-25-vertex-ai-rag--grounding-integration-week-35)
+- [Implementation Plan - Phase 2.5](file:///home/lhzn/Projects/lhzn-io/kanoa/docs/planning/roadmap.md#phase-25-vertex-ai-rag--grounding-integration-week-35)
 - [Integration Guide - Knowledge Base Strategies](file:///home/lhzn/Projects/lhzn-io/kanoa/docs/Integration%20Guide.md#knowledge-base-strategies)

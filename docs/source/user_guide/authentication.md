@@ -50,7 +50,7 @@ config_dir = Path.home() / ".config" / "kanoa"
 load_dotenv(config_dir / ".env")
 
 from kanoa import AnalyticsInterpreter
-interpreter = AnalyticsInterpreter(backend='gemini-3')
+interpreter = AnalyticsInterpreter(backend='gemini')
 ```
 
 #### Option 2: Repo Root with Pre-commit Protection
@@ -70,7 +70,7 @@ from dotenv import load_dotenv
 load_dotenv()  # Loads .env from current directory
 
 from kanoa import AnalyticsInterpreter
-interpreter = AnalyticsInterpreter(backend='gemini-3')
+interpreter = AnalyticsInterpreter(backend='gemini')
 ```
 
 The `.env` file is in `.gitignore`, and we use `detect-secrets` pre-commit hook as backup protection.
@@ -94,7 +94,7 @@ export GOOGLE_API_KEY="your-api-key"
 Then in Python:
 
 ```python
-interpreter = AnalyticsInterpreter(backend='gemini-3')
+interpreter = AnalyticsInterpreter(backend='gemini')
 # Automatically uses GOOGLE_API_KEY
 ```
 
@@ -109,7 +109,7 @@ gcloud auth application-default login
 Then in Python:
 
 ```python
-interpreter = AnalyticsInterpreter(backend='gemini-3')
+interpreter = AnalyticsInterpreter(backend='gemini')
 # Automatically uses ADC
 ```
 
@@ -251,7 +251,7 @@ def get_api_key(project_id: str, secret_id: str) -> str:
 
 # Use in kanoa
 api_key = get_api_key("my-project", "gemini-api-key")
-interpreter = AnalyticsInterpreter(backend='gemini-3', api_key=api_key)
+interpreter = AnalyticsInterpreter(backend='gemini', api_key=api_key)
 ```
 
 #### AWS Secrets Manager
@@ -285,7 +285,7 @@ client.token = 'your-vault-token'
 secret = client.secrets.kv.v2.read_secret_version(path='kanoa/api-keys')
 api_key = secret['data']['data']['google_api_key']
 
-interpreter = AnalyticsInterpreter(backend='gemini-3', api_key=api_key)
+interpreter = AnalyticsInterpreter(backend='gemini', api_key=api_key)
 ```
 
 ---
@@ -318,7 +318,7 @@ Monitor API usage for unusual patterns:
 ```python
 from kanoa import AnalyticsInterpreter
 
-interpreter = AnalyticsInterpreter(backend='gemini-3', track_costs=True)
+interpreter = AnalyticsInterpreter(backend='gemini', track_costs=True)
 
 # After using
 costs = interpreter.get_cost_summary()

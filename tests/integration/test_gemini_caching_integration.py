@@ -316,7 +316,7 @@ class TestGeminiCachingIntegration:
 
         try:
             interp = AnalyticsInterpreter(
-                backend="gemini-3",
+                backend="gemini",
                 kb_path=str(kb_dir),
                 cache_ttl=300,  # 5 minute cache for tests
             )
@@ -377,7 +377,7 @@ class TestGeminiCachingIntegration:
 
         assert result.text is not None
         assert len(result.text) > 50
-        assert result.backend == "gemini-3"
+        assert result.backend == "gemini"
 
         print(f"\n🎓 Response: {result.text[:100]}...")
         if result.usage:
@@ -513,7 +513,7 @@ class TestGeminiNoCachingBaseline:
 
         try:
             interp = AnalyticsInterpreter(
-                backend="gemini-3",
+                backend="gemini",
                 cache_ttl=None,  # Explicitly disable caching
             )
             auth_state.mark_auth_ok("gemini")

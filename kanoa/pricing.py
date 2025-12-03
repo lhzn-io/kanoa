@@ -53,7 +53,7 @@ def get_model_pricing(backend: str, model: str) -> Dict[str, float]:
     Get pricing for a specific model.
 
     Args:
-        backend: Backend name (gemini, claude, openai)
+        backend: Backend name (vllm, gemini, claude, openai)
         model: Model identifier
 
     Returns:

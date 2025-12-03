@@ -31,7 +31,7 @@ plt.plot([1, 2, 3], [1, 4, 9])
 plt.title("Growth Curve")
 
 # Initialize interpreter
-interpreter = AnalyticsInterpreter(backend='gemini-3')
+interpreter = AnalyticsInterpreter(backend='gemini')
 
 # Interpret
 result = interpreter.interpret(

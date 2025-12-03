@@ -19,7 +19,7 @@ from kanoa import AnalyticsInterpreter
 import matplotlib.pyplot as plt
 
 # Create interpreter
-interpreter = AnalyticsInterpreter(backend='gemini-3')
+interpreter = AnalyticsInterpreter(backend='gemini')
 
 # Interpret a plot
 plt.plot(data)
@@ -48,7 +48,7 @@ from kanoa import AnalyticsInterpreter
 class YourProjectInterpreter:
     """Wrapper with project-specific defaults."""
 
-    def __init__(self, backend='gemini-3', **kwargs):
+    def __init__(self, backend='gemini', **kwargs):
         # Auto-detect project knowledge base
         project_root = Path(__file__).parent.parent.parent
         kb_path = project_root / "docs"  # or wherever your docs are
@@ -165,7 +165,7 @@ The default approach loads your entire knowledge base into the model's context w
 
 ```python
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs',
     kb_type='auto',
     enable_caching=True  # Reuse KB across calls
@@ -197,7 +197,7 @@ interpreter = AnalyticsInterpreter(
 from kanoa import AnalyticsInterpreter
 
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs',
     grounding_mode='rag_engine',  # Use Vertex AI RAG Engine
     rag_config={
@@ -271,7 +271,7 @@ from pathlib import Path
 
 # Initialize with RAG Engine
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs',
     grounding_mode='rag_engine',
     rag_config={
@@ -339,7 +339,7 @@ Enables Gemini to search Google for relevant information when needed.
 
 ```python
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     grounding_mode='google_search',
     google_search_config={
         'dynamic_retrieval': True,  # Model decides when to search
@@ -382,7 +382,7 @@ Combines your private knowledge base with real-time web search.
 
 ```python
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs',
     grounding_mode='hybrid',
     rag_config={
@@ -508,7 +508,7 @@ from kanoa import AnalyticsInterpreter
 
 # Methods corpus
 methods_interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs/methods',
     grounding_mode='rag_engine',
     rag_config={
@@ -519,7 +519,7 @@ methods_interpreter = AnalyticsInterpreter(
 
 # Literature corpus
 literature_interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs/literature',
     grounding_mode='rag_engine',
     rag_config={
@@ -586,7 +586,7 @@ class MarineBioInterpreter:
         if use_rag_engine:
             # Production: Use RAG Engine for large KB
             self.interpreter = AnalyticsInterpreter(
-                backend='gemini-3',
+                backend='gemini',
                 kb_path=kb_path,
                 grounding_mode='rag_engine',
                 rag_config={
@@ -604,7 +604,7 @@ class MarineBioInterpreter:
         else:
             # Development: Use context stuffing for simplicity
             self.interpreter = AnalyticsInterpreter(
-                backend='gemini-3',
+                backend='gemini',
                 kb_path=kb_path,
                 kb_type='auto',
                 enable_caching=True,
@@ -688,7 +688,7 @@ If you're currently using context stuffing and want to migrate:
 ```python
 # Step 1: Test RAG Engine with existing code
 interpreter_rag = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs',  # Same KB path
     grounding_mode='rag_engine',
     rag_config={
@@ -720,7 +720,7 @@ print("RAG Engine cost:", result_rag.usage.cost)
 - Cost: ~$0.02-0.05 per interpretation (with caching)
 
 ```python
-interpreter = AnalyticsInterpreter(backend='gemini-3')
+interpreter = AnalyticsInterpreter(backend='gemini')
 ```
 
 ### Claude Sonnet 4.5
@@ -779,7 +779,7 @@ print(f"Total cost: ${summary['total_cost_usd']:.4f}")
 ```python
 # Gemini with high thinking level
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     thinking_level='high'
 )
 
@@ -886,7 +886,7 @@ export GOOGLE_API_KEY='your-key'
 
 Either:
 
-- Switch to Gemini: `backend='gemini-3'`
+- Switch to Gemini: `backend='gemini'`
 - Or use text-only KB: `kb_type='text'`
 
 ### High costs
@@ -908,7 +908,7 @@ from kanoa import AnalyticsInterpreter
 class MarineBioInterpreter:
     """Marine biology analysis interpreter."""
 
-    def __init__(self, backend='gemini-3', **kwargs):
+    def __init__(self, backend='gemini', **kwargs):
         project_root = Path(__file__).parent.parent.parent
         kb_path = project_root / "docs"
 

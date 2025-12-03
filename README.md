@@ -6,13 +6,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-`kanoa` brings the power of a dedicated AI research assistant directly into your Python workflows — whether in Jupyter notebooks, Streamlit apps, or automated scripts. It programmatically interprets visualizations, tables, and results using multimodal LLMs (Gemini, Claude, OpenAI, Molmo), grounded in your project's documentation and literature.
+`kanoa` brings the power of a dedicated AI research assistant directly into your Python workflows — whether in Jupyter notebooks, Streamlit apps, or automated scripts. It programmatically interprets visualizations, tables, and results using multimodal LLMs (Molmo, Gemini, Claude, OpenAI), grounded in your project's documentation and literature.
 
 ## Supported Backends
 
 | Backend | Best For | Getting Started |
 | :--- | :--- | :--- |
-| `local` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3 via vLLM | [Guide](./docs/source/user_guide/getting_started_vllm.md) |
+| `vllm` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3 via vLLM | [Guide](./docs/source/user_guide/getting_started_vllm.md) |
 | `gemini` | Free tier, native PDF support, 1M context, caching | [Guide](./docs/source/user_guide/getting_started_gemini.md) |
 | `claude` | Strong reasoning, vision support | [Guide](./docs/source/user_guide/getting_started_claude.md) |
 | `openai` | GPT models, Azure OpenAI | [Guide](./docs/source/user_guide/backends.md#openai) |
@@ -21,7 +21,7 @@ For detailed backend comparison, see [Backends Overview](./docs/source/user_guid
 
 ## Features
 
-- **Multi-Backend Support**: Seamlessly switch between Gemini, Claude, and OpenAI (including local vLLM).
+- **Multi-Backend Support**: Seamlessly switch between vLLM (local), Gemini, Claude, and OpenAI.
 - **Provider-Native Grounding**: Offloads knowledge retrieval to best-in-breed provider solutions.
 - **Native Vision**: Uses multimodal capabilities to "see" complex plots and diagrams.
 - **Cost Optimized**: Intelligent context caching and token usage tracking.
@@ -87,7 +87,7 @@ plt.plot(t, y)
 plt.title("Projectile Trajectory")
 
 # 2. Ask Kanoa to debug
-interpreter = AnalyticsInterpreter(backend="gemini-3")
+interpreter = AnalyticsInterpreter(backend="gemini")
 result = interpreter.interpret(
     fig=plt.gcf(),
     context="Simulating a projectile launch. Something looks wrong.",
@@ -118,7 +118,7 @@ print(result.text)
 ```python
 # Point to a directory of Markdown or PDF files
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs/literature',
     kb_type='auto'  # Detects if PDFs are present
 )

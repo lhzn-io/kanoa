@@ -2,7 +2,7 @@
 
 kanoa supports multiple AI backends, each with different strengths and use cases.
 
-## Gemini (`gemini-3`)
+## Gemini (`gemini`)
 
 > For detailed documentation, see [Gemini Backend Reference](../backends/gemini.md).
 
@@ -32,13 +32,13 @@ from kanoa import AnalyticsInterpreter
 
 # With API key
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     api_key='your-api-key'
 )
 
 # With ADC (Vertex AI)
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     project='your-project-id',
     location='us-central1'
 )
@@ -85,7 +85,7 @@ cost savings when making multiple queries against the same content.
 
 ```python
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs',
     cache_ttl=3600,  # Cache valid for 1 hour (default)
 )
@@ -169,29 +169,54 @@ interpreter = AnalyticsInterpreter(
 - Input: $3.00 per 1M tokens
 - Output: $15.00 per 1M tokens
 
-## OpenAI / vLLM (`openai`)
+## vLLM (`vllm`)
 
-> For detailed documentation, see [OpenAI Backend Reference](../backends/openai.md) and [vLLM Backend Reference](../backends/vllm.md).
+> For detailed documentation, see [vLLM Backend Reference](../backends/vllm.md).
 
-**Best for**: Local inference (Gemma 3, Molmo), Azure OpenAI, or GPT-5.1
+**Best for**: Local inference with open-source models (Molmo, Gemma 3)
 
 ### Features
 
-- **Generic Compatibility**: Works with any OpenAI-compatible API
-- **Local Inference**: Connect to local vLLM servers (via `kanoa-mlops`)
-- **Vision Support**: Supports image inputs (if underlying model supports it)
+- **Fully Open Source**: Run inference locally with no API costs
+- **Privacy**: Your data never leaves your machine
+- **Vision Support**: Supports multimodal models like Molmo
+- **GPU Acceleration**: Optimized for NVIDIA GPUs via vLLM
 
 ### Usage
 
-#### Local vLLM (Gemma 3)
-
 ```python
+from kanoa import AnalyticsInterpreter
+
+# Local vLLM (Molmo)
 interpreter = AnalyticsInterpreter(
-    backend='openai',
+    backend='vllm',
+    api_base='http://localhost:8000/v1',
+    model='allenai/Molmo-7B-D-0924'
+)
+
+# Local vLLM (Gemma 3)
+interpreter = AnalyticsInterpreter(
+    backend='vllm',
     api_base='http://localhost:8000/v1',
     model='google/gemma-3-12b-it'
 )
 ```
+
+See the [vLLM Getting Started Guide](getting_started_vllm.md) for setup instructions.
+
+## OpenAI (`openai`)
+
+> For detailed documentation, see [OpenAI Backend Reference](../backends/openai.md).
+
+**Best for**: GPT models, Azure OpenAI
+
+### Features
+
+- **GPT Models**: Access to GPT-4, GPT-5.1, and future models
+- **Azure OpenAI**: Enterprise deployment via Azure
+- **Vision Support**: Supports image inputs with compatible models
+
+### Usage
 
 #### OpenAI (GPT-5.1)
 
@@ -232,7 +257,7 @@ For enterprise users requiring advanced compliance and security features,
 a dedicated Vertex AI backend is on the roadmap.
 
 | Feature | Google AI (`google-genai`) | Vertex AI (roadmap) |
-|---------|---------------------------|---------------------|
+| --------- | --------------------------- | --------------------- |
 | Auth | API key / ADC | Service account / ADC |
 | VPC Service Controls | ❌ | ✅ |
 | Audit Logs | ❌ | ✅ (Cloud Logging) |

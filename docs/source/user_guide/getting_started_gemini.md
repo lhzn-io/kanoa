@@ -12,7 +12,7 @@ This guide will help you get started with kanoa using Google's Gemini models.
 Gemini offers a **free tier** that's perfect for learning and experimentation:
 
 | Feature | Free Tier | Paid Tier |
-|---------|-----------|-----------|
+| --------- | ----------- | ----------- |
 | Input/Output tokens | **Free** | Pay-per-use |
 | Rate limits | 500 requests/day | Higher limits |
 | Context caching | ❌ | ✅ |
@@ -32,7 +32,7 @@ Gemini offers a **free tier** that's perfect for learning and experimentation:
 The free tier has a **reduced context window** which limits knowledge base capabilities:
 
 | Knowledge Base Type | Free Tier | Paid Tier (Gemini 3 Pro) |
-|---------------------|-----------|--------------------------|
+| --------------------- | ----------- | -------------------------- |
 | Text (Markdown) | ✅ Works well | ✅ Full support |
 | PDF (multimodal) | ⚠️ Limited | ✅ Full support (1M+ tokens) |
 | Context caching | ❌ Not available | ✅ ~67% cost savings |
@@ -42,7 +42,7 @@ For **serious knowledge-grounded analysis** (e.g., scientific papers, technical 
 **Real-world example** (8.5 MB PDF — WMO Climate Report):
 
 | Operation | Cost |
-|-----------|------|
+| ----------- | ------ |
 | Cache creation (first query) | $0.02 |
 | Subsequent queries (cached) | < $0.01 each |
 | Cache savings per query | ~$0.014 (67% reduction) |
@@ -92,7 +92,7 @@ plt.xlabel("Time")
 plt.ylabel("Amplitude")
 
 # Initialize the interpreter
-interpreter = AnalyticsInterpreter(backend='gemini-3')
+interpreter = AnalyticsInterpreter(backend='gemini')
 
 # Interpret the plot
 result = interpreter.interpret(

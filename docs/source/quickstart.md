@@ -74,7 +74,7 @@ result = interpreter.interpret(fig=plt.gcf())
 ```python
 # Point to a directory of Markdown or PDF files
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs/literature',
     kb_type='auto'  # Auto-detects PDFs
 )

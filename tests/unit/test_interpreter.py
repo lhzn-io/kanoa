@@ -15,8 +15,8 @@ class TestAnalyticsInterpreter:
             "kanoa.core.interpreter._get_backend_class",
             return_value=MockBackendClass,
         ):
-            interpreter = AnalyticsInterpreter(backend="gemini-3")
-            assert interpreter.backend_name == "gemini-3"
+            interpreter = AnalyticsInterpreter(backend="gemini")
+            assert interpreter.backend_name == "gemini"
             assert interpreter.kb is None
 
     def test_interpret_figure(self) -> None:
@@ -30,7 +30,7 @@ class TestAnalyticsInterpreter:
             backend_instance.total_tokens["output"] += 20
             return InterpretationResult(
                 text="Test interpretation",
-                backend="gemini-3",
+                backend="gemini",
                 usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
             )
 
@@ -43,7 +43,7 @@ class TestAnalyticsInterpreter:
             "kanoa.core.interpreter._get_backend_class",
             return_value=MockBackendClass,
         ):
-            interpreter = AnalyticsInterpreter(backend="gemini-3")
+            interpreter = AnalyticsInterpreter(backend="gemini")
             fig = plt.figure()
             result = interpreter.interpret(fig=fig)
 
@@ -58,7 +58,7 @@ class TestAnalyticsInterpreter:
         backend_instance = MockBackendClass.return_value
         backend_instance.interpret.return_value = InterpretationResult(
             text="Test interpretation",
-            backend="gemini-3",
+            backend="gemini",
             usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
         )
 
@@ -66,7 +66,7 @@ class TestAnalyticsInterpreter:
             "kanoa.core.interpreter._get_backend_class",
             return_value=MockBackendClass,
         ):
-            interpreter = AnalyticsInterpreter(backend="gemini-3")
+            interpreter = AnalyticsInterpreter(backend="gemini")
             data = {"key": "value"}
             result = interpreter.interpret(data=data)
 
@@ -79,7 +79,7 @@ class TestAnalyticsInterpreter:
             "kanoa.core.interpreter._get_backend_class",
             return_value=MockBackendClass,
         ):
-            interpreter = AnalyticsInterpreter(backend="gemini-3")
+            interpreter = AnalyticsInterpreter(backend="gemini")
             with pytest.raises(ValueError):
                 interpreter.interpret()
 
@@ -94,7 +94,7 @@ class TestAnalyticsInterpreter:
             backend_instance.total_tokens["output"] += 20
             return InterpretationResult(
                 text="Test interpretation",
-                backend="gemini-3",
+                backend="gemini",
                 usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
             )
 
@@ -107,7 +107,7 @@ class TestAnalyticsInterpreter:
             "kanoa.core.interpreter._get_backend_class",
             return_value=MockBackendClass,
         ):
-            interpreter = AnalyticsInterpreter(backend="gemini-3", track_costs=True)
+            interpreter = AnalyticsInterpreter(backend="gemini", track_costs=True)
             fig = plt.figure()
             interpreter.interpret(fig=fig)
             interpreter.interpret(fig=fig)
@@ -121,7 +121,7 @@ class TestAnalyticsInterpreter:
         backend_instance = MockBackendClass.return_value
         backend_instance.interpret.return_value = InterpretationResult(
             text="Test interpretation",
-            backend="gemini-3",
+            backend="gemini",
             usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
         )
 
@@ -129,7 +129,7 @@ class TestAnalyticsInterpreter:
             "kanoa.core.interpreter._get_backend_class",
             return_value=MockBackendClass,
         ):
-            interpreter = AnalyticsInterpreter(backend="gemini-3")
+            interpreter = AnalyticsInterpreter(backend="gemini")
             fig = plt.figure()
             interpreter.interpret_figure(fig=fig)
             backend_instance.interpret.assert_called_once()
@@ -139,7 +139,7 @@ class TestAnalyticsInterpreter:
         backend_instance = MockBackendClass.return_value
         backend_instance.interpret.return_value = InterpretationResult(
             text="Test interpretation",
-            backend="gemini-3",
+            backend="gemini",
             usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
         )
 
@@ -147,7 +147,7 @@ class TestAnalyticsInterpreter:
             "kanoa.core.interpreter._get_backend_class",
             return_value=MockBackendClass,
         ):
-            interpreter = AnalyticsInterpreter(backend="gemini-3")
+            interpreter = AnalyticsInterpreter(backend="gemini")
             interpreter.interpret_dataframe(df={"a": 1})
             backend_instance.interpret.assert_called_once()
 
@@ -156,11 +156,11 @@ class TestAnalyticsInterpreter:
         backend_instance = MockBackendClass.return_value
         backend_instance.interpret.return_value = InterpretationResult(
             text="Test interpretation",
-            backend="gemini-3",
+            backend="gemini",
             usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
         )
         backend_instance.get_cost_summary.return_value = {
-            "backend": "gemini-3",
+            "backend": "gemini",
             "total_cost_usd": 0.01,
         }
         backend_instance.call_count = 1
@@ -169,11 +169,11 @@ class TestAnalyticsInterpreter:
             "kanoa.core.interpreter._get_backend_class",
             return_value=MockBackendClass,
         ):
-            interpreter = AnalyticsInterpreter(backend="gemini-3")
+            interpreter = AnalyticsInterpreter(backend="gemini")
             interpreter.interpret(data="test")
 
             summary = interpreter.get_cost_summary()
-            assert summary["backend"] == "gemini-3"
+            assert summary["backend"] == "gemini"
             assert summary["total_cost_usd"] == 0.01
 
     def test_reload_kb(self) -> None:
@@ -183,7 +183,7 @@ class TestAnalyticsInterpreter:
             "kanoa.core.interpreter._get_backend_class",
             return_value=MockBackendClass,
         ):
-            interpreter = AnalyticsInterpreter(backend="gemini-3")
+            interpreter = AnalyticsInterpreter(backend="gemini")
             interpreter.kb = MagicMock()
             interpreter.reload_knowledge_base()
             cast("Any", interpreter.kb).reload.assert_called_once()

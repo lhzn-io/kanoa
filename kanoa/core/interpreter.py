@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional, Type, Union
+from typing import Any, Dict, Literal, Optional, Tuple, Type, Union
 
 import matplotlib.pyplot as plt
 
@@ -8,6 +8,12 @@ from ..knowledge_base.base import BaseKnowledgeBase
 from ..knowledge_base.pdf_kb import PDFKnowledgeBase
 from ..knowledge_base.text_kb import TextKnowledgeBase
 from .types import InterpretationResult
+
+# Canonical list of supported backends (in recommended order: open-source first)
+supported_backends: Tuple[str, ...] = ("vllm", "gemini", "claude", "openai")
+
+# Type alias for backend parameter (must match supported_backends)
+BackendType = Literal["vllm", "gemini", "claude", "openai"]
 
 
 def _get_backend_class(name: str) -> Type[BaseBackend]:
@@ -25,7 +31,6 @@ def _get_backend_class(name: str) -> Type[BaseBackend]:
         "claude": ClaudeBackend,
         "claude-sonnet-4.5": ClaudeBackend,
         "gemini": GeminiBackend,
-        "gemini-3": GeminiBackend,
         "openai": OpenAIBackend,
         "vllm": OpenAIBackend,
     }
@@ -41,21 +46,22 @@ class AnalyticsInterpreter:
     AI-powered analytics interpreter with multi-backend support.
 
     Supports:
-    - Multiple AI backends (Claude, Gemini, OpenAI)
+    - Multiple AI backends (vLLM, Gemini, Claude, OpenAI)
     - Knowledge base grounding (text, PDFs, or none)
     - Multiple input types (figures, DataFrames, dicts)
     - Cost tracking and optimization
 
     Install backends with:
+        pip install kanoa[local]    # vLLM (Molmo, Gemma 3)
         pip install kanoa[gemini]   # Google Gemini
         pip install kanoa[claude]   # Anthropic Claude
-        pip install kanoa[openai]   # OpenAI / vLLM
+        pip install kanoa[openai]   # OpenAI GPT models
         pip install kanoa[all]      # All backends
     """
 
     def __init__(
         self,
-        backend: Literal["claude", "gemini", "gemini-3", "openai", "vllm"] = "gemini-3",
+        backend: BackendType = "gemini",
         kb_path: Optional[Union[str, Path]] = None,
         kb_content: Optional[str] = None,
         kb_type: Literal["text", "pdf", "auto"] = "auto",
@@ -69,7 +75,7 @@ class AnalyticsInterpreter:
         Initialize analytics interpreter.
 
         Args:
-            backend: AI backend to use ('claude', 'gemini', 'gemini-3', 'openai')
+            backend: AI backend to use ('vllm', 'gemini', 'claude', 'openai')
             kb_path: Path to knowledge base directory
             kb_content: Pre-loaded knowledge base string
             kb_type: Knowledge base type ('text', 'pdf', 'auto')
@@ -127,7 +133,7 @@ class AnalyticsInterpreter:
                     "PDF knowledge base requires Gemini backend "
                     "(for native vision). "
                     f"Current backend: {backend}. "
-                    "Use kb_type='text' or switch to 'gemini-3'."
+                    "Use kb_type='text' or switch to 'gemini'."
                 )
             return PDFKnowledgeBase(kb_path=kb_path, backend=self.backend)
         else:

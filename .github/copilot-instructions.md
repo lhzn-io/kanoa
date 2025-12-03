@@ -12,6 +12,7 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
         *   **MD029**: Use sequential ordered list numbering (1, 2, 3, not 1, 1, 1).
         *   **MD036**: Use proper headings (`##`) instead of bold text for section titles.
         *   **MD040**: Always specify language for fenced code blocks (` ```python `, not ` ``` `).
+        *   **MD060**: Table separators need spaces around pipes: `| --- | --- |` not `|---|---|`.
 
 2.  **Code Quality**:
     *   **Type Hints**: All function signatures must have type hints.

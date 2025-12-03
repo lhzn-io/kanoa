@@ -99,7 +99,7 @@ class TestMolmoIntegration:
 
         # 3. Assertions (Golden Set check)
         model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
-        print(f"[AI] {model_name}: " f"{result.text[:50].replace(chr(10), ' ')}...")
+        print(f"[AI] {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
         assert result.text is not None
         assert len(result.text) > 50
@@ -136,7 +136,7 @@ class TestMolmoIntegration:
             pytest.fail(f"Molmo API call failed: {e}")
 
         model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
-        print(f"[AI] {model_name}: " f"{result.text[:50].replace(chr(10), ' ')}...")
+        print(f"[AI] {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
         assert result.text is not None
         assert len(result.text) > 20

@@ -44,7 +44,7 @@ class TestGeminiBackend:
 
         assert isinstance(result, InterpretationResult)
         assert "Interpretation result" in result.text
-        assert result.backend == "gemini-3"
+        assert result.backend == "gemini"
         assert result.usage is not None
         assert result.usage.input_tokens == 10
         assert result.usage.output_tokens == 20

@@ -17,7 +17,7 @@ plt.xlabel("Time (s)")
 plt.ylabel("Height (m)")
 
 # 2. Ask kanoa to debug
-interpreter = AnalyticsInterpreter(backend="gemini-3")
+interpreter = AnalyticsInterpreter(backend="gemini")
 result = interpreter.interpret(
     fig=plt.gcf(),
     context="Simulating a projectile launch. Something looks wrong.",

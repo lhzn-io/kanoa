@@ -182,6 +182,7 @@ module = [
   "matplotlib.*",
   "pandas.*",
   "google.genai.*",
+  "google.cloud.*",
   "anthropic.*",
   "IPython.*",
 ]

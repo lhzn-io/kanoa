@@ -29,7 +29,7 @@ result = interpreter.interpret(fig=my_figure, display_result=True)
 kanoa supports four log levels with visual differentiation via opacity:
 
 | Level | Opacity | Use Case |
-|-------|---------|----------|
+| ------- | --------- | ---------- |
 | DEBUG | 50% | Detailed diagnostics |
 | INFO | 85% | General progress |
 | WARNING | 95% | Important notices |

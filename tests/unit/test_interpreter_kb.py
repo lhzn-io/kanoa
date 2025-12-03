@@ -16,7 +16,7 @@ class TestInterpreterKB:
             return_value=MagicMock(),
         ):
             interpreter = AnalyticsInterpreter(
-                backend="gemini-3", kb_path=tmp_path, kb_type="auto"
+                backend="gemini", kb_path=tmp_path, kb_type="auto"
             )
             assert interpreter.kb is not None
             assert interpreter.kb.__class__.__name__ == "TextKnowledgeBase"
@@ -29,7 +29,7 @@ class TestInterpreterKB:
             return_value=MagicMock(),
         ):
             interpreter = AnalyticsInterpreter(
-                backend="gemini-3", kb_path=tmp_path, kb_type="auto"
+                backend="gemini", kb_path=tmp_path, kb_type="auto"
             )
             assert interpreter.kb is not None
             assert interpreter.kb.__class__.__name__ == "PDFKnowledgeBase"
@@ -50,7 +50,7 @@ class TestInterpreterKB:
         # Return a proper InterpretationResult instead of a MagicMock
         backend_instance.interpret.return_value = InterpretationResult(
             text="Test interpretation",
-            backend="gemini-3",
+            backend="gemini",
             usage=None,
         )
 
@@ -59,7 +59,7 @@ class TestInterpreterKB:
             return_value=MockBackendClass,
         ):
             interpreter = AnalyticsInterpreter(
-                backend="gemini-3", kb_path=tmp_path, kb_type="text"
+                backend="gemini", kb_path=tmp_path, kb_type="text"
             )
             interpreter.interpret(data="test", display_result=False)
 

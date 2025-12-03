@@ -14,7 +14,7 @@ kanoa can ground its interpretations in your project's documentation and literat
 
 ```python
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs',
     kb_type='text'
 )
@@ -38,7 +38,7 @@ The interpreter will:
 
 ```python
 interpreter = AnalyticsInterpreter(
-    backend='gemini-3',
+    backend='gemini',
     kb_path='./docs/literature',
     kb_type='pdf'
 )

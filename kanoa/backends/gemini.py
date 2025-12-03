@@ -840,7 +840,7 @@ class GeminiBackend(BaseBackend):
 
             return InterpretationResult(
                 text=interpretation,
-                backend="gemini-3",
+                backend="gemini",
                 usage=usage,
                 metadata={
                     "model": self.model,
@@ -853,7 +853,7 @@ class GeminiBackend(BaseBackend):
 
         except Exception as e:
             error_msg = f"❌ **Error**: {e!s}"
-            return InterpretationResult(text=error_msg, backend="gemini-3", usage=None)
+            return InterpretationResult(text=error_msg, backend="gemini", usage=None)
 
         finally:
             # Update shared cost tracking

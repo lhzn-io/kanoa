@@ -323,7 +323,7 @@ def display_interpretation(
 
     Args:
         text: The interpretation text (markdown)
-        backend: Backend name (e.g., "gemini-3", "claude")
+        backend: Backend name (e.g., "gemini", "claude")
         model: Full model name (e.g., "gemini-2.0-flash", "claude-sonnet-4-20250514")
         usage: UsageInfo object with token counts and cost
         cached: Whether context caching was used
