@@ -6,7 +6,18 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-**kanoa** brings the power of a dedicated AI research assistant directly into your **Python workflows — whether in Jupyter notebooks, Streamlit apps, or automated scripts**. It programmatically interprets visualizations, tables, and results using multimodal LLMs (Gemini, Claude, OpenAI, Molmo), grounded in your project's documentation and literature. It is designed to be dropped into any data science project to provide instant, context-aware analysis.
+`kanoa` brings the power of a dedicated AI research assistant directly into your Python workflows — whether in Jupyter notebooks, Streamlit apps, or automated scripts. It programmatically interprets visualizations, tables, and results using multimodal LLMs (Gemini, Claude, OpenAI, Molmo), grounded in your project's documentation and literature.
+
+## Supported Backends
+
+| Backend | Best For | Getting Started |
+| :--- | :--- | :--- |
+| `local` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3 via vLLM | [Guide](./docs/source/user_guide/getting_started_vllm.md) |
+| `gemini` | Free tier, native PDF support, 1M context, caching | [Guide](./docs/source/user_guide/getting_started_gemini.md) |
+| `claude` | Strong reasoning, vision support | [Guide](./docs/source/user_guide/getting_started_claude.md) |
+| `openai` | GPT models, Azure OpenAI | [Guide](./docs/source/user_guide/backends.md#openai) |
+
+For detailed backend comparison, see [Backends Overview](./docs/source/user_guide/backends.md).
 
 ## Features
 
@@ -15,22 +26,23 @@
 - **Native Vision**: Uses multimodal capabilities to "see" complex plots and diagrams.
 - **Cost Optimized**: Intelligent context caching and token usage tracking.
 - **Knowledge Base**: Support for text (Markdown) and PDF knowledge bases.
+- **Notebook-Native Logging**: see the [Logging Guide](./docs/source/user_guide/logging.md).
 
 ## Installation
 
-kanoa is modular — install only the backends you need:
+`kanoa` is modular — install only the backends you need:
 
 ```bash
-# For Google Gemini (free tier; $$ → PDF grounding + context caching)
-pip install kanoa[gemini]
-
-# For local inference (vLLM, Ollama, Gemma 3, Molmo)
+# Local inference (vLLM — Molmo, Gemma 3)
 pip install kanoa[local]
 
-# For Anthropic Claude (Opus 4.5, Sonnet 4.5)
+# Google Gemini (free tier available)
+pip install kanoa[gemini]
+
+# Anthropic Claude
 pip install kanoa[claude]
 
-# For OpenAI API (GPT 5 models, Azure OpenAI)
+# OpenAI API (GPT models, Azure OpenAI)
 pip install kanoa[openai]
 
 # Everything
@@ -54,9 +66,9 @@ Check out [10 Minutes to kanoa](./notebooks/10_minutes_to_kanoa.ipynb) for a han
 
 For a comprehensive feature overview, see the [detailed quickstart](./examples/quickstart_10min.ipynb).
 
-### Basic Usage: Debugging with Vision
+### Basic Usage: AI-assisted Debugging with Visual Interpretation
 
-In this example, we use **kanoa** to identify a bug in a physics simulation.
+In this example, we use `kanoa` to identify a bug in a physics simulation.
 
 ```python
 import numpy as np
@@ -84,7 +96,7 @@ result = interpreter.interpret(
 print(result.text)
 ```
 
-**kanoa's response:**
+`kanoa`'s response:
 > "The plot shows a linear relationship between height and time, which indicates constant velocity. A projectile under gravity should follow a parabolic path ($y = v_0t - \frac{1}{2}gt^2$). The code is likely missing the $t^2$ term in the gravity component."
 
 ### Using Claude
@@ -95,8 +107,10 @@ interpreter = AnalyticsInterpreter(backend='claude')
 
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Sales analysis"
+    context="Analyzing environmental data for climate trends",
+    focus="Explain any regime changes in the data."
 )
+print(result.text)
 ```
 
 ### Using a Knowledge Base
@@ -112,17 +126,19 @@ interpreter = AnalyticsInterpreter(
 # The interpreter will now use the knowledge base to ground its analysis
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Compare with Braun et al. 2025 results"
+    context="Analyzing marine biologger data from a whale shark deployment",
+    focus="Compare diving behavior with Braun et al. 2025 findings."
 )
+print(result.text)
 ```
 
-### Local Inference (vLLM / Gemma 3)
+### Local Inference with vLLM
 
-Use `kanoa-mlops` to host local models like Gemma 3 or Molmo:
+Connect to any model hosted via vLLM's OpenAI-compatible API. We've tested with
+[Molmo](https://molmo.allenai.org/) from AI2 — a fully-open multimodal model.
+Gemma 3 support coming soon. See `kanoa-mlops` for our local hosting setup.
 
 ```python
-# Connect to local vLLM server
-# For setup instructions, see: docs/source/user_guide/getting_started_vllm.md
 interpreter = AnalyticsInterpreter(
     backend='openai',
     api_base='http://localhost:8000/v1',
@@ -131,36 +147,10 @@ interpreter = AnalyticsInterpreter(
 
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Local analysis"
+    context="Analyzing aquaculture sensor data",
+    focus="Identify drivers of dissolved oxygen levels"
 )
 ```
-
-## Supported Backends
-
-| Backend | Key Features | Best For |
-| :--- | :--- | :--- |
-| `gemini-3` | Native PDF support, 1M context, caching | Complex analysis with PDF references |
-| `claude` | Strong reasoning, vision support | General analysis, text-heavy KBs |
-| `openai` | Generic OpenAI API support (GPT-5.1, vLLM) | Local inference (Molmo,Gemma 3), Azure OpenAI |
-
-## Getting Started
-
-kanoa requires API keys for cloud backends. Choose your backend and follow the getting started guide:
-
-- **[Getting Started with Gemini](./docs/source/user_guide/getting_started_gemini.md)** - Google's Gemini models (recommended for PDF knowledge bases)
-- **[Getting Started with Claude](./docs/source/user_guide/getting_started_claude.md)** - Anthropic's Claude models (excellent reasoning)
-- **[Getting Started with vLLM](./docs/source/user_guide/getting_started_vllm.md)** - Local inference or OpenAI API
-
-Each guide includes:
-
-- API key setup instructions
-- Basic usage examples
-- Links to detailed backend references
-
-**For advanced configuration**, see:
-
-- [Authentication Guide](./docs/source/user_guide/authentication.md) - Security best practices, ADC, and more
-- [Backends Overview](./docs/source/user_guide/backends.md) - Detailed comparison of all backends
 
 ## Documentation
 
@@ -178,4 +168,6 @@ The API reference is auto-generated from docstrings in the source code.
 
 ## License
 
-MIT © 2025 Long Horizon Observatory
+Copyright 2025 Long Horizon Observatory
+
+This project is licensed under the MIT License — see the [LICENSE](./LICENSE) file for details.

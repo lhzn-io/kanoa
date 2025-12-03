@@ -397,6 +397,11 @@ def display_interpretation(
     # Get primary color from current palette (ocean blue by default)
     color = _get_style_colors("ai")
 
+    # Add title with backend name (monospace font)
+    title_line = ""
+    if backend:
+        title_line = f"<div style=\"font-weight: 600; margin-bottom: 12px; opacity: 0.9; font-size: 1.05em; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;\">{backend}</div>\n\n"
+
     styled_markdown = f"""
 <div style="background: {color["bg"]};
             border: 1px solid {color["border"]};
@@ -407,7 +412,7 @@ def display_interpretation(
             backdrop-filter: blur(5px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
 
-{text}{footer_line}
+{title_line}{text}{footer_line}
 
 </div>
 """

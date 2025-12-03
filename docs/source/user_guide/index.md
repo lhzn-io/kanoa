@@ -10,6 +10,7 @@ getting_started_claude
 getting_started_vllm
 backends
 knowledge_bases
+logging
 cost_management
 vertex_ai_integration
 authentication

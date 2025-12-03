@@ -55,7 +55,7 @@ class AnalyticsInterpreter:
 
     def __init__(
         self,
-        backend: Literal["claude", "gemini-3", "openai", "vllm"] = "gemini-3",
+        backend: Literal["claude", "gemini", "gemini-3", "openai", "vllm"] = "gemini-3",
         kb_path: Optional[Union[str, Path]] = None,
         kb_content: Optional[str] = None,
         kb_type: Literal["text", "pdf", "auto"] = "auto",
@@ -69,7 +69,7 @@ class AnalyticsInterpreter:
         Initialize analytics interpreter.
 
         Args:
-            backend: AI backend to use ('claude', 'gemini-3', 'openai')
+            backend: AI backend to use ('claude', 'gemini', 'gemini-3', 'openai')
             kb_path: Path to knowledge base directory
             kb_content: Pre-loaded knowledge base string
             kb_type: Knowledge base type ('text', 'pdf', 'auto')
@@ -92,9 +92,7 @@ class AnalyticsInterpreter:
             max_tokens=max_tokens,
             enable_caching=enable_caching,
             **backend_kwargs,
-        )
-
-        # Initialize knowledge base
+        )  # Initialize knowledge base
         self.kb: Optional[BaseKnowledgeBase] = None
         if kb_path or kb_content:
             self.kb = self._initialize_knowledge_base(
@@ -223,7 +221,7 @@ class AnalyticsInterpreter:
         if include_kb and self.kb:
             kb_context = self.kb.get_context()
 
-        # Call backend
+        # Call backend (logs will go to active stream or handlers)
         result = self.backend.interpret(
             fig=fig,
             data=data,

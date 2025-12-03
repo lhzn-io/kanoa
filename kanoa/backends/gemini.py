@@ -11,7 +11,7 @@ from google.genai import types
 from ..config import options
 from ..core.token_guard import BaseTokenCounter, TokenCheckResult, TokenGuard
 from ..core.types import CacheCreationResult, InterpretationResult, UsageInfo
-from ..utils.logging import log_info, log_warning
+from ..utils.logging import log_debug, log_info, log_warning
 from .base import BaseBackend
 
 # Pricing (per 1M tokens) - Gemini 3.0 Pro (Preview)
@@ -746,7 +746,7 @@ class GeminiBackend(BaseBackend):
         # Call API
         try:
             if self.verbose >= 1:
-                print(f"▶ Generating content with {self.model}...")
+                log_info(f"Generating content with {self.model}...")
 
             # Build generation config
             generate_config = types.GenerateContentConfig(
@@ -756,27 +756,26 @@ class GeminiBackend(BaseBackend):
             # Use cached content if available
             if cache_name:
                 if self.verbose >= 1:
-                    print(f"  • Using cached context: {cache_name}")
+                    log_info(f"Using cached context: {cache_name}", title="Cache")
                 generate_config.cached_content = cache_name
 
             # Level 2: Full Request Logging
             if self.verbose >= 2:
-                print("\n[DEBUG] Request Payload:")
-                print(f"  Model: {self.model}")
-                print(f"  Config: {generate_config}")
-                print("  Contents:")
-                for i, content in enumerate(content_parts):
-                    print(f"    Part {i}: Role={content.role}")
+                log_debug(f"Model: {self.model}", title="Request")
+                log_debug(f"Config: {generate_config}")
+                log_debug(f"Contents: {len(content_parts)} parts")
+                for _i, content in enumerate(content_parts):
                     if not content.parts:
                         continue
                     for part in content.parts:
                         if part.text:
                             text_preview = part.text[:100].replace("\n", "\\n")
-                            print(
-                                f'      [Text]: "{text_preview}..."'
+                            preview_msg = (
+                                f'Text: "{text_preview}..."'
                                 if len(part.text) > 100
-                                else f'      [Text]: "{text_preview}"'
+                                else f'Text: "{text_preview}"'
                             )
+                            log_debug(preview_msg)
                         elif part.inline_data and part.inline_data.data:
                             data_bytes = part.inline_data.data
                             data_len = len(data_bytes)
@@ -785,16 +784,13 @@ class GeminiBackend(BaseBackend):
                                 if data_len > 1024 * 1024
                                 else f"{data_len / 1024:.2f} KB"
                             )
-                            preview = data_bytes[:8].hex()
-                            print(
-                                f"      [Blob]: {part.inline_data.mime_type} | {size_str} | <{preview}...>"
+                            log_debug(
+                                f"Blob: {part.inline_data.mime_type} | {size_str}"
                             )
                         elif part.file_data:
-                            print(
-                                f"      [File]: {part.file_data.file_uri} ({part.file_data.mime_type})"
+                            log_debug(
+                                f"File: {part.file_data.file_uri} ({part.file_data.mime_type})"
                             )
-                        else:
-                            print(f"      [Other]: {part}")
 
             # Call API with retry logic for 429s
             max_retries = 3
@@ -831,13 +827,14 @@ class GeminiBackend(BaseBackend):
 
             # Level 2: Full Response Logging
             if self.verbose >= 2:
-                print("\n[DEBUG] Response Payload:")
+                log_debug("Response received", title="Response")
                 # Try to dump full JSON if available, else string repr
                 try:
                     # Pydantic v2 style
-                    print(response.model_dump_json(indent=2))
+                    response_json = response.model_dump_json(indent=2)
+                    log_debug(f"Payload: {response_json[:500]}...")
                 except AttributeError:
-                    print(response)
+                    log_debug(f"Payload: {str(response)[:500]}...")
 
             # Extract text
             interpretation = response.text or ""
@@ -848,11 +845,11 @@ class GeminiBackend(BaseBackend):
             )
 
             if self.verbose >= 1 and usage:
-                print(
-                    f"  • Usage: {usage.input_tokens:,} in / {usage.output_tokens:,} out"
+                log_info(
+                    f"Usage: {usage.input_tokens:,} in / {usage.output_tokens:,} out"
                 )
                 if usage.cached_tokens:
-                    print(f"  • Cached tokens: {usage.cached_tokens:,}")
+                    log_info(f"Cached tokens: {usage.cached_tokens:,}")
 
             return InterpretationResult(
                 text=interpretation,

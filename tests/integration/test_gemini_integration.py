@@ -80,7 +80,7 @@ class TestGeminiIntegration:
             pytest.skip(f"Gemini auth previously failed: {error}")
 
         try:
-            interp = AnalyticsInterpreter(backend="gemini-3")
+            interp = AnalyticsInterpreter(backend="gemini", model="gemini-2.5-flash")
             auth_state.mark_auth_ok("gemini")
             return interp
         except Exception as e:
@@ -144,9 +144,10 @@ class TestGeminiIntegration:
         assert "sine" in result.text.lower() or "sinusoidal" in result.text.lower()
 
         # Check metadata
-        assert result.backend == "gemini-3"
+        assert result.backend == "gemini"
         assert result.usage is not None
-        assert result.usage.cost > 0
+        # gemini-2.5-flash is free, so cost may be 0
+        assert result.usage.input_tokens > 0
 
         # Record and print cost
         cost = result.usage.cost

@@ -1,6 +1,6 @@
 """Utility functions for kanoa."""
 
-from .logging import log_debug, log_error, log_info, log_warning
+from .logging import LogStream, log_debug, log_error, log_info, log_stream, log_warning
 from .notebook import (
     display_error,
     display_info,
@@ -33,4 +33,7 @@ __all__ = [
     "log_info",
     "log_warning",
     "log_error",
+    # Streaming context
+    "LogStream",
+    "log_stream",
 ]

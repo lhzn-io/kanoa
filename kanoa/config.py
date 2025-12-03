@@ -30,6 +30,10 @@ class Options:
         log_bg_color (Tuple[int, int, int]): RGB color for log background.
             Default: (186, 164, 217) - Lavender
 
+        default_log_stream (str): Default stream title for auto-collecting logs.
+            Default: "kanoa" - All logs go to one unified "kanoa" stream in notebooks.
+            Set to "" to disable auto-streaming (each log creates its own box).
+
         backend_colors (Dict[str, Tuple[int, int, int]]): Optional per-backend colors.
             Example: {"gemini-3": (186, 164, 217), "claude": (170, 200, 180)}
 
@@ -55,6 +59,9 @@ class Options:
         self.log_style: str = "styled"  # "styled" or "plain"
         self.log_bg_color: Tuple[int, int, int] = (186, 164, 217)  # Lavender
         self.backend_colors: Dict[str, Tuple[int, int, int]] = {}
+
+        # Default log stream (auto-created, collects all logs)
+        self.default_log_stream: str = "kanoa"  # Set to "" to disable
 
         # File Logging
         self.log_to_file: bool = False
