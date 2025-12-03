@@ -1,3 +1,5 @@
+import re
+
 from setuptools import find_packages, setup
 
 # Core dependencies - always installed
@@ -36,13 +38,38 @@ DOCS_DEPS = [
     "sphinx-autodoc-typehints>=1.20.0",
 ]
 
+
+def read_long_description():
+    with open("README.md", "r", encoding="utf-8") as f:
+        text = f.read()
+
+    # Replace relative links with absolute GitHub links
+    # Matches [Link Text](./path/to/file) or [Link Text](path/to/file)
+    # Excludes http, https, mailto, and # anchors
+    base_url = "https://github.com/lhzn-io/kanoa/blob/main/"
+
+    def replace_link(match):
+        link = match.group(1)
+        # Don't touch absolute paths (rare in READMEs but possible)
+        if link.startswith("/"):
+            return match.group(0)
+
+        if link.startswith("./"):
+            link = link[2:]
+        return f"]({base_url}{link})"
+
+    # Pattern matches ](link) where link doesn't start with http, https, mailto, or #
+    pattern = r"\]\(((?!http|https|mailto|#)[^)]+)\)"
+    return re.sub(pattern, replace_link, text)
+
+
 setup(
     name="kanoa",
     use_scm_version=True,
     description=(
         "AI-powered interpretation of data science outputs with multi-backend support"
     ),
-    long_description=open("README.md").read(),
+    long_description=read_long_description(),
     long_description_content_type="text/markdown",
     author="Daniel Fry",
     author_email="dfry@lhzn.io",
