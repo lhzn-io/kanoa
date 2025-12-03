@@ -22,7 +22,7 @@ install-molmo:
 	pip install -e ".[dev,molmo]"
 
 test:
-	pytest tests/ -m "not integration"
+	pytest tests/
 
 test-fast:
 	pytest tests/ -m "not integration and not slow"

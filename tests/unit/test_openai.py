@@ -48,7 +48,7 @@ class TestOpenAIBackend:
         backend = OpenAIBackend()
 
         assert backend.api_base is None
-        assert backend.model == "gpt-4-turbo"
+        assert backend.model == "gpt-5-mini"
         mock_openai_class.assert_called_once()
 
     @patch("openai.OpenAI")
@@ -76,12 +76,12 @@ class TestOpenAIBackend:
         assert result.usage.input_tokens == 100
         assert result.usage.output_tokens == 50
         assert result.metadata is not None
-        assert result.metadata["model"] == "gpt-4-turbo"
+        assert result.metadata["model"] == "gpt-5-mini"
 
         # Verify API call
         mock_client.chat.completions.create.assert_called_once()
         call_kwargs = mock_client.chat.completions.create.call_args.kwargs
-        assert call_kwargs["model"] == "gpt-4-turbo"
+        assert call_kwargs["model"] == "gpt-5-mini"
         assert call_kwargs["max_tokens"] == 3000
 
     @patch("openai.OpenAI")
