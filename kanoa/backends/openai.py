@@ -4,6 +4,7 @@ from typing import Any, Optional
 import matplotlib.pyplot as plt
 
 from ..core.types import InterpretationResult, UsageInfo
+from ..utils.logging import log_debug, log_info, log_warning
 from .base import BaseBackend
 
 
@@ -49,6 +50,7 @@ class OpenAIBackend(BaseBackend):
         api_key: Optional[str] = None,
         max_tokens: int = 3000,
         temperature: float = 0.7,
+        verbose: int = 0,
         **kwargs: Any,
     ) -> None:
         """
@@ -60,6 +62,7 @@ class OpenAIBackend(BaseBackend):
             api_key: API key (defaults to OPENAI_API_KEY env var)
             max_tokens: Maximum tokens to generate
             temperature: Sampling temperature
+            verbose: Logging verbosity level (0=silent, 1=info, 2=debug)
             **kwargs: Additional arguments
         """
         super().__init__(api_key, max_tokens, **kwargs)
@@ -69,6 +72,7 @@ class OpenAIBackend(BaseBackend):
         self.api_base = api_base
         self.model = model
         self.temperature = temperature
+        self.verbose = verbose
 
         # Initialize OpenAI client
         # If api_base is None, OpenAI client defaults to official API
@@ -76,6 +80,11 @@ class OpenAIBackend(BaseBackend):
             api_key=api_key or os.environ.get("OPENAI_API_KEY", "EMPTY"),
             base_url=api_base,
         )
+
+        if self.verbose >= 1:
+            endpoint = api_base or "api.openai.com"
+            log_info(f"Initialized with model: {self.model}", title="OpenAI")
+            log_info(f"Endpoint: {endpoint}", title="OpenAI")
 
     def interpret(
         self,
@@ -94,6 +103,9 @@ class OpenAIBackend(BaseBackend):
         """
         self.call_count += 1
 
+        if self.verbose >= 1:
+            log_info(f"Calling {self.model} (call #{self.call_count})", title="OpenAI")
+
         # Build prompt
         prompt = self._build_prompt(context, focus, kb_context, custom_prompt)
 
@@ -110,15 +122,26 @@ class OpenAIBackend(BaseBackend):
                     "image_url": {"url": f"data:image/png;base64,{img_base64}"},
                 }
             )
+            if self.verbose >= 2:
+                log_debug("Attached figure as base64 image", title="OpenAI")
 
         # Add data if provided
         if data is not None:
             data_text = self._data_to_text(data)
             prompt = f"Data to analyze:\n```\n{data_text}\n```\n\n{prompt}"
+            if self.verbose >= 2:
+                log_debug(f"Attached data ({len(data_text)} chars)", title="OpenAI")
 
         # Add prompt text
         content.append({"type": "text", "text": prompt})
         messages.append({"role": "user", "content": content})
+
+        if self.verbose >= 2:
+            log_debug(f"Prompt length: {len(prompt)} chars", title="Request")
+            if kb_context:
+                log_debug(
+                    f"Knowledge base context: {len(kb_context)} chars", title="Request"
+                )
 
         try:
             response = self.client.chat.completions.create(
@@ -134,6 +157,17 @@ class OpenAIBackend(BaseBackend):
             # Calculate usage
             usage = self._calculate_usage(response.usage) if response.usage else None
 
+            if self.verbose >= 1 and usage:
+                log_info(
+                    f"Tokens: {usage.input_tokens} in / {usage.output_tokens} out "
+                    f"(${usage.cost:.4f})",
+                    title="OpenAI",
+                )
+            if self.verbose >= 2:
+                log_debug(
+                    f"Response length: {len(interpretation)} chars", title="Response"
+                )
+
             return InterpretationResult(
                 text=interpretation,
                 backend="openai",
@@ -145,6 +179,7 @@ class OpenAIBackend(BaseBackend):
             )
 
         except Exception as e:
+            log_warning(f"API call failed: {e}", title="OpenAI")
             return InterpretationResult(
                 text=f"❌ **Error**: {e!s}", backend="openai", usage=None
             )

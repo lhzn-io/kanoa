@@ -6,6 +6,7 @@ from anthropic import Anthropic
 
 from ..core.token_guard import BaseTokenCounter
 from ..core.types import InterpretationResult, UsageInfo
+from ..utils.logging import log_debug, log_info, log_warning
 from .base import BaseBackend
 
 
@@ -17,6 +18,7 @@ class ClaudeTokenCounter(BaseTokenCounter):
         client: Any,
         model: str = "claude-sonnet-4-5",
         system: Optional[str] = None,
+        verbose: int = 0,
     ):
         """
         Initialize Claude token counter.
@@ -25,10 +27,12 @@ class ClaudeTokenCounter(BaseTokenCounter):
             client: anthropic.Anthropic instance
             model: Model name for token counting
             system: Optional system prompt (counted separately)
+            verbose: Logging verbosity level (0=silent, 1=info, 2=debug)
         """
         self._client = client
         self._model = model
         self._system = system
+        self.verbose = verbose
 
     @property
     def backend_name(self) -> str:
@@ -61,9 +65,12 @@ class ClaudeTokenCounter(BaseTokenCounter):
                 kwargs["system"] = self._system
 
             result = self._client.messages.count_tokens(**kwargs)
-            return int(result.input_tokens)
+            token_count = int(result.input_tokens)
+            if self.verbose >= 2:
+                log_debug(f"Token count: {token_count}", title="Claude")
+            return token_count
         except Exception as e:
-            print(f"⚠️ Claude token counting failed, using estimate: {e}")
+            log_warning(f"Token counting failed, using estimate: {e}", title="Claude")
             return self.estimate_tokens(contents)
 
     def _normalize_messages(self, contents: Any) -> List[Dict[str, Any]]:
@@ -107,11 +114,16 @@ class ClaudeBackend(BaseBackend):
         model: str = "claude-sonnet-4-5-20250929",
         max_tokens: int = 3000,
         enable_caching: bool = True,
+        verbose: int = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(api_key, max_tokens, enable_caching)
         self.client = Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
         self.model = model
+        self.verbose = verbose
+
+        if self.verbose >= 1:
+            log_info(f"Initialized with model: {self.model}", title="Claude")
 
     def interpret(
         self,
@@ -125,6 +137,9 @@ class ClaudeBackend(BaseBackend):
     ) -> InterpretationResult:
         """Interpret using Claude."""
         self.call_count += 1
+
+        if self.verbose >= 1:
+            log_info(f"Calling {self.model} (call #{self.call_count})", title="Claude")
 
         messages: List[Dict[str, Any]] = []
         content_blocks: List[Dict[str, Any]] = []
@@ -142,6 +157,8 @@ class ClaudeBackend(BaseBackend):
                     },
                 }
             )
+            if self.verbose >= 2:
+                log_debug("Attached figure as base64 image", title="Claude")
 
         # Add data
         if data is not None:
@@ -149,10 +166,19 @@ class ClaudeBackend(BaseBackend):
             content_blocks.append(
                 {"type": "text", "text": f"Data to analyze:\n```\n{data_text}\n```"}
             )
+            if self.verbose >= 2:
+                log_debug(f"Attached data ({len(data_text)} chars)", title="Claude")
 
         # Add prompt
         prompt = self._build_prompt(context, focus, kb_context, custom_prompt)
         content_blocks.append({"type": "text", "text": prompt})
+
+        if self.verbose >= 2:
+            log_debug(f"Prompt length: {len(prompt)} chars", title="Request")
+            if kb_context:
+                log_debug(
+                    f"Knowledge base context: {len(kb_context)} chars", title="Request"
+                )
 
         messages.append({"role": "user", "content": content_blocks})
 
@@ -168,6 +194,17 @@ class ClaudeBackend(BaseBackend):
             )
             usage = self._calculate_usage(response.usage)
 
+            if self.verbose >= 1:
+                log_info(
+                    f"Tokens: {usage.input_tokens} in / {usage.output_tokens} out "
+                    f"(${usage.cost:.4f})",
+                    title="Claude",
+                )
+            if self.verbose >= 2:
+                log_debug(
+                    f"Response length: {len(interpretation)} chars", title="Response"
+                )
+
             return InterpretationResult(
                 text=interpretation,
                 backend="claude",
@@ -176,6 +213,7 @@ class ClaudeBackend(BaseBackend):
             )
 
         except Exception as e:
+            log_warning(f"API call failed: {e}", title="Claude")
             return InterpretationResult(
                 text=f"❌ **Error**: {e!s}", backend="claude", usage=None
             )
