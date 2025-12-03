@@ -443,7 +443,7 @@ class GeminiBackend(BaseBackend):
 
         log_info(
             f"Checking context cache (Hash: {content_hash})",
-            title="⚡ Cache Check",
+            title="Cache Check",
             source="kanoa.backends.gemini",
             context={"hash": content_hash},
         )
@@ -454,7 +454,7 @@ class GeminiBackend(BaseBackend):
             try:
                 log_info(
                     f"Cache hit (Memory)! Refreshing TTL for {self._cached_content_name}",
-                    title="⚡ Cache Hit",
+                    title="Cache Hit",
                     source="kanoa.backends.gemini",
                     context={
                         "cache_name": self._cached_content_name,
@@ -498,7 +498,7 @@ class GeminiBackend(BaseBackend):
 
                     log_info(
                         f"Cache hit (Server)! Recovered {cache.name}",
-                        title="⚡ Cache Hit",
+                        title="Cache Hit",
                         source="kanoa.backends.gemini",
                         context={"cache_name": cache.name, "source": "server"},
                     )
