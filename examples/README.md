@@ -13,7 +13,6 @@ Perfect for getting started quickly.
 
 - Load and visualize oceanographic time series data
 - Get AI-powered interpretation with a single function call
-- See the lavender logging output in action
 
 ---
 
