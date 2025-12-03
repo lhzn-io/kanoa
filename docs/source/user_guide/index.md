@@ -5,6 +5,9 @@ This section provides detailed guides for using kanoa in various scenarios.
 ```{toctree}
 :maxdepth: 2
 
+getting_started_gemini
+getting_started_claude
+getting_started_vllm
 backends
 knowledge_bases
 cost_management

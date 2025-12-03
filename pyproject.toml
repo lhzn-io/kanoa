@@ -5,7 +5,8 @@ build-backend = "setuptools.build_meta"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-ra -v" # Show all test summary info (including skip reasons), verbose
+# Default: exclude integration tests (cost-incurring). Run with: pytest -m integration
+addopts = "-ra -v -m 'not integration'"
 markers = [
   "caching: marks tests that test context caching",
   "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
@@ -114,12 +115,14 @@ unfixable = []
 [tool.ruff.lint.per-file-ignores]
 # Allow unused imports in __init__.py (re-exports)
 "__init__.py" = ["F401"]
-# Tests can use assert, magic values, unused variables, etc.
-"tests/**" = ["PLR2004", "PT011", "F841", "SIM117"]
+# Tests can use assert, magic values, unused variables, ambiguous unicode (Greek letters)
+"tests/**" = ["PLR2004", "PT011", "F841", "SIM117", "RUF001"]
 # Examples/notebooks can be more relaxed
 "examples/**" = ["E722", "T201", "PLR2004", "F841", "C408"]
 # setup.py uses open() without context manager (setuptools pattern)
 "setup.py" = ["SIM115"]
+# notebook.py intentionally uses Unicode Greek letters for LaTeX normalization
+"kanoa/utils/notebook.py" = ["RUF001"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["kanoa"]

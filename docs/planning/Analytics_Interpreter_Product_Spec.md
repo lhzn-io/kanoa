@@ -128,17 +128,17 @@ The core usage pattern approximates the experience of a dedicated research assis
 
 ```mermaid
 graph TD
-    User[User Application<br/>Jupyter Notebook / Streamlit App / Python Script]
+    User[User Application]
 
-    API[AnalyticsInterpreter API<br/>• interpret fig, context, focus, backend='auto'<br/>• interpret_dataframe df, ...<br/>• load_knowledge_base path/pdfs]
+    API[AnalyticsInterpreter API]
 
-    Claude[Claude Backend<br/>Anthropic<br/>• Text KB only<br/>• $3/$15 per 1M<br/>• 200K context]
+    Claude[Claude Backend - Anthropic]
 
-    Gemini[Gemini Backend<br/>Google<br/>• Full PDF vision<br/>• $2/$12 per 1M<br/>• 2M context (Gemini 3 Pro)]
+    Gemini[Gemini Backend - Google]
 
-    OpenAI[OpenAI Backend<br/>GPT 5.1 / vLLM<br/>• OpenAI-compatible API<br/>• Molmo, Gemma 3<br/>• Local or Cloud]
+    OpenAI[OpenAI Backend - GPT/vLLM]
 
-    KB[Knowledge Base Layer<br/>• Pre-integrated Content<br/>• Provider-Specific Adapters<br/>• (Gemini Cache, OpenAI Vector Store)]
+    KB[Knowledge Base Layer]
 
     User --> API
     API --> Claude
@@ -148,6 +148,17 @@ graph TD
     Gemini --> KB
     OpenAI --> KB
 ```
+
+**Components:**
+
+| Component | Description |
+|-----------|-------------|
+| **User Application** | Jupyter Notebook, Streamlit App, or Python Script |
+| **AnalyticsInterpreter API** | `interpret(fig, context, focus)`, `interpret_dataframe(df)`, `load_knowledge_base(path)` |
+| **Claude Backend** | Anthropic - Text KB only, $3/$15 per 1M tokens, 200K context |
+| **Gemini Backend** | Google - Full PDF vision, $2/$12 per 1M tokens, 2M context (Gemini 3 Pro) |
+| **OpenAI Backend** | GPT 5.1 / vLLM - OpenAI-compatible API, Molmo, Gemma 3, Local or Cloud |
+| **Knowledge Base Layer** | Pre-integrated Content, Provider-Specific Adapters (Gemini Cache, OpenAI Vector Store) |
 
 ### Design Principles
 

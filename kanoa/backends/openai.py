@@ -45,7 +45,7 @@ class OpenAIBackend(BaseBackend):
     def __init__(
         self,
         api_base: Optional[str] = None,
-        model: str = "gpt-4-turbo",
+        model: str = "gpt-5-mini",
         api_key: Optional[str] = None,
         max_tokens: int = 3000,
         temperature: float = 0.7,

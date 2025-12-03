@@ -53,6 +53,23 @@ interpreter = AnalyticsInterpreter(
 | Cache Storage | $0.20/hour | Per million cached tokens |
 | Output | $12.00 | All output tokens |
 
+#### Real-World Cost Study
+
+Using an **8.5 MB PDF** (WMO State of the Climate 2025 Report, ~9,500 tokens):
+
+| Operation | Cost | Notes |
+| --- | --- | --- |
+| First query (cache creation) | $0.02 | Full token cost |
+| Subsequent queries (cached) | < $0.01 | 67% savings |
+| 10-query session | ~$0.11 | vs. $0.21 without caching |
+
+**Bottom line**: For a typical research session analyzing a scientific paper:
+
+- **Free tier**: Works for simple text analysis, but no caching or PDF support
+- **Paid tier**: ~$0.02 to cache a paper, then pennies per question
+
+See the [Context Caching Demo](../../../examples/gemini_context_caching_demo.ipynb) for a complete walkthrough.
+
 ### Context Caching
 
 Gemini supports **explicit context caching** for knowledge bases, providing significant

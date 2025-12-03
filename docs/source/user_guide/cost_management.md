@@ -1,6 +1,6 @@
 # Cost Management
 
-When working with LLM APIs, costs can accumulate quickly—especially during development
+When working with LLM APIs, costs can accumulate quickly — especially during development
 and experimentation. kanoa provides the `TokenGuard` system to help you monitor and
 control API costs before requests are sent.
 

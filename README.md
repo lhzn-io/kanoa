@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-**kanoa** brings the power of a dedicated AI research assistant directly into your **Python workflows—whether in Jupyter notebooks, Streamlit apps, or automated scripts**. It programmatically interprets visualizations, tables, and results using multimodal LLMs (Gemini, Claude, OpenAI, Molmo), grounded in your project's documentation and literature. It is designed to be dropped into any data science project to provide instant, context-aware analysis.
+**kanoa** brings the power of a dedicated AI research assistant directly into your **Python workflows — whether in Jupyter notebooks, Streamlit apps, or automated scripts**. It programmatically interprets visualizations, tables, and results using multimodal LLMs (Gemini, Claude, OpenAI, Molmo), grounded in your project's documentation and literature. It is designed to be dropped into any data science project to provide instant, context-aware analysis.
 
 ## Features
 
@@ -18,17 +18,35 @@
 
 ## Installation
 
+kanoa is modular — install only the backends you need:
+
 ```bash
-pip install kanoa
+# For Google Gemini (free tier; $$ → PDF grounding + context caching)
+pip install kanoa[gemini]
+
+# For local inference (vLLM, Ollama, Gemma 3, Molmo)
+pip install kanoa[local]
+
+# For Anthropic Claude (Opus 4.5, Sonnet 4.5)
+pip install kanoa[claude]
+
+# For OpenAI API (GPT 5 models, Azure OpenAI)
+pip install kanoa[openai]
+
+# Everything
+pip install kanoa[all]
 ```
 
-Or for development:
+<details>
+<summary>Development installation</summary>
 
 ```bash
 git clone https://github.com/lhzn-io/kanoa.git
 cd kanoa
-pip install -e .
+pip install -e ".[dev]"
 ```
+
+</details>
 
 ## Quick Start
 
@@ -36,30 +54,38 @@ Check out [10 Minutes to kanoa](./notebooks/10_minutes_to_kanoa.ipynb) for a han
 
 For a comprehensive feature overview, see the [detailed quickstart](./examples/quickstart_10min.ipynb).
 
-### Basic Usage
+### Basic Usage: Debugging with Vision
+
+In this example, we use **kanoa** to identify a bug in a physics simulation.
 
 ```python
+import numpy as np
 import matplotlib.pyplot as plt
 from kanoa import AnalyticsInterpreter
 
-# 1. Create your plot
-plt.plot([1, 2, 3], [1, 4, 9])
-plt.title("Growth Curve")
+# 1. Simulate a projectile (with a bug!)
+t = np.linspace(0, 10, 100)
+v0 = 50
+g = 9.8
+# BUG: Missing t**2 in the gravity term (should be 0.5 * g * t**2)
+y = v0 * t - 0.5 * g * t
 
-# 2. Initialize Interpreter (defaults to Gemini)
-# Ensure GOOGLE_API_KEY is set in your environment
-interpreter = AnalyticsInterpreter(backend='gemini-3')
+plt.figure(figsize=(10, 6))
+plt.plot(t, y)
+plt.title("Projectile Trajectory")
 
-# 3. Interpret it
+# 2. Ask Kanoa to debug
+interpreter = AnalyticsInterpreter(backend="gemini-3")
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Bacterial growth experiment",
-    focus="Exponential phase"
+    context="Simulating a projectile launch. Something looks wrong.",
+    focus="Identify the physics error in the trajectory."
 )
-
-# 4. View results (auto-displays in Jupyter)
 print(result.text)
 ```
+
+**kanoa's response:**
+> "The plot shows a linear relationship between height and time, which indicates constant velocity. A projectile under gravity should follow a parabolic path ($y = v_0t - \frac{1}{2}gt^2$). The code is likely missing the $t^2$ term in the gravity component."
 
 ### Using Claude
 
@@ -86,7 +112,7 @@ interpreter = AnalyticsInterpreter(
 # The interpreter will now use the knowledge base to ground its analysis
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Compare with Smith et al. 2023 results"
+    context="Compare with Braun et al. 2025 results"
 )
 ```
 
@@ -95,11 +121,12 @@ result = interpreter.interpret(
 Use `kanoa-mlops` to host local models like Gemma 3 or Molmo:
 
 ```python
-# Connect to local vLLM server (see kanoa-mlops repo)
+# Connect to local vLLM server
+# For setup instructions, see: docs/source/user_guide/getting_started_vllm.md
 interpreter = AnalyticsInterpreter(
     backend='openai',
     api_base='http://localhost:8000/v1',
-    model='google/gemma-3-12b-it'
+    model='allenai/Molmo-7B-D-0924'
 )
 
 result = interpreter.interpret(
@@ -114,26 +141,26 @@ result = interpreter.interpret(
 | :--- | :--- | :--- |
 | `gemini-3` | Native PDF support, 1M context, caching | Complex analysis with PDF references |
 | `claude` | Strong reasoning, vision support | General analysis, text-heavy KBs |
-| `openai` | Generic OpenAI support (GPT-5.1, vLLM) | Local inference (Gemma 3), Azure OpenAI |
+| `openai` | Generic OpenAI API support (GPT-5.1, vLLM) | Local inference (Molmo,Gemma 3), Azure OpenAI |
 
-## API Keys
+## Getting Started
 
-kanoa requires API keys for cloud backends. **Recommended**: Store in `~/.config/kanoa/.env`:
+kanoa requires API keys for cloud backends. Choose your backend and follow the getting started guide:
 
-```bash
-mkdir -p ~/.config/kanoa
-echo "GOOGLE_API_KEY=your-key" > ~/.config/kanoa/.env
-echo "ANTHROPIC_API_KEY=your-key" >> ~/.config/kanoa/.env
-```
+- **[Getting Started with Gemini](./docs/source/user_guide/getting_started_gemini.md)** - Google's Gemini models (recommended for PDF knowledge bases)
+- **[Getting Started with Claude](./docs/source/user_guide/getting_started_claude.md)** - Anthropic's Claude models (excellent reasoning)
+- **[Getting Started with vLLM](./docs/source/user_guide/getting_started_vllm.md)** - Local inference or OpenAI API
 
-⚠️ **Security Note**: API keys generate costs. We recommend `keeping secrets outside of your kanoa-dev workspace,
-and we include detect-secrets in our pre-commit hooks for defense-in-depth.
+Each guide includes:
 
-**For detailed setup instructions**, see:
+- API key setup instructions
+- Basic usage examples
+- Links to detailed backend references
 
-- [Authentication Guide](./docs/source/user_guide/authentication.md) - Complete setup, security best practices
-- [Get Gemini API Key](https://aistudio.google.com/apikey)
-- [Get Claude API Key](https://console.anthropic.com/)
+**For advanced configuration**, see:
+
+- [Authentication Guide](./docs/source/user_guide/authentication.md) - Security best practices, ADC, and more
+- [Backends Overview](./docs/source/user_guide/backends.md) - Detailed comparison of all backends
 
 ## Documentation
 

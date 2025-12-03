@@ -82,6 +82,7 @@ setup(
         "gemini": GEMINI_DEPS,
         "claude": CLAUDE_DEPS,
         "openai": OPENAI_DEPS,
+        "local": OPENAI_DEPS,  # Alias for vLLM/Ollama users
         "gcloud": GCLOUD_DEPS,
         # Notebook enhancements (rich HTML display)
         "notebook": NOTEBOOK_DEPS,

@@ -77,7 +77,7 @@ def __getattr__(name: str) -> type:
         except ImportError as e:
             raise ImportError(
                 f"OpenAIBackend requires openai. "
-                f"Install with: pip install kanoa[openai]\n"
+                f"Install with: pip install kanoa[local]  # or kanoa[openai]\n"
                 f"Original error: {e}"
             ) from e
 
