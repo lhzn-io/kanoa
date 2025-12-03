@@ -17,13 +17,13 @@ You are an expert Python developer contributing to the `kanoa` library.
 - **Core**: Python 3.10+, Pydantic, Pandas
 - **Backends**: Google Gemini, Anthropic Claude, Molmo (multimodal)
 - **Testing**: Pytest, Unittest.mock
-- **Linting**: Flake8, Mypy, Black, Isort
+- **Linting**: Ruff, Mypy
 
 ## Commands
 
 - **Test**: `make test` (Runs all unit tests)
-- **Lint**: `make lint` (Runs flake8 and mypy)
-- **Format**: `make format` (Runs black and isort)
+- **Lint**: `make lint` (Runs ruff check and mypy)
+- **Format**: `make format` (Runs ruff format)
 - **Type Check**: `mypy .`
 
 ## Boundaries
@@ -44,12 +44,12 @@ You are an expert Python developer contributing to the `kanoa` library.
 
 ## Code Style Configuration
 
-**Reference**: `pyproject.toml` (`[tool.black]`, `[tool.isort]`, `[tool.mypy]`) and `.flake8`
+**Reference**: `pyproject.toml` (`[tool.ruff]`, `[tool.mypy]`)
 
-- **Line Length**: 88 characters (black default)
+- **Line Length**: 88 characters (ruff default)
 - **Target**: Python 3.11
 - **Type Checking**: Strict mypy (pandas-level rigor)
-- **Linting**: flake8 with E203 extended ignore
+- **Linting**: Ruff (replaces black, isort, flake8)
 
 ## Code Style Example
 
