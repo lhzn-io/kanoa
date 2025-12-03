@@ -33,11 +33,12 @@ DOCS_DEPS = [
     "sphinx>=7.0.0",
     "myst-parser>=2.0.0",
     "sphinx-rtd-theme>=2.0.0",
+    "sphinx-autodoc-typehints>=1.20.0",
 ]
 
 setup(
     name="kanoa",
-    version="0.1.0",
+    use_scm_version=True,
     description=(
         "AI-powered interpretation of data science outputs with multi-backend support"
     ),
