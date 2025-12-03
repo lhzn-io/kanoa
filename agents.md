@@ -33,6 +33,7 @@ You are an expert Python developer contributing to the `kanoa` library.
   - Write unit tests for new code (aim for >85% coverage).
   - Use `kanoa` (lowercase) in documentation.
   - Follow Google-style docstrings.
+  - Follow emoji policy in [CONTRIBUTING.md](CONTRIBUTING.md#2-emoji-policy).
 - ⚠️ **Ask First**:
   - Adding new dependencies to `setup.py`.
   - Changing public API signatures.
