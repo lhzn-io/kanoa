@@ -1,5 +1,6 @@
 """Utility functions for kanoa."""
 
+from .logging import log_debug, log_error, log_info, log_warning
 from .notebook import (
     display_error,
     display_info,
@@ -27,4 +28,9 @@ __all__ = [
     # Color palette customization
     "set_color_palette",
     "get_color_palette",
+    # Logging functions
+    "log_debug",
+    "log_info",
+    "log_warning",
+    "log_error",
 ]

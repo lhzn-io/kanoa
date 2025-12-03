@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 from ..config import options
+from ..utils.logging import log_error, log_info, log_warning
 
 
 class BaseKnowledgeBase(ABC):
@@ -33,14 +34,16 @@ class BaseKnowledgeBase(ABC):
             # Use configured default home or fallback to temp
             if options.kb_home:
                 self.kb_path = options.kb_home
-                if options.verbose:
-                    print(f"Using default knowledge base path: {self.kb_path}")
+                log_info(
+                    f"Using default knowledge base path: {self.kb_path}",
+                    source="kanoa.knowledge_base",
+                )
             else:
                 self.kb_path = Path(tempfile.mkdtemp(prefix="kanoa_kb_"))
-                if options.verbose:
-                    print(
-                        f"⚠️ No kb_path set. Using temporary directory: {self.kb_path}"
-                    )
+                log_warning(
+                    f"No kb_path set. Using temporary directory: {self.kb_path}",
+                    source="kanoa.knowledge_base",
+                )
 
         # Ensure directory exists
         self.kb_path.mkdir(parents=True, exist_ok=True)
@@ -60,8 +63,10 @@ class BaseKnowledgeBase(ABC):
             # We preserve :/?=& to keep the URL structure intact
             uri = urllib.parse.quote(uri, safe=":/?=&")
 
-            if options.verbose:
-                print(f"Downloading {uri} to {dest_path}...")
+            log_info(
+                f"Downloading {uri} to {dest_path}...",
+                source="kanoa.knowledge_base",
+            )
             try:
                 # Use a custom user agent to avoid 403s from some sites
                 req = urllib.request.Request(uri, headers={"User-Agent": "kanoa/0.1.0"})
@@ -71,12 +76,18 @@ class BaseKnowledgeBase(ABC):
                 ):
                     shutil.copyfileobj(response, out_file)
             except Exception as e:
-                print(f"❌ Error downloading {uri}: {e}")
+                log_error(
+                    f"Error downloading {uri}: {e}",
+                    source="kanoa.knowledge_base",
+                    context={"uri": uri, "error": str(e)},
+                )
                 raise e
 
         elif uri.startswith("gs://"):
-            if options.verbose:
-                print(f"Downloading {uri} to {dest_path}...")
+            log_info(
+                f"Downloading {uri} to {dest_path}...",
+                source="kanoa.knowledge_base",
+            )
             # Try using google-cloud-storage if available
             try:
                 from google.cloud import (
@@ -100,9 +111,13 @@ class BaseKnowledgeBase(ABC):
                 # Fallback to CLI tools if library not installed
                 pass
             except Exception as e:
-                # If library is installed but fails (e.g. auth), print warning and try CLI
-                print(f"⚠️ Google Cloud Storage API failed: {e}")
-                print("Falling back to CLI tools...")
+                # If library installed but fails (e.g. auth), try CLI
+                log_warning(
+                    f"Google Cloud Storage API failed: {e}. "
+                    f"Falling back to CLI tools...",
+                    source="kanoa.knowledge_base",
+                    context={"error": str(e)},
+                )
 
             try:
                 # Try gcloud storage cp first (faster, modern)
@@ -120,9 +135,13 @@ class BaseKnowledgeBase(ABC):
                         capture_output=True,
                     )
                 except Exception as e:
-                    print(f"❌ Error downloading {uri}: {e}")
-                    print("Ensure 'gcloud' or 'gsutil' is installed and authenticated.")
-                    print("Or install the Python client: pip install 'kanoa[gcloud]'")
+                    log_error(
+                        f"Error downloading {uri}: {e}. "
+                        "Ensure 'gcloud' or 'gsutil' is installed and authenticated. "
+                        "Or install the Python client: pip install 'kanoa[gcloud]'",
+                        source="kanoa.knowledge_base",
+                        context={"uri": uri, "error": str(e)},
+                    )
                     raise e
 
         else:

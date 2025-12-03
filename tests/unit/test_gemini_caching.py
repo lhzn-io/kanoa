@@ -28,10 +28,14 @@ class TestGeminiContextCaching:
         """Test that cache is created when KB content is large enough."""
         backend = GeminiBackend(api_key="test_key", enable_caching=True)
 
-        # Mock cache creation
+        # Mock cache creation with usage_metadata
         mock_cache = MagicMock()
         mock_cache.name = "caches/test-cache-123"
+        mock_usage = MagicMock()
+        mock_usage.total_token_count = 3000
+        mock_cache.usage_metadata = mock_usage
         cast("Any", backend.client.caches.create).return_value = mock_cache
+        cast("Any", backend.client.caches.list).return_value = []
 
         # KB content needs to be > 2048 tokens for gemini-3-pro-preview
         # (~4 chars per token, so ~8192 chars needed)
@@ -73,10 +77,14 @@ class TestGeminiContextCaching:
         """Test that cache is reused when content hash matches."""
         backend = GeminiBackend(api_key="test_key", enable_caching=True)
 
-        # Mock cache creation
+        # Mock cache creation with usage_metadata
         mock_cache = MagicMock()
         mock_cache.name = "caches/test-cache-123"
+        mock_usage = MagicMock()
+        mock_usage.total_token_count = 3000
+        mock_cache.usage_metadata = mock_usage
         cast("Any", backend.client.caches.create).return_value = mock_cache
+        cast("Any", backend.client.caches.list).return_value = []
 
         # Large enough for caching (> 2048 tokens for gemini-3-pro-preview)
         large_kb = "Test content with some words. " * 400
@@ -99,15 +107,24 @@ class TestGeminiContextCaching:
         """Test that cache is recreated when content changes."""
         backend = GeminiBackend(api_key="test_key", enable_caching=True)
 
-        # Mock cache creation
+        # Mock cache creation with usage_metadata
         mock_cache1 = MagicMock()
         mock_cache1.name = "caches/cache-1"
+        mock_usage1 = MagicMock()
+        mock_usage1.total_token_count = 3000
+        mock_cache1.usage_metadata = mock_usage1
+
         mock_cache2 = MagicMock()
         mock_cache2.name = "caches/cache-2"
+        mock_usage2 = MagicMock()
+        mock_usage2.total_token_count = 3000
+        mock_cache2.usage_metadata = mock_usage2
+
         cast("Any", backend.client.caches.create).side_effect = [
             mock_cache1,
             mock_cache2,
         ]
+        cast("Any", backend.client.caches.list).return_value = []
 
         # Large enough for caching (> 2048 tokens for gemini-3-pro-preview)
         kb1 = "First content with some extra words here. " * 400
@@ -150,10 +167,14 @@ class TestGeminiContextCaching:
         """Test that interpret() uses cached content when available."""
         backend = GeminiBackend(api_key="test_key", enable_caching=True)
 
-        # Mock cache creation
+        # Mock cache creation with usage_metadata
         mock_cache = MagicMock()
         mock_cache.name = "caches/kb-cache"
+        mock_usage = MagicMock()
+        mock_usage.total_token_count = 3000
+        mock_cache.usage_metadata = mock_usage
         cast("Any", backend.client.caches.create).return_value = mock_cache
+        cast("Any", backend.client.caches.list).return_value = []
 
         # Mock generate response
         mock_response = MagicMock()

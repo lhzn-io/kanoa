@@ -182,7 +182,7 @@ class AnalyticsInterpreter:
         context: Optional[str] = None,
         focus: Optional[str] = None,
         include_kb: bool = True,
-        display_result: bool = True,
+        display_result: Optional[bool] = None,
         custom_prompt: Optional[str] = None,
         **kwargs: Any,
     ) -> InterpretationResult:
@@ -195,7 +195,8 @@ class AnalyticsInterpreter:
             context: Brief description of the output
             focus: Specific aspects to analyze
             include_kb: Whether to include knowledge base context
-            display_result: Auto-display as Markdown in Jupyter
+            display_result: Auto-display as Markdown in Jupyter.
+                If None, uses kanoa.options.display_result (default: True)
             custom_prompt: Override default prompt template
             **kwargs: Additional backend-specific arguments
 
@@ -210,6 +211,12 @@ class AnalyticsInterpreter:
             raise ValueError(
                 "Must provide either 'fig', 'data', or 'custom_prompt' to interpret"
             )
+
+        # Use global option if display_result not explicitly set
+        from ..config import options
+
+        if display_result is None:
+            display_result = options.display_result
 
         # Get knowledge base context
         kb_context = None

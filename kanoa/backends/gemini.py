@@ -11,6 +11,7 @@ from google.genai import types
 from ..config import options
 from ..core.token_guard import BaseTokenCounter, TokenCheckResult, TokenGuard
 from ..core.types import CacheCreationResult, InterpretationResult, UsageInfo
+from ..utils.logging import log_info, log_warning
 from .base import BaseBackend
 
 # Pricing (per 1M tokens) - Gemini 3.0 Pro (Preview)
@@ -65,7 +66,10 @@ class GeminiTokenCounter(BaseTokenCounter):
             )
             return int(result.total_tokens)
         except Exception as e:
-            print(f"⚠️ Gemini token counting failed, using estimate: {e}")
+            log_warning(
+                f"Gemini token counting failed, using estimate: {e}",
+                source="kanoa.backends.gemini",
+            )
             return self.estimate_tokens(contents)
 
 
@@ -134,8 +138,11 @@ class GeminiBackend(BaseBackend):
         else:
             self.verbose = int(_v)
 
-        if self.verbose:
-            print(f"Authenticating with Google Cloud (Model: {model})...")
+        log_info(
+            f"Authenticating with Google Cloud (Model: {model})...",
+            source="kanoa.backends.gemini",
+            context={"model": model, "backend": "gemini"},
+        )
 
         # Initialize client with support for both AI Studio and Vertex AI
         client_kwargs: Dict[str, Any] = {}
@@ -175,23 +182,34 @@ class GeminiBackend(BaseBackend):
         Returns:
             Dict mapping filename to uploaded file object or inline data
         """
-        if self.verbose:
-            print(f"Found {len(pdf_paths)} PDFs to process...")
+        log_info(
+            f"Found {len(pdf_paths)} PDFs to process...",
+            source="kanoa.backends.gemini",
+            context={"pdf_count": len(pdf_paths)},
+        )
 
         for pdf_path in pdf_paths:
             if pdf_path in self.uploaded_pdfs:
-                if self.verbose:
-                    print(f"  • PDF already loaded: {pdf_path.name}")
+                log_info(
+                    f"PDF already loaded: {pdf_path.name}",
+                    source="kanoa.backends.gemini",
+                    context={"file": str(pdf_path.name)},
+                )
                 continue
 
-            if self.verbose:
-                file_size_mb = os.path.getsize(pdf_path) / (1024 * 1024)
-                print(f"Processing PDF: {pdf_path.name} ({file_size_mb:.2f} MB)")
+            file_size_mb = os.path.getsize(pdf_path) / (1024 * 1024)
+            log_info(
+                f"Processing PDF: {pdf_path.name} ({file_size_mb:.2f} MB)",
+                source="kanoa.backends.gemini",
+                context={"file": str(pdf_path.name), "size_mb": round(file_size_mb, 2)},
+            )
 
             # If using Vertex AI, skip File API and go straight to inline
             if self.is_vertex:
-                if self.verbose:
-                    print("  • Using inline transfer (Vertex AI)...")
+                log_info(
+                    "Using inline transfer (Vertex AI)...",
+                    source="kanoa.backends.gemini",
+                )
                 with open(pdf_path, "rb") as f:
                     data = f.read()
                 self.uploaded_pdfs[pdf_path] = {
@@ -202,8 +220,10 @@ class GeminiBackend(BaseBackend):
                 continue
 
             try:
-                if self.verbose:
-                    print("  • Attempting upload via File API...")
+                log_info(
+                    "Attempting upload via File API...",
+                    source="kanoa.backends.gemini",
+                )
                 with open(pdf_path, "rb") as f:
                     uploaded = self.client.files.upload(
                         file=f,
@@ -215,24 +235,30 @@ class GeminiBackend(BaseBackend):
 
                 # Wait for processing
                 while uploaded.state == "PROCESSING":
-                    if self.verbose:
-                        print("  • Waiting for remote processing...")
+                    log_info(
+                        "Waiting for remote processing...",
+                        source="kanoa.backends.gemini",
+                    )
                     time.sleep(2)
                     if uploaded.name:
                         uploaded = self.client.files.get(name=uploaded.name)
 
                 if uploaded.state == "ACTIVE":
-                    if self.verbose:
-                        print(f"  • Upload complete: {uploaded.name}")
+                    log_info(
+                        f"Upload complete: {uploaded.name}",
+                        source="kanoa.backends.gemini",
+                        context={"file_id": uploaded.name},
+                    )
                     self.uploaded_pdfs[pdf_path] = uploaded
 
             except ValueError as e:
                 if "Gemini Developer client" in str(e):
-                    if self.verbose:
-                        print("  ⚠️ AI Studio File API unavailable (Consumer).")
-                        print(
-                            "  • Switching to Vertex AI inline strategy (Enterprise)."
-                        )
+                    log_warning(
+                        "AI Studio File API unavailable (Consumer). "
+                        "Switching to Vertex AI inline strategy (Enterprise).",
+                        title="File API Fallback",
+                        source="kanoa.backends.gemini",
+                    )
                     # Fallback for Vertex AI: Read file bytes for inline transfer
                     with open(pdf_path, "rb") as f:
                         data = f.read()
@@ -242,8 +268,11 @@ class GeminiBackend(BaseBackend):
                         "data": data,
                         "inline": True,
                     }
-                    if self.verbose:
-                        print(f"  • Loaded {len(data)} bytes for inline transfer.")
+                    log_info(
+                        f"Loaded {len(data)} bytes for inline transfer.",
+                        source="kanoa.backends.gemini",
+                        context={"bytes": len(data)},
+                    )
                 else:
                     raise e
 
@@ -398,27 +427,40 @@ class GeminiBackend(BaseBackend):
         # (PDFs are usually > 2048 tokens)
         if estimated_tokens < min_tokens and not self.uploaded_pdfs:
             # Content too small for caching benefit
-            if self.verbose:
-                print(
-                    f"  • Content too small for caching (~{estimated_tokens} tokens < {min_tokens})"
-                )
+            log_info(
+                f"Content too small for caching (~{estimated_tokens} tokens < {min_tokens})",
+                source="kanoa.backends.gemini",
+                context={
+                    "estimated_tokens": estimated_tokens,
+                    "min_tokens": min_tokens,
+                },
+            )
             return CacheCreationResult(name=None, created=False, token_count=0)
 
         # Compute content hash to detect changes (Text + PDFs)
         content_hash = self._compute_cache_hash(kb_context)
         target_display_name = display_name or f"kanoa-kb-{content_hash}"
 
-        if self.verbose:
-            print(f"⚡ Checking context cache (Hash: {content_hash})")
+        log_info(
+            f"Checking context cache (Hash: {content_hash})",
+            title="⚡ Cache Check",
+            source="kanoa.backends.gemini",
+            context={"hash": content_hash},
+        )
 
         # 1. Check in-memory reference (fastest)
         if self._cached_content_name and self._cached_content_hash == content_hash:
             # Try to refresh TTL on existing cache
             try:
-                if self.verbose:
-                    print(
-                        f"  ⚡ Cache hit (Memory)! Refreshing TTL for {self._cached_content_name}"
-                    )
+                log_info(
+                    f"Cache hit (Memory)! Refreshing TTL for {self._cached_content_name}",
+                    title="⚡ Cache Hit",
+                    source="kanoa.backends.gemini",
+                    context={
+                        "cache_name": self._cached_content_name,
+                        "source": "memory",
+                    },
+                )
                 self.client.caches.update(
                     name=self._cached_content_name,
                     config=types.UpdateCachedContentConfig(
@@ -432,17 +474,20 @@ class GeminiBackend(BaseBackend):
                 )
             except Exception:
                 # Cache expired or invalid, will recreate
-                if self.verbose:
-                    print("  ⚠️ Cache expired or invalid. Recreating...")
+                log_warning(
+                    "Cache expired or invalid. Recreating...",
+                    title="Cache Miss",
+                    source="kanoa.backends.gemini",
+                )
                 self._cached_content_name = None
 
         # 2. Check server-side for existing cache (Resilient Caching)
         # This allows reusing cache across kernel restarts
         try:
-            if self.verbose:
-                print(
-                    f"  ⚡ Checking server for existing cache: {target_display_name}..."
-                )
+            log_info(
+                f"Checking server for existing cache: {target_display_name}...",
+                source="kanoa.backends.gemini",
+            )
 
             # List caches (returns iterator)
             # We iterate to find a match by display_name
@@ -451,8 +496,12 @@ class GeminiBackend(BaseBackend):
                     if not cache.name:
                         continue
 
-                    if self.verbose:
-                        print(f"  ⚡ Cache hit (Server)! Recovered {cache.name}")
+                    log_info(
+                        f"Cache hit (Server)! Recovered {cache.name}",
+                        title="⚡ Cache Hit",
+                        source="kanoa.backends.gemini",
+                        context={"cache_name": cache.name, "source": "server"},
+                    )
 
                     # Update TTL to keep it alive
                     self.client.caches.update(
@@ -476,8 +525,11 @@ class GeminiBackend(BaseBackend):
                         token_count=self._cache_token_count,
                     )
         except Exception as e:
-            if self.verbose:
-                print(f"  ⚠️ Failed to check server caches: {e}")
+            log_warning(
+                f"Failed to check server caches: {e}",
+                source="kanoa.backends.gemini",
+                context={"error": str(e)},
+            )
 
         # 3. Create new cache (if not found)
         # Build cache content - use cast for type compatibility
@@ -526,8 +578,11 @@ class GeminiBackend(BaseBackend):
             # Create the cached content
             # Note: Model must use explicit version for caching
             cache_model = self._get_cache_model_name()
-            if self.verbose:
-                print(f"  ⚡ Creating new cache on {cache_model}...")
+            log_info(
+                f"Creating new cache on {cache_model}...",
+                source="kanoa.backends.gemini",
+                context={"model": cache_model},
+            )
 
             cache = self.client.caches.create(
                 model=cache_model,
@@ -543,10 +598,15 @@ class GeminiBackend(BaseBackend):
                     cache.usage_metadata, "total_token_count", 0
                 )
 
-            if self.verbose:
-                print(
-                    f"  ✔ Cache created: {cache.name} ({self._cache_token_count:,} tokens)"
-                )
+            log_info(
+                f"Cache created: {cache.name} ({self._cache_token_count:,} tokens)",
+                title="✓ Cache Created",
+                source="kanoa.backends.gemini",
+                context={
+                    "cache_name": cache.name,
+                    "token_count": self._cache_token_count,
+                },
+            )
 
             return CacheCreationResult(
                 name=cache.name, created=True, token_count=self._cache_token_count
@@ -554,7 +614,11 @@ class GeminiBackend(BaseBackend):
 
         except Exception as e:
             # Caching failed, fall back to non-cached
-            print(f"⚠️ Context caching unavailable: {e}")
+            log_warning(
+                f"Context caching unavailable: {e}",
+                source="kanoa.backends.gemini",
+                context={"error": str(e)},
+            )
             return CacheCreationResult(name=None, created=False, token_count=0)
 
     def _get_cache_model_name(self) -> str:
@@ -717,7 +781,7 @@ class GeminiBackend(BaseBackend):
                             data_bytes = part.inline_data.data
                             data_len = len(data_bytes)
                             size_str = (
-                                f"{data_len / (1024*1024):.2f} MB"
+                                f"{data_len / (1024 * 1024):.2f} MB"
                                 if data_len > 1024 * 1024
                                 else f"{data_len / 1024:.2f} KB"
                             )
