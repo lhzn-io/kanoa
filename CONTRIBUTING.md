@@ -329,6 +329,33 @@ pytest
 3. Describe your changes clearly in the PR description.
 4. Link to any relevant issues.
 
+## Documentation
+
+Good documentation is as important as code. We use **Sphinx** to generate our documentation.
+
+### Building Docs Locally
+
+To preview documentation changes locally:
+
+1. **Install documentation dependencies**:
+
+    ```bash
+    pip install -r docs/requirements-docs.txt
+    ```
+
+2. **Build the HTML**:
+
+    ```bash
+    cd docs
+    make html
+    ```
+
+3. **View**: Open `docs/build/html/index.html` in your browser.
+
+## Release Process
+
+For maintainers, the release process is documented in [RELEASING.md](RELEASING.md).
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
