@@ -62,7 +62,7 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
-Check out [10 Minutes to kanoa](./notebooks/10_minutes_to_kanoa.ipynb) for a hands-on introduction using real-world water quality data.
+Check out [2 Minutes to kanoa](./examples/2_minutes_to_kanoa.ipynb) for a hands-on introduction.
 
 For a comprehensive feature overview, see the [detailed quickstart](./examples/quickstart_10min.ipynb).
 

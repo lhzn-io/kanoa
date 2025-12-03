@@ -4,16 +4,29 @@ This directory contains example notebooks and scripts demonstrating kanoa's capa
 
 ## Available Examples
 
-### quickstart_10min.ipynb
+### 2_minutes_to_kanoa.ipynb
 
-**10 Minutes to kanoa** - Comprehensive Introduction
+**2 Minutes to kanoa** — Quick Introduction
 
-This notebook showcases kanoa's core capabilities:
+A fast-paced introduction using real-world Scripps Pier water quality data.
+Perfect for getting started quickly.
+
+- Load and visualize oceanographic time series data
+- Get AI-powered interpretation with a single function call
+- See the lavender logging output in action
+
+---
+
+### 10_minutes_to_kanoa.ipynb
+
+**10 Minutes to kanoa** — Multi-Backend Deep Dive
+
+A comprehensive tour of `kanoa`'s capabilities across multiple backends:
 
 1. **Multi-Backend Support**
-   - Gemini (Google) - with native PDF vision
-   - Claude (Anthropic) - text-based analysis
-   - OpenAI/vLLM (Local) - privacy-preserving inference
+   - Gemini (Google) — with native PDF vision
+   - Claude (Anthropic) — text-based analysis
+   - OpenAI/vLLM (Local) — privacy-preserving inference
 
 2. **Knowledge Base Integration**
    - Text/Markdown knowledge bases
@@ -78,7 +91,7 @@ context. This example demonstrates:
 **Quick Start:**
 
 ```bash
-jupyter notebook examples/quickstart_10min.ipynb
+jupyter notebook examples/2_minutes_to_kanoa.ipynb
 ```
 
 To verify kanoa is installed correctly, you can run:
@@ -100,7 +113,7 @@ conda activate kanoa
 # Start Jupyter
 jupyter notebook
 
-# Navigate to examples/ and open quickstart_10min.ipynb
+# Navigate to examples/ and open 2_minutes_to_kanoa.ipynb
 ```
 
 ### Option 2: JupyterLab
@@ -112,14 +125,14 @@ conda activate kanoa
 # Start JupyterLab
 jupyter lab
 
-# Navigate to examples/ and open quickstart_10min.ipynb
+# Navigate to examples/ and open 2_minutes_to_kanoa.ipynb
 ```
 
 ### Option 3: VS Code
 
 1. Open the `kanoa` repository in VS Code
 2. Install the Jupyter extension
-3. Open `examples/quickstart_10min.ipynb`
+3. Open `examples/2_minutes_to_kanoa.ipynb`
 4. Select the `kanoa` kernel
 5. Run cells interactively
 
