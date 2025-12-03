@@ -11,20 +11,9 @@ from google.genai import types
 from ..config import options
 from ..core.token_guard import BaseTokenCounter, TokenCheckResult, TokenGuard
 from ..core.types import CacheCreationResult, InterpretationResult, UsageInfo
+from ..pricing import get_model_pricing
 from ..utils.logging import log_debug, log_info, log_warning
 from .base import BaseBackend
-
-# Pricing (per 1M tokens) - Gemini 3.0 Pro (Preview)
-# Note: Google does not provide a public pricing API.
-# These values are manually maintained based on official documentation.
-GEMINI_PRICING = {
-    "input_short": 2.00,  # <= 200K context
-    "output_short": 12.00,
-    "input_long": 4.00,  # > 200K context
-    "output_long": 18.00,
-    "cached_input": 0.50,  # Cached content input (75% cheaper)
-    "cached_storage": 1.00,  # Per 1M tokens per hour
-}
 
 
 class GeminiTokenCounter(BaseTokenCounter):
@@ -84,9 +73,6 @@ class GeminiBackend(BaseBackend):
     - File Search tool for RAG
     - Automatic cache management with configurable TTL
     """
-
-    # Pricing (per 1M tokens) - Gemini 3.0 Pro (Preview)
-    PRICING = GEMINI_PRICING
 
     # Minimum token counts for context caching by model
     MIN_CACHE_TOKENS = {
@@ -317,7 +303,8 @@ class GeminiBackend(BaseBackend):
             )
 
         # Check tokens using the guard
-        return guard.check(pdf_contents, pricing=self.PRICING)
+        pricing = get_model_pricing("gemini", self.model)
+        return guard.check(pdf_contents, pricing=pricing)
 
     def _compute_cache_hash(self, kb_context: str) -> str:
         """Compute deterministic hash for KB context + uploaded PDFs."""
@@ -957,21 +944,40 @@ Use markdown formatting. Be concise but technically precise.
         # Calculate non-cached input tokens
         non_cached_input = input_tokens - cached_tokens
 
+        # Get pricing for this model
+        pricing = get_model_pricing("gemini", self.model)
+        if not pricing:
+            # Fallback if no pricing found (e.g. unknown model)
+            return UsageInfo(
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                cost=0.0,
+                cached_tokens=cached_tokens if cached_tokens > 0 else None,
+                cache_created=cache_created,
+                savings=None,
+            )
+
         # Determine pricing tier based on context length
-        # Threshold is 200,000 tokens for Gemini 3.0 Pro
-        if input_tokens <= 200_000:
-            input_price = self.PRICING["input_short"]
-            output_price = self.PRICING["output_short"]
+        # Threshold is 128k tokens for most Gemini models (was 200k for 3.0 preview)
+        # We'll use the 128k keys from pricing.json if available
+        if input_tokens <= 128_000:
+            input_price = pricing.get("input_price", 0.0)
+            output_price = pricing.get("output_price", 0.0)
         else:
-            input_price = self.PRICING["input_long"]
-            output_price = self.PRICING["output_long"]
+            input_price = pricing.get(
+                "input_price_128k", pricing.get("input_price", 0.0)
+            )
+            output_price = pricing.get(
+                "output_price_128k", pricing.get("output_price", 0.0)
+            )
 
         # Calculate cost
         # Cached tokens are charged at reduced rate ONLY if it's a cache hit
         # If we just created the cache, we pay full price for processing
         savings = None
         if cached_tokens > 0 and not cache_created:
-            cached_cost = cached_tokens / 1_000_000 * self.PRICING["cached_input"]
+            cached_price = pricing.get("cached_input_price", 0.0)
+            cached_cost = cached_tokens / 1_000_000 * cached_price
             non_cached_cost = non_cached_input / 1_000_000 * input_price
             input_cost = cached_cost + non_cached_cost
 

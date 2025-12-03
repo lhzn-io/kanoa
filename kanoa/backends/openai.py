@@ -4,6 +4,7 @@ from typing import Any, Optional
 import matplotlib.pyplot as plt
 
 from ..core.types import InterpretationResult, UsageInfo
+from ..pricing import get_model_pricing
 from ..utils.logging import log_debug, log_info, log_warning
 from .base import BaseBackend
 
@@ -246,11 +247,20 @@ Use markdown formatting. Be concise but technically precise.
         input_tokens = usage_data.prompt_tokens
         output_tokens = usage_data.completion_tokens
 
-        # For local models, we estimate cost based on token count
-        # This is a rough approximation: $0.10 per 1M tokens (both input/output)
-        # Users can override this by tracking their own infrastructure costs
-        cost_per_million = 0.10
-        cost = ((input_tokens + output_tokens) / 1_000_000) * cost_per_million
+        # Get pricing for this model
+        pricing = get_model_pricing("openai", self.model)
+
+        if pricing:
+            input_price = pricing.get("input_price", 0.0)
+            output_price = pricing.get("output_price", 0.0)
+            cost = (input_tokens / 1_000_000 * input_price) + (
+                output_tokens / 1_000_000 * output_price
+            )
+        else:
+            # For local models or unknown models, we estimate cost
+            # This is a rough approximation: $0.10 per 1M tokens (both input/output)
+            cost_per_million = 0.10
+            cost = ((input_tokens + output_tokens) / 1_000_000) * cost_per_million
 
         return UsageInfo(
             input_tokens=input_tokens, output_tokens=output_tokens, cost=cost

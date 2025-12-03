@@ -6,6 +6,7 @@ from anthropic import Anthropic
 
 from ..core.token_guard import BaseTokenCounter
 from ..core.types import InterpretationResult, UsageInfo
+from ..pricing import get_model_pricing
 from ..utils.logging import log_debug, log_info, log_warning
 from .base import BaseBackend
 
@@ -96,12 +97,6 @@ class ClaudeBackend(BaseBackend):
     - Vision capabilities (interprets figures)
     - Text knowledge base integration
     """
-
-    PRICING = {
-        # Claude 4.5 models (latest, Nov 2025)
-        "claude-sonnet-4-5-20250929": {"input": 3.00, "output": 15.00},
-        "claude-opus-4-5-20251101": {"input": 5.00, "output": 25.00},
-    }
 
     @property
     def backend_name(self) -> str:
@@ -278,10 +273,13 @@ Use markdown formatting. Be concise but technically precise.
         input_tokens = usage_data.input_tokens
         output_tokens = usage_data.output_tokens
 
-        pricing = self.PRICING.get(self.model, {"input": 3.00, "output": 15.00})
+        pricing = get_model_pricing("claude", self.model)
+        if not pricing:
+            # Fallback default if pricing not found
+            pricing = {"input_price": 3.00, "output_price": 15.00}
 
-        cost = (input_tokens / 1_000_000 * pricing["input"]) + (
-            output_tokens / 1_000_000 * pricing["output"]
+        cost = (input_tokens / 1_000_000 * pricing.get("input_price", 3.00)) + (
+            output_tokens / 1_000_000 * pricing.get("output_price", 15.00)
         )
 
         return UsageInfo(

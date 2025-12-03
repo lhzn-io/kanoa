@@ -152,6 +152,36 @@ result = interpreter.interpret(
 )
 ```
 
+## Pricing Configuration
+
+`kanoa` includes up-to-date pricing for all supported models. You can override these values locally without waiting for a package update:
+
+1. Create `~/.config/kanoa/pricing.json`
+2. Add your custom pricing (merges with defaults):
+
+```json
+{
+  "gemini": {
+    "gemini-3-pro-preview": {
+      "input_price": 2.00,
+      "output_price": 12.00
+    }
+  },
+  "claude": {
+    "claude-opus-4-5-20251101": {
+      "input_price": 5.00,
+      "output_price": 25.00
+    }
+  }
+}
+```
+
+Pricing sources:
+
+- **Gemini**: [ai.google.dev/pricing](https://ai.google.dev/pricing)
+- **Claude**: [anthropic.com/pricing](https://www.anthropic.com/pricing)
+- **OpenAI**: [openai.com/api/pricing](https://openai.com/api/pricing)
+
 ## Documentation
 
 Full API documentation is available and built using Sphinx:
