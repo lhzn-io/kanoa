@@ -1,4 +1,4 @@
-.PHONY: install test test-fast test-integration test-gemini test-claude lint format clean check-any-usage help
+.PHONY: install test test-fast test-integration test-gemini test-claude test-molmo-egpu lint format clean check-any-usage help
 
 help:
 	@echo "Available commands:"
@@ -6,8 +6,9 @@ help:
 	@echo "  make test                     - Run unit tests only (skips integration)"
 	@echo "  make test-fast                - Run unit tests only (skip integration/slow)"
 	@echo "  make test-integration         - Run all integration tests"
-	@echo "  make test-gemini-integration  - Run Gemini integration tests only"
-	@echo "  make test-claude-integration  - Run Claude integration tests only"
+	@echo "  make test-gemini-integration    - Run Gemini integration tests only"
+	@echo "  make test-claude-integration    - Run Claude integration tests only"
+	@echo "  make test-molmo-egpu-integration - Run Molmo eGPU integration tests only"
 	@echo "  make lint                     - Run all linters (ruff, mypy)"
 	@echo "  make format                   - Auto-format code (ruff)"
 	@echo "  make check-any-usage          - Check Any usage in codebase"
@@ -35,7 +36,7 @@ test-gemini-integration:
 test-claude-integration:
 	pytest tests/ -m "integration and claude" -s
 
-test-molmo-integration:
+test-molmo-egpu-integration:
 	pytest tests/ -m "integration and molmo" -s
 
 lint:

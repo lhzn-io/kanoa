@@ -34,6 +34,9 @@ pytest -m "integration and gemini"
 
 # Claude only (when implemented)
 pytest -m "integration and claude"
+
+# Molmo eGPU only
+pytest -m "integration and molmo"
 ```
 
 ### With Verbose Output
