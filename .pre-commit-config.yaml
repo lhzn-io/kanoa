@@ -23,6 +23,16 @@ repos:
         args: ['--baseline', '.secrets.baseline']
         exclude: package.lock.json
 
+  - repo: local
+    hooks:
+      - id: stage-secrets-baseline
+        name: stage secrets baseline
+        entry: bash -c 'git add .secrets.baseline 2>/dev/null || true'
+        language: system
+        always_run: true
+        pass_filenames: false
+        stages: [pre-commit]
+
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.13.0
     hooks:
