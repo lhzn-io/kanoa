@@ -16,9 +16,57 @@ We follow [Semantic Versioning](https://semver.org/):
 - **Minor (x.Y.z)**: New features, backward compatible.
 - **Patch (x.y.Z)**: Bug fixes, backward compatible.
 
+## Pre-Flight Checklist
+
+Before creating a release, **YOU MUST** complete this checklist:
+
+### 1. Update Version Number
+
+⚠️ **CRITICAL**: Increment `__version__` in `kanoa/__init__.py`
+
+```bash
+# Check current version
+make check-version
+
+# Manually edit kanoa/__init__.py
+vim kanoa/__init__.py  # Update __version__ = "X.Y.Z"
+```
+
+Version must follow [Semantic Versioning](https://semver.org/):
+
+- **Major (X.y.z)**: Breaking changes
+- **Minor (x.Y.z)**: New features, backward compatible
+- **Patch (x.y.Z)**: Bug fixes, backward compatible
+
+### 2. Run Pre-Release Checks
+
+```bash
+# Automated pre-flight check
+make pre-release VERSION=0.1.4
+```
+
+This verifies:
+
+- [✓] Version in `__init__.py` matches intended release
+- [✓] All tests pass
+- [✓] Linting passes
+- [✓] No uncommitted changes
+
+### 3. Update Changelog
+
+Add release notes to `CHANGELOG.md` (if it exists) or prepare notes for GitHub release.
+
+### 4. Commit Version Bump
+
+```bash
+git add kanoa/__init__.py
+git commit -m "chore: bump version to 0.1.4"
+git push origin main
+```
+
 ## Release Process
 
-The release process is fully automated via GitHub Actions. Triggering a release involves creating a new Git tag and GitHub Release.
+After completing the pre-flight checklist, create the release.
 
 ### Option 1: Using GitHub CLI (Recommended)
 

@@ -40,6 +40,36 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
 
 - **Setup**: Activate the development environment with `conda activate kanoa-dev` before running any commands.
 
+## Release Process
+
+⚠️ **CRITICAL**: When preparing a release, you MUST:
+
+1. **Update `kanoa/__init__.py`**:
+   ```python
+   __version__ = "X.Y.Z"  # ← Increment this!
+   ```
+
+2. **Run pre-release check**:
+   ```bash
+   make pre-release VERSION=X.Y.Z
+   ```
+
+3. **Commit version bump BEFORE creating GitHub release**:
+   ```bash
+   git add kanoa/__init__.py
+   git commit -m "chore: bump version to X.Y.Z"
+   git push origin main
+   ```
+
+4. **Then create release**:
+   ```bash
+   gh release create vX.Y.Z --generate-notes
+   ```
+
+See [RELEASING.md](../RELEASING.md) for full details.
+
+**Never create a GitHub release without updating `__version__` first!**
+
 ## Notebook Handling
 
 * **NEVER USE copilot_getNotebookSummary tool** - it hangs indefinitely and is explicitly forbidden

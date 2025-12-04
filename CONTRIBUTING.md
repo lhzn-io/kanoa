@@ -364,6 +364,14 @@ To preview documentation changes locally:
 
 For maintainers, the release process is documented in [RELEASING.md](RELEASING.md).
 
+⚠️ **CRITICAL REMINDER**: Always update `kanoa/__version__` BEFORE creating a release!
+
+```bash
+# Quick pre-flight check
+make check-version                    # Check current version
+make pre-release VERSION=0.1.4        # Automated verification
+```
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
