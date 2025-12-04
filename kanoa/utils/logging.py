@@ -281,7 +281,7 @@ class NotebookHandler:
         from ..config import options
 
         # Get background color from options (default: lavender)
-        bg_rgb = options.log_bg_color
+        bg_rgb = options.internal_log_bg_color
 
         # Check for backend-specific colors
         backend = record.context.get("backend")
@@ -316,7 +316,11 @@ class NotebookHandler:
             border-radius: 6px;
             font-size: 0.9em;
             line-height: 1.5;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;">
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
+            box-sizing: border-box;
+            max-width: 100%;
+            overflow-x: auto;
+            word-wrap: break-word;">
 
 {title_line}<div style="opacity: {opacity};">{record.message}</div>
 
@@ -457,6 +461,7 @@ class LogStream:
         self,
         title: Optional[str] = None,
         bg_color: Optional[tuple[int, int, int]] = None,
+        bg_opacity: Optional[float] = None,
         auto_display: bool = True,
     ) -> None:
         """
@@ -465,10 +470,12 @@ class LogStream:
         Args:
             title: Optional title for the log container
             bg_color: Override background color (RGB tuple)
+            bg_opacity: Override background opacity (0.0-1.0)
             auto_display: If False, caller must manually call render()
         """
         self.title = title
         self.bg_color = bg_color
+        self.bg_opacity = bg_opacity
         self.auto_display = auto_display
         self.messages: List[str] = []
         self.display_id = f"kanoa-log-{id(self)}"
@@ -569,12 +576,17 @@ class LogStream:
         from ..config import options
 
         # Get background color
-        bg_rgb = self.bg_color or options.log_bg_color
+        bg_rgb = self.bg_color or options.internal_log_bg_color
 
-        # Check if this is a user stream (clear/translucent background)
+        # Determine opacity: explicit > user_stream default > internal default
+        if self.bg_opacity is not None:
+            opacity = self.bg_opacity
+        elif getattr(self, "_is_user_stream", False):
+            opacity = options.user_log_opacity
+        else:
+            opacity = 0.12
+
         is_user_stream = getattr(self, "_is_user_stream", False)
-        opacity = options.user_log_opacity if is_user_stream else 0.12
-
         bg_color = f"rgba({bg_rgb[0]}, {bg_rgb[1]}, {bg_rgb[2]}, {opacity})"
         border_color = f"rgba({bg_rgb[0]}, {bg_rgb[1]}, {bg_rgb[2]}, {0.35 if not is_user_stream else 0.15})"
         accent_color = f"rgba({bg_rgb[0]}, {bg_rgb[1]}, {bg_rgb[2]}, {0.75 if not is_user_stream else 0.25})"
@@ -596,7 +608,11 @@ class LogStream:
             border-radius: 6px;
             font-size: 0.9em;
             line-height: 1.5;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;">
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
+            box-sizing: border-box;
+            max-width: 100%;
+            overflow-x: auto;
+            word-wrap: break-word;">
 
 {title_line}{content}
 
@@ -661,13 +677,17 @@ class LogStream:
 def log_stream(
     title: Optional[str] = None,
     bg_color: Optional[tuple[int, int, int]] = None,
+    bg_opacity: Optional[float] = None,
 ) -> LogStream:
     """
     Create a log stream context for collecting logs into one container.
 
     Args:
         title: Optional title for the log container
-        bg_color: Optional background color override (RGB tuple)
+        bg_color: Optional background color override (RGB tuple).
+            Defaults to user_log_bg_color (gray).
+        bg_opacity: Optional background opacity (0.0-1.0).
+            Defaults to user_log_opacity.
 
     Returns:
         LogStream context manager
@@ -678,8 +698,20 @@ def log_stream(
         ...     log_info("Transforming...")
         ...     log_info("Complete!")
         # All logs appear in a single styled box
+
+        >>> # Custom color and opacity
+        >>> with log_stream(title="Ocean", bg_color=(2, 62, 138), bg_opacity=0.2):
+        ...     log_info("Deep blue theme")
     """
-    return LogStream(title=title, bg_color=bg_color)
+    # Import here to avoid circular dependency
+    from ..config import options
+
+    # Default to user color (gray) for user-created streams
+    effective_bg_color = bg_color if bg_color is not None else options.user_log_bg_color
+    stream = LogStream(title=title, bg_color=effective_bg_color, bg_opacity=bg_opacity)
+    # Mark as user stream for consistent opacity handling
+    stream._is_user_stream = True  # type: ignore[attr-defined]
+    return stream
 
 
 # =============================================================================
@@ -1059,7 +1091,7 @@ def _get_or_create_internal_stream() -> Optional["LogStream"]:
     if _internal_stream is None:
         _internal_stream = LogStream(
             title="kanoa",
-            bg_color=options.log_bg_color,  # Lavender by default
+            bg_color=options.internal_log_bg_color,  # Lavender by default
             auto_display=True,
         )
 

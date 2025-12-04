@@ -2623,6 +2623,38 @@ PDFs typically contain:
 
 ---
 
+## Deferred Features
+
+Features explicitly considered and deferred to maintain focus on core mission.
+
+### Log Stream Reuse by ID/Handle
+
+**Status**: Won't implement (out of scope)
+**Date**: 2024-12-03
+
+**Context**: The `log_stream()` context manager creates visual containers for
+grouping verbose logs in Jupyter notebooks. Each `with log_stream()` block
+creates a separate container, even when using the same `title=`.
+
+**Feature Request**: Allow multiple `with log_stream()` blocks to append to
+the same container by reusing a handle or ID.
+
+**Decision**: Deferred indefinitely. Rationale:
+
+1. **Scope creep** — kanoa's mission is AI-powered analytics interpretation,
+   not general-purpose logging infrastructure.
+2. **Complexity** — Stream reuse requires state management (registry, cleanup,
+   cross-cell persistence) that adds maintenance burden.
+3. **Existing solutions** — Users needing advanced log streaming should use
+   dedicated libraries (loguru, structlog, rich).
+4. **Current behavior is sufficient** — The primary use case (grouping verbose
+   logs during `interpret()` calls) works well with the current design.
+
+**If revisited**: Factor logging utilities into a separate lightweight package
+(`kanoa-logging` or similar) rather than expanding kanoa's core.
+
+---
+
 ## Changelog
 
 ### v1.3 (2025-12-01)

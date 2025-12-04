@@ -27,7 +27,7 @@ class Options:
             "styled": Notebook-aware styled markdown boxes (default)
             "plain": Plain text output for all environments
 
-        log_bg_color (Tuple[int, int, int]): RGB color for internal log background.
+        internal_log_bg_color (Tuple[int, int, int]): RGB color for internal log background.
             Default: (186, 164, 217) - Lavender
             Used by kanoa internals (ilog_* functions).
 
@@ -67,7 +67,7 @@ class Options:
         # Display Options
         self.display_result: bool = True
         self.log_style: str = "styled"  # "styled" or "plain"
-        self.log_bg_color: Tuple[int, int, int] = (186, 164, 217)  # Lavender (internal)
+        self.internal_log_bg_color: Tuple[int, int, int] = (186, 164, 217)  # Lavender
         self.user_log_bg_color: Tuple[int, int, int] = (128, 128, 128)  # Gray (user)
         self.user_log_opacity: float = 0.04  # Very translucent for user logs
         self.backend_colors: Dict[str, Tuple[int, int, int]] = {}
