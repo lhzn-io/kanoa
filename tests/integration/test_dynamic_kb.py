@@ -39,6 +39,10 @@ class MockBackend:
             text="Mock interpretation", backend="mock", usage=usage, metadata={}
         )
 
+    def encode_kb(self, kb_manager):
+        """Encode knowledge base content for this backend."""
+        return kb_manager.get_context() if kb_manager else None
+
     def get_cost_summary(self):
         return {
             "backend": self.backend_name,

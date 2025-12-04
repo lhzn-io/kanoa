@@ -130,6 +130,17 @@ class KnowledgeBaseManager:
 
         return "\n\n".join(content)
 
+    def get_context(self) -> str:
+        """
+        Get knowledge base context as a string.
+
+        Alias for get_text_content() for backward compatibility.
+
+        Returns:
+            Knowledge base content as a string.
+        """
+        return self.get_text_content()
+
     def get_pdf_paths(self) -> list[Path]:
         """Get list of PDF file paths."""
         categories = self._categorize_files()
