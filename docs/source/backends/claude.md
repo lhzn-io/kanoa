@@ -58,7 +58,7 @@ The Claude backend supports **Text Knowledge Bases**. You can load text files or
 
 ```python
 # Load a text-based knowledge base
-interpreter = interpreter.with_kb(kb_path="data/docs", kb_type="text")
+interpreter = interpreter.with_kb(kb_path="data/docs")  # Auto-detects file types
 ```
 
 ## Cost Tracking

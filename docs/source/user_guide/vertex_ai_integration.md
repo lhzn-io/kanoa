@@ -56,7 +56,6 @@ class YourProjectInterpreter:
         self.interpreter = AnalyticsInterpreter(
             backend=backend,
             kb_path=kb_path,
-            kb_type='auto',  # Auto-detects PDFs vs markdown
             **kwargs
         )
 
@@ -167,7 +166,6 @@ The default approach loads your entire knowledge base into the model's context w
 interpreter = AnalyticsInterpreter(
     backend='gemini',
     kb_path='./docs',
-    kb_type='auto',
     enable_caching=True  # Reuse KB across calls
 )
 ```
@@ -606,7 +604,6 @@ class MarineBioInterpreter:
             self.interpreter = AnalyticsInterpreter(
                 backend='gemini',
                 kb_path=kb_path,
-                kb_type='auto',
                 enable_caching=True,
                 track_costs=True
             )
@@ -887,7 +884,6 @@ export GOOGLE_API_KEY='your-key'
 Either:
 
 - Switch to Gemini: `backend='gemini'`
-- Or use text-only KB: `kb_type='text'`
 
 ### High costs
 
@@ -915,7 +911,6 @@ class MarineBioInterpreter:
         self.interpreter = AnalyticsInterpreter(
             backend=backend,
             kb_path=kb_path,
-            kb_type='auto',
             enable_caching=True,
             track_costs=True,
             **kwargs

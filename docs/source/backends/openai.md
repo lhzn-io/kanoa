@@ -75,10 +75,9 @@ The OpenAI backend supports both **Text** and **PDF** knowledge bases:
 
 ```python
 # Text knowledge base
-interpreter = interpreter.with_kb(kb_path="data/docs", kb_type="text")
+interpreter = interpreter.with_kb(kb_path="data/docs")  # Auto-detects file types
 
 # PDF knowledge base
-interpreter = interpreter.with_kb(kb_path="data/pdfs", kb_type="pdf")
 ```
 
 ## Cost Tracking

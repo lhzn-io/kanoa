@@ -4,9 +4,7 @@ from typing import Any, Dict, Literal, Optional, Tuple, Type, Union
 import matplotlib.pyplot as plt
 
 from ..backends.base import BaseBackend
-from ..knowledge_base.base import BaseKnowledgeBase
-from ..knowledge_base.pdf_kb import PDFKnowledgeBase
-from ..knowledge_base.text_kb import TextKnowledgeBase
+from ..knowledge_base.manager import KnowledgeBaseManager
 from .types import InterpretationResult
 
 # Canonical list of supported backends (in recommended order: open-source first)
@@ -64,7 +62,6 @@ class AnalyticsInterpreter:
         backend: BackendType = "gemini",
         kb_path: Optional[Union[str, Path]] = None,
         kb_content: Optional[str] = None,
-        kb_type: Literal["text", "pdf", "auto"] = "auto",
         api_key: Optional[str] = None,
         max_tokens: int = 3000,
         enable_caching: bool = True,
@@ -78,7 +75,6 @@ class AnalyticsInterpreter:
             backend: AI backend to use ('vllm', 'gemini', 'claude', 'openai')
             kb_path: Path to knowledge base directory
             kb_content: Pre-loaded knowledge base string
-            kb_type: Knowledge base type ('text', 'pdf', 'auto')
             api_key: API key for cloud backends (or use env vars)
             max_tokens: Maximum tokens for response
             enable_caching: Enable context caching for cost savings
@@ -98,52 +94,19 @@ class AnalyticsInterpreter:
             max_tokens=max_tokens,
             enable_caching=enable_caching,
             **backend_kwargs,
-        )  # Initialize knowledge base
-        self.kb: Optional[BaseKnowledgeBase] = None
+        )
+        # Initialize knowledge base
+        self.kb: Optional[KnowledgeBaseManager] = None
         if kb_path or kb_content:
-            self.kb = self._initialize_knowledge_base(
-                kb_path=kb_path, kb_content=kb_content, kb_type=kb_type, backend=backend
-            )
+            self.kb = KnowledgeBaseManager(kb_path=kb_path, kb_content=kb_content)
 
         # Cost tracking - delegated to backend
         self.track_costs = track_costs
-
-    def _initialize_knowledge_base(
-        self,
-        kb_path: Optional[Union[str, Path]],
-        kb_content: Optional[str],
-        kb_type: str,
-        backend: str,
-    ) -> BaseKnowledgeBase:
-        """Initialize appropriate knowledge base type."""
-        # Auto-detect KB type
-        if kb_type == "auto":
-            if kb_path:
-                kb_path = Path(kb_path)
-                has_pdfs = any(kb_path.glob("**/*.pdf"))
-                kb_type = "pdf" if has_pdfs else "text"
-            else:
-                kb_type = "text"
-
-        # Create KB instance
-        if kb_type == "pdf":
-            # PDF KB requires Gemini backend
-            if "gemini" not in backend.lower():
-                raise ValueError(
-                    "PDF knowledge base requires Gemini backend "
-                    "(for native vision). "
-                    f"Current backend: {backend}. "
-                    "Use kb_type='text' or switch to 'gemini'."
-                )
-            return PDFKnowledgeBase(kb_path=kb_path, backend=self.backend)
-        else:
-            return TextKnowledgeBase(kb_path=kb_path, kb_content=kb_content)
 
     def with_kb(
         self,
         kb_path: Optional[Union[str, Path]] = None,
         kb_content: Optional[str] = None,
-        kb_type: Literal["text", "pdf", "auto"] = "auto",
     ) -> "AnalyticsInterpreter":
         """
         Create a new interpreter instance with a specific knowledge base,
@@ -168,11 +131,8 @@ class AnalyticsInterpreter:
 
         # Initialize the new KB (Replaces existing)
         if kb_path or kb_content:
-            new_interpreter.kb = self._initialize_knowledge_base(
-                kb_path=kb_path,
-                kb_content=kb_content,
-                kb_type=kb_type,
-                backend=self.backend_name,
+            new_interpreter.kb = KnowledgeBaseManager(
+                kb_path=kb_path, kb_content=kb_content
             )
         else:
             new_interpreter.kb = None
@@ -225,7 +185,7 @@ class AnalyticsInterpreter:
         # Get knowledge base context
         kb_context = None
         if include_kb and self.kb:
-            kb_context = self.kb.get_context()
+            kb_context = self.backend.encode_kb(self.kb)
 
         # Call backend (logs will go to active stream or handlers)
         result = self.backend.interpret(
@@ -294,12 +254,12 @@ class AnalyticsInterpreter:
         """Get summary of token usage and costs."""
         return self.backend.get_cost_summary()
 
-    def get_kb(self) -> BaseKnowledgeBase:
+    def get_kb(self) -> KnowledgeBaseManager:
         """
         Get the active knowledge base.
 
         Returns:
-            The active KnowledgeBase instance.
+            The active KnowledgeBaseManager instance.
 
         Raises:
             RuntimeError: If no knowledge base has been configured.
@@ -323,9 +283,9 @@ class AnalyticsInterpreter:
         Returns:
             TokenCheckResult or None if not supported/empty.
         """
-        # Ensure KB is loaded/uploaded
+        # Ensure KB is encoded via backend
         if self.kb:
-            self.kb.get_context()
+            self.backend.encode_kb(self.kb)
 
         return self.backend.check_kb_cost()
 
@@ -345,7 +305,7 @@ class AnalyticsInterpreter:
 
         kb_context = None
         if self.kb:
-            kb_context = self.kb.get_context()
+            kb_context = self.backend.encode_kb(self.kb)
 
         if not kb_context:
             return {"exists": False, "reason": "No knowledge base loaded"}

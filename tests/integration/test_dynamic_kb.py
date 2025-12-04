@@ -39,6 +39,10 @@ class MockBackend:
             text="Mock interpretation", backend="mock", usage=usage, metadata={}
         )
 
+    def encode_kb(self, kb_manager):
+        """Encode knowledge base content for this backend."""
+        return kb_manager.get_text_content() if kb_manager else None
+
     def get_cost_summary(self):
         return {
             "backend": self.backend_name,
@@ -72,7 +76,7 @@ def test_with_kb_creates_new_instance(mock_interpreter):
     assert interp1 is not interp2
     assert interp1.kb is None
     assert interp2.kb is not None
-    assert interp2.kb.get_context() == "KB Content"
+    assert interp2.kb.get_text_content() == "KB Content"
 
 
 def test_with_kb_shares_backend_state(mock_interpreter):
@@ -109,8 +113,8 @@ def test_with_kb_replacement(mock_interpreter):
     interp1 = mock_interpreter.with_kb(kb_content="KB 1")
     interp2 = interp1.with_kb(kb_content="KB 2")
 
-    assert interp2.kb.get_context() == "KB 2"
-    assert interp1.kb.get_context() == "KB 1"  # Original untouched
+    assert interp2.kb.get_text_content() == "KB 2"
+    assert interp1.kb.get_text_content() == "KB 1"  # Original untouched
 
 
 def test_kb_context_passing(mock_interpreter):

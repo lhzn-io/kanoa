@@ -306,6 +306,39 @@ class GeminiBackend(BaseBackend):
         pricing = get_model_pricing("gemini", self.model)
         return guard.check(pdf_contents, pricing=pricing)
 
+    def encode_kb(self, kb_manager: Any) -> Optional[str]:
+        """
+        Encode knowledge base for Gemini backend.
+
+        Strategy:
+        - PDFs: Upload via native File API (best quality)
+        - Text: Concatenate into prompt
+        - Images: Upload via File API
+
+        Args:
+            kb_manager: KnowledgeBaseManager instance
+
+        Returns:
+            Text context string for the prompt
+        """
+        # Import here to avoid circular dependency
+        from ..knowledge_base.manager import KnowledgeBaseManager
+
+        if not isinstance(kb_manager, KnowledgeBaseManager):
+            return None
+
+        # Get text content
+        text_content = kb_manager.get_text_content()
+
+        # Upload PDFs if present
+        pdf_paths = kb_manager.get_pdf_paths()
+        if pdf_paths:
+            self.load_pdfs(pdf_paths)
+
+        # For now, return text content
+        # PDFs are handled separately via uploaded_pdfs
+        return text_content or None
+
     def _compute_cache_hash(self, kb_context: str) -> str:
         """Compute deterministic hash for KB context + uploaded PDFs."""
         # Start with KB context (text)

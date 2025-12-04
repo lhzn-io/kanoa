@@ -144,9 +144,7 @@ The sine wave represents simulated dive depth over time.
         )
 
         # Initialize interpreter with KB
-        kb_interpreter = AnalyticsInterpreter(
-            backend="claude", kb_path=str(kb_dir), kb_type="text"
-        )
+        kb_interpreter = AnalyticsInterpreter(backend="claude", kb_path=str(kb_dir))
 
         # Create test figure
         x = np.linspace(0, 10, 100)
