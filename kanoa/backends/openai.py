@@ -265,3 +265,38 @@ Use markdown formatting. Be concise but technically precise.
         return UsageInfo(
             input_tokens=input_tokens, output_tokens=output_tokens, cost=cost
         )
+
+    def encode_kb(self, kb_manager: Any) -> Optional[str]:
+        """
+        Encode knowledge base for OpenAI/vLLM backend.
+
+        Strategy:
+        - Text: Concatenate into prompt
+        - PDFs: Currently text only (conversion can be added)
+        - Images: Currently text only (can be added via base64)
+
+        Args:
+            kb_manager: KnowledgeBaseManager instance
+
+        Returns:
+            Text context string for the prompt
+        """
+        # Import here to avoid circular dependency
+        from ..knowledge_base.manager import KnowledgeBaseManager
+
+        if not isinstance(kb_manager, KnowledgeBaseManager):
+            return None
+
+        # Get text content
+        text_content = kb_manager.get_text_content()
+
+        # Check for PDFs - warn user for now
+        if kb_manager.has_pdfs():
+            ilog_warning(
+                "PDFs detected in knowledge base. "
+                "PDF support for OpenAI/vLLM backends is coming in a future update. "
+                "Text files will be used for now.",
+                source="kanoa.backends.openai",
+            )
+
+        return text_content or None
