@@ -77,7 +77,7 @@ The vLLM backend supports **Text Knowledge Bases**:
 
 ```python
 # Load a text-based knowledge base
-interpreter = interpreter.with_kb(kb_path="data/docs", kb_type="text")
+interpreter = interpreter.with_kb(kb_path="data/docs")  # Auto-detects file types
 ```
 
 ## Cost Tracking
