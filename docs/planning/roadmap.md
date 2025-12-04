@@ -170,8 +170,28 @@ graph TD
 
 ### Future Enhancements
 
-- **Multi-Turn Memory**: Currently, the system is stateless (single-turn analysis). Future versions will include a `ChatSession` class to support multi-turn conversations and memory retention across requests.
-- **Structured Logging**: Evaluate `structlog` to replace the current custom logging implementation for better observability and structured output handling.
+#### Phase 1: Completed
+
+- [x] Multi-backend support (Gemini, Claude, OpenAI/vLLM)
+- [x] Knowledge base integration (text, PDF)
+- [x] Cost tracking and optimization
+- [x] Documentation reorganization
+
+#### Phase 2: In Progress
+
+- [ ] **Ollama Integration** (Issue #6)
+  - Test existing OpenAI backend compatibility with Ollama's API
+  - Create example notebooks demonstrating Ollama usage
+  - Document setup and model selection for Ollama
+  - Target models: Llama 3.2 Vision 11B, Qwen3-VL, LLaVA
+  - Benefits: Easier local setup, no NVIDIA requirement (CPU/Apple Silicon support)
+
+#### Phase 3: Future
+
+- [ ] **Multi-Turn Memory**: `ChatSession` class for conversation history
+- [ ] **Structured Logging**: Migrate to `structlog` for better observability
+- [ ] **Audio/Video Knowledge Base**: Extend beyond PDF/text
+- [ ] **Batch Processing**: Interpret multiple figures in one call
 
 ---
 
