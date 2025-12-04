@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://kanoa.docs.lhzn.io
+    about: Check the documentation for usage guides and API reference
+  - name: Discussions
+    url: https://github.com/lhzn-io/kanoa/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: Security Vulnerability
+    url: https://github.com/lhzn-io/kanoa/security/policy
+    about: Report security vulnerabilities privately

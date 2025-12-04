@@ -1,0 +1,116 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "ENH: "
+labels: ["enhancement", "Needs Triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please fill out the form below.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: I'm frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like
+      placeholder: I'd like kanoa to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of kanoa does this feature relate to?
+      options:
+        - Core Interpreter
+        - Backends (gemini/claude/openai/vllm)
+        - Knowledge Base
+        - Cost Tracking
+        - Logging
+        - CLI
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Backend-Specific?
+      description: Is this feature specific to a particular backend?
+      multiple: true
+      options:
+        - gemini
+        - claude
+        - openai
+        - vllm
+        - All backends
+        - Not backend-specific
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example Usage
+      description: Show how you would like to use this feature (pseudocode is fine)
+      placeholder: |
+        ```python
+        from kanoa import AnalyticsInterpreter
+
+        # Your proposed API
+        ```
+      render: python
+    validations:
+      required: false
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      description: How important is this feature to you?
+      options:
+        - Critical - Blocking my use case
+        - High - Would significantly improve my workflow
+        - Medium - Nice to have
+        - Low - Minor convenience
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or links about the feature request here
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues to ensure this feature hasn't been requested
+          required: true
+        - label: I have checked the documentation to ensure this feature doesn't already exist
+          required: true
+        - label: I am willing to help implement this feature (optional but appreciated!)
+          required: false
