@@ -3,6 +3,7 @@
 > **In-notebook AI interpretation of data science outputs, grounded in your project's knowledge base.**
 
 [![Tests](https://github.com/lhzn-io/kanoa/actions/workflows/tests.yml/badge.svg)](https://github.com/lhzn-io/kanoa/actions/workflows/tests.yml)
+[![Docs](https://img.shields.io/badge/docs-kanoa.docs.lhzn.io-blue)](https://kanoa.docs.lhzn.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
@@ -184,7 +185,10 @@ Pricing sources:
 
 ## Documentation
 
-Full API documentation is available and built using Sphinx:
+📖 **[Full documentation](https://kanoa.docs.lhzn.io)** — User guides, API reference, and examples.
+
+<details>
+<summary>Building docs locally</summary>
 
 ```bash
 cd docs
@@ -194,7 +198,7 @@ make html
 
 Then open `docs/build/html/index.html` in your browser.
 
-The API reference is auto-generated from docstrings in the source code.
+</details>
 
 ## License
 
