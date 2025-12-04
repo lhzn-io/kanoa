@@ -32,6 +32,10 @@
     "claude-sonnet-4-5-20251022": {
       "input_price": 3.00,
       "output_price": 15.00
+    },
+    "claude-haiku-4-5-20251022": {
+      "input_price": 0.80,
+      "output_price": 4.00
     }
   },
   "openai": {

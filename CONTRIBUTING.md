@@ -295,6 +295,8 @@ For detailed documentation, see [Cost Management](docs/source/user_guide/cost_ma
 
 We use `pytest` for testing. The test suite is divided into **Unit Tests** (fast, mocked) and **Integration Tests** (slower, hit live APIs).
 
+See [Testing Guide](docs/source/developer_guide/testing_philosophy.md) for philosophy, cost-awareness, and detailed practices.
+
 ### 1. Unit Tests (Required)
 
 Run these before every commit. They mock all external API calls and should complete in seconds.
@@ -313,7 +315,7 @@ Run these to verify end-to-end functionality with live APIs (Gemini, Claude). Th
 pytest -m integration
 ```
 
-**Note**: Integration tests use the "Golden Set" strategy — running a small, fixed set of prompts to verify the pipeline without incurring high costs.
+⚠️ **Cost Awareness**: Integration tests cost approximately **$0.07 per full run**. They include automatic rate limiting (5 min between runs, 20 runs/day max) to prevent accidental cost overruns.
 
 ### 3. Full Suite
 

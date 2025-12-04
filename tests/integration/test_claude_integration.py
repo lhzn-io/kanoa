@@ -39,13 +39,15 @@ class TestClaudeIntegration:
     @pytest.fixture(scope="class")
     def interpreter(self) -> Any:
         """
-        Initialize Claude backend.
+        Initialize Claude backend with Haiku model for cost-effective testing.
 
         Requires ANTHROPIC_API_KEY environment variable.
         Get your key at: https://console.anthropic.com/
         """
         try:
-            return AnalyticsInterpreter(backend="claude")
+            return AnalyticsInterpreter(
+                backend="claude", model="claude-haiku-4-5-20251022"
+            )
         except Exception as e:
             pytest.skip(
                 f"Could not initialize Claude backend: {e}\n"
@@ -143,8 +145,13 @@ The sine wave represents simulated dive depth over time.
 """
         )
 
-        # Initialize interpreter with KB
-        kb_interpreter = AnalyticsInterpreter(backend="claude", kb_path=str(kb_dir))
+        # Initialize interpreter with KB (using Haiku for cost savings)
+        kb_interpreter = AnalyticsInterpreter(
+            backend="claude",
+            model="claude-haiku-4-5-20251022",
+            kb_path=str(kb_dir),
+            kb_type="text",
+        )
 
         # Create test figure
         x = np.linspace(0, 10, 100)
