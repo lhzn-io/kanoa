@@ -13,7 +13,7 @@
 
 | Backend | Best For | Getting Started |
 | :--- | :--- | :--- |
-| `vllm` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3 via vLLM | [Guide](./docs/source/user_guide/getting_started_vllm.md) |
+| `vllm` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3 12B via vLLM | [Guide](./docs/source/user_guide/getting_started_vllm.md) |
 | `gemini` | Free tier, native PDF support, 1M context, caching | [Guide](./docs/source/user_guide/getting_started_gemini.md) |
 | `claude` | Strong reasoning, vision support | [Guide](./docs/source/user_guide/getting_started_claude.md) |
 | `openai` | GPT models, Azure OpenAI | [Guide](./docs/source/user_guide/backends.md#openai) |
@@ -136,14 +136,22 @@ print(result.text)
 ### Local Inference with vLLM
 
 Connect to any model hosted via vLLM's OpenAI-compatible API. We've tested with
-[Molmo](https://molmo.allenai.org/) from AI2 — a fully-open multimodal model.
-Gemma 3 support coming soon. See `kanoa-mlops` for our local hosting setup.
+[Molmo](https://molmo.allenai.org/) from AI2 and Google's Gemma 3 12B — fully-open multimodal models.
+See `kanoa-mlops` for our local hosting setup.
 
 ```python
+# Molmo 7B
 interpreter = AnalyticsInterpreter(
     backend='openai',
     api_base='http://localhost:8000/v1',
     model='allenai/Molmo-7B-D-0924'
+)
+
+# Gemma 3 12B (recommended for 16GB VRAM - 5x faster than 4B)
+interpreter = AnalyticsInterpreter(
+    backend='openai',
+    api_base='http://localhost:8000/v1',
+    model='google/gemma-3-12b-it'
 )
 
 result = interpreter.interpret(

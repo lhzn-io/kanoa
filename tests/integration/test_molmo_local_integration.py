@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,21 +16,37 @@ if (config_dir / ".env").exists():
     load_dotenv(config_dir / ".env")
 
 
-def has_vllm_server() -> bool:
-    """Check if vLLM server is running on localhost:8000."""
+def get_molmo_model() -> Optional[str]:
+    """
+    Check vLLM server and return the Molmo model name if available.
+
+    Returns:
+        Model name if a Molmo model is found, None otherwise.
+    """
+    import json
     import urllib.error
     import urllib.request
 
     try:
-        # Try to connect to the vLLM server
         with urllib.request.urlopen(
             "http://localhost:8000/v1/models", timeout=2
         ) as response:
-            # Explicitly check status to satisfy mypy
-            status_code: int = response.status
-            return status_code == 200
-    except (urllib.error.URLError, TimeoutError, OSError):
-        return False
+            data = json.loads(response.read().decode())
+            models: list[str] = [str(m["id"]) for m in data.get("data", [])]
+
+            # Look for any Molmo model
+            for model in models:
+                if "molmo" in model.lower():
+                    return model
+
+            return None
+    except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError):
+        return None
+
+
+def has_vllm_server() -> bool:
+    """Check if vLLM server is running on localhost:8000."""
+    return get_molmo_model() is not None
 
 
 # Module-level skip condition
@@ -40,7 +56,7 @@ pytestmark = [
     pytest.mark.skipif(
         not has_vllm_server(),
         reason=(
-            "vLLM server not available on http://localhost:8000. "
+            "Molmo vLLM server not available on http://localhost:8000. "
             "Start server with: vllm serve allenai/Molmo-7B-D-0924"
         ),
     ),
@@ -53,15 +69,25 @@ class TestMolmoIntegration:
     @pytest.fixture(scope="class")
     def interpreter(self) -> Any:
         """
-        Initialize Molmo backend via vLLM.
+        Initialize Molmo backend via local vLLM.
 
         Requires vLLM server running on http://localhost:8000.
+        Automatically detects which Molmo model is available.
         """
+        model_name = get_molmo_model()
+        if not model_name:
+            pytest.skip(
+                "No Molmo model found on vLLM server at http://localhost:8000\n"
+                "Start server with: vllm serve allenai/Molmo-7B-D-0924"
+            )
+
+        print(f"\n[INFO] Using model: {model_name}")
+
         try:
             return AnalyticsInterpreter(
                 backend="openai",
                 api_base="http://localhost:8000/v1",
-                model="allenai/Molmo-7B-D-0924",
+                model=model_name,
                 api_key="EMPTY",  # pragma: allowlist secret
             )
         except Exception as e:

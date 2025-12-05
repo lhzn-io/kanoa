@@ -133,10 +133,8 @@ class TestGeminiIntegration:
             raise
 
         # 3. Assertions (Golden Set check)
-        print(
-            f"🎓 {result.metadata.get('model', 'AI')}: "
-            f"{result.text[:50].replace(chr(10), ' ')}..."
-        )
+        model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
+        print(f"🎓 {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
         assert result.text is not None
         assert len(result.text) > 50
@@ -182,10 +180,8 @@ class TestGeminiIntegration:
                 pytest.skip(f"Gemini auth failed on API call: {error_msg}")
             raise
 
-        print(
-            f"🎓 {result.metadata.get('model', 'AI')}: "
-            f"{result.text[:50].replace(chr(10), ' ')}..."
-        )
+        model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
+        print(f"🎓 {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
         assert "increase" in result.text.lower() or "growth" in result.text.lower()
         assert "Q3" in result.text

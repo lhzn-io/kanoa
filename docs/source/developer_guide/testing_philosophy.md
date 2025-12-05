@@ -11,9 +11,9 @@ Integration tests with real APIs catch issues that mocks miss: authentication, r
 
 ### Cost-Awareness
 
-Testing shouldn't break the bank. ~60% of integration tests use free-tier models, the rest use low-cost options. Full suite: **~$0.07/run**.
+Testing shouldn't break the bank. ~70% of integration tests use free-tier models, the rest use low-cost options. Full suite: **~$0.07/run**.
 
-- Free-first: `gemini-2.5-flash`, local Molmo, mocked tests
+- Free-first: `gemini-2.5-flash`, local Molmo, local Gemma-3-4B, mocked tests
 - Low-cost fallback: `claude-haiku-4-5-20251022` ($0.80/$4.00 per million tokens)
 - Rate limiting: 5 min between runs, 20/day max
 - Cost tracking: `CostTracker` reports costs at session end
@@ -41,7 +41,8 @@ pytest -m integration --force-integration      # Bypass rate limits
 | Test | Model | Cost |
 | :--- | :--- | :--- |
 | `test_gemini_integration.py` | gemini-2.5-flash | FREE |
-| `test_molmo_egpu_integration.py` | Molmo-7B (local) | FREE |
+| `test_molmo_local_integration.py` | Molmo-7B (local) | FREE |
+| `test_gemma3_local_integration.py` | Gemma-3-4B (local) | FREE |
 | `test_dynamic_kb.py` | Mocked | FREE |
 | `test_claude_integration.py` | claude-haiku-4-5 | $0.008 |
 | `test_gemini_caching_integration.py` | gemini-3-pro-preview | $0.038 |
@@ -51,7 +52,7 @@ Caching tests use paid tier to validate core feature (75% cost savings in produc
 
 ## Adding Integration Tests
 
-1. **Choose cheapest model**: gemini-2.5-flash (free), claude-haiku-4-5 (low-cost), or local Molmo
+1. **Choose cheapest model**: gemini-2.5-flash (free), claude-haiku-4-5 (low-cost), local Molmo, or local Gemma-3-4B
 2. **Add cost tracking**: `get_cost_tracker().record("test_name", result.usage.cost)`
 3. **Keep data minimal**: Programmatic test data, not large files
 4. **Update cost table** if adding new suite

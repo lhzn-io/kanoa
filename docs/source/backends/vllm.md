@@ -28,8 +28,29 @@ These models have been verified working with specific hardware configurations:
 | Model | Parameters | VRAM Required | Hardware Tested | Vision Support | Status |
 |-------|------------|---------------|-----------------|----------------|--------|
 | **Molmo 7B-D** (Allen AI) | 7B | 12GB (4-bit) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [✓] Verified |
-| **Gemma 3 12B** (Google) | 12B | 16GB (4-bit) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [~] Testing |
+| **Gemma 3 4B** (Google) | 4B | 8GB (4-bit) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [✓] Verified (2.5 tok/s) |
+| **Gemma 3 12B** (Google) | 12B | 14GB (4-bit + FP8 KV) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [✓] Verified (12.9 tok/s) |
 | **Gemma 3 12B** (Google) | 12B | 24GB (fp16) | GCP L4 GPU (24GB) | ✓ | [ ] Planned |
+
+#### Performance Benchmarks (RTX 5080 16GB)
+
+**Gemma 3 12B vs 4B** — Surprisingly, the 12B model is **5.2x faster** on average:
+
+| Metric | Gemma 3 4B | Gemma 3 12B | Speedup |
+|--------|------------|-------------|----------|
+| **Avg Throughput** | 2.5 tok/s | 12.9 tok/s | **5.2x** |
+| **Vision Tasks** | 0.8-1.5 tok/s | 5.1-23.8 tok/s | **10-30x** |
+| **Text Tasks** | 3.3-7.1 tok/s | 20.6-27.3 tok/s | **4-6x** |
+| **Total Duration (7 tests)** | 343.9s | 62.4s | **5.5x** |
+
+**Key Findings**:
+
+- 12B is dramatically faster despite larger size (better vLLM optimization)
+- Vision tasks benefit most: 3-30x faster on complex charts
+- Sub-second latency for short responses on 12B
+- Both fit in 16GB VRAM with 4-bit quantization + FP8 KV cache
+
+**Recommendation**: Use Gemma 3 12B over 4B if you have 16GB VRAM — it's both faster and more capable.
 
 ### Theoretically Supported
 
@@ -105,7 +126,7 @@ interpreter = AnalyticsInterpreter(
 
 ### Multiple Model Endpoints
 
-Switch between different local models:
+Switch between different local models by restarting the vLLM server:
 
 ```python
 # Molmo for vision tasks
@@ -115,11 +136,11 @@ molmo = AnalyticsInterpreter(
     model="allenai/Molmo-7B-D-0924"
 )
 
-# Gemma for text reasoning
+# Gemma 3 4B for text reasoning (restart server with different model)
 gemma = AnalyticsInterpreter(
     backend="vllm",
-    api_base="http://localhost:8001/v1",
-    model="google/gemma-2-12b-it"
+    api_base="http://localhost:8000/v1",
+    model="google/gemma-3-4b-it"
 )
 ```
 

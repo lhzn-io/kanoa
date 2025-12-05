@@ -123,9 +123,9 @@ class TestGeminiCachePersistence:
             print(f"[Instance 2] Cache resolved: {cache_name2}")
 
             # VERIFICATION
-            assert cache_name1 == cache_name2, (
-                f"Cache names differ! {cache_name1} vs {cache_name2}"
-            )
+            assert (
+                cache_name1 == cache_name2
+            ), f"Cache names differ! {cache_name1} vs {cache_name2}"
 
             print("\n✅ SUCCESS: Cache reused across instances!")
 

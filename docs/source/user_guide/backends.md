@@ -187,14 +187,14 @@ interpreter = AnalyticsInterpreter(
 ```python
 from kanoa import AnalyticsInterpreter
 
-# Local vLLM (Molmo)
+# Local vLLM (Molmo 7B)
 interpreter = AnalyticsInterpreter(
     backend='vllm',
     api_base='http://localhost:8000/v1',
     model='allenai/Molmo-7B-D-0924'
 )
 
-# Local vLLM (Gemma 3)
+# Local vLLM (Gemma 3 12B)
 interpreter = AnalyticsInterpreter(
     backend='vllm',
     api_base='http://localhost:8000/v1',
