@@ -165,8 +165,11 @@ class TestGeminiIntegration:
         print("📐 TEST: Text Reasoning")
         print("=" * 50)
 
-        data = {"revenue": [100, 120, 150, 140], "quarter": ["Q1", "Q2", "Q3", "Q4"]}
-        context = "Quarterly revenue report"
+        data = {
+            "dissolved_oxygen": [6.5, 6.8, 7.2, 7.0],
+            "site": ["Site A", "Site B", "Site C", "Site D"],
+        }
+        context = "Water quality monitoring report"
         focus = "Identify the trend"
 
         print(f"\n🔍 User: {context} | {focus}")
@@ -184,7 +187,7 @@ class TestGeminiIntegration:
         print(f"🎓 {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
         assert "increase" in result.text.lower() or "growth" in result.text.lower()
-        assert "Q3" in result.text
+        assert "Site C" in result.text
 
         # Record and print cost
         cost = result.usage.cost

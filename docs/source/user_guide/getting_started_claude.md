@@ -36,28 +36,28 @@ export ANTHROPIC_API_KEY="your-api-key-here"
 ## Step 3: Your First Interpretation
 
 ```python
-import numpy as np
 import matplotlib.pyplot as plt
 from kanoa import AnalyticsInterpreter
 
-# Create some sample data
-categories = ['Q1', 'Q2', 'Q3', 'Q4']
-revenue = [120, 145, 132, 167]
+# Sample Data
+sites = ['Site A', 'Site B', 'Site C', 'Site D']
+dissolved_oxygen = [6.5, 6.8, 7.2, 7.0]
 
+# Create Bar Chart
 plt.figure(figsize=(10, 6))
-plt.bar(categories, revenue)
-plt.title("Quarterly Revenue")
-plt.xlabel("Quarter")
-plt.ylabel("Revenue ($K)")
+plt.bar(sites, dissolved_oxygen)
+plt.title("Dissolved Oxygen Levels")
+plt.xlabel("Monitoring Sites")
+plt.ylabel("DO (mg/L)")
 
 # Initialize the interpreter with Claude
 interpreter = AnalyticsInterpreter(backend='claude')
 
-# Interpret the plot
+# Use Kanoa to interpret the plot
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Quarterly revenue analysis for 2024",
-    focus="Identify trends and provide insights"
+    context="Water quality analysis for monitoring sites",
+    focus="Identify sites with optimal oxygen levels"
 )
 
 print(result.text)

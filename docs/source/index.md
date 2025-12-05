@@ -37,7 +37,7 @@ interpreter = AnalyticsInterpreter(backend='gemini')
 # Interpret
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Bacterial growth experiment"
+    context="Water quality analysis"
 )
 
 print(result.text)

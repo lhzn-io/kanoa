@@ -122,7 +122,7 @@ class AnalyticsInterpreter:
             interp = AnalyticsInterpreter()
 
             # Specialized interpreter (shares costs with base)
-            finance_interp = interp.with_kb("kbs/finance")
+            env_interp = interp.with_kb("kbs/environmental")
         """
         import copy
 

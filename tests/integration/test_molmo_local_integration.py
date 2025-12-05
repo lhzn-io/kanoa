@@ -150,8 +150,11 @@ class TestMolmoIntegration:
         print("[TEST] Text Reasoning - Molmo")
         print("=" * 50)
 
-        data = {"revenue": [100, 120, 150, 140], "quarter": ["Q1", "Q2", "Q3", "Q4"]}
-        context = "Quarterly revenue report"
+        data = {
+            "dissolved_oxygen": [6.5, 6.8, 7.2, 7.0],
+            "site": ["Site A", "Site B", "Site C", "Site D"],
+        }
+        context = "Water quality monitoring report"
         focus = "Identify the trend"
 
         print(f"\n[USER] {context} | {focus}")
