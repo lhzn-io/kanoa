@@ -27,12 +27,21 @@ These models have been verified working with specific hardware configurations:
 
 | Model | Parameters | VRAM Required | Hardware Tested | Vision Support | Status |
 |-------|------------|---------------|-----------------|----------------|--------|
-| **Molmo 7B-D** (Allen AI) | 7B | 12GB (4-bit) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [✓] Verified |
+| **Molmo 7B-D** (Allen AI) | 7B | 12GB (4-bit) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [✓] Verified (31.1 tok/s avg) |
 | **Gemma 3 4B** (Google) | 4B | 8GB (4-bit) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [✓] Verified (2.5 tok/s) |
 | **Gemma 3 12B** (Google) | 12B | 14GB (4-bit + FP8 KV) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [✓] Verified (10.3 tok/s avg) |
 | **Gemma 3 12B** (Google) | 12B | 24GB (fp16) | GCP L4 GPU (24GB) | ✓ | [ ] Planned |
 
 #### Performance Benchmarks (RTX 5080 16GB)
+
+**Molmo 7B Statistics** (3-run benchmark on RTX 5080 eGPU):
+
+| Test | Mean (tok/s) | StdDev | Min | Max | Notes |
+|------|--------------|--------|-----|-----|-------|
+| **Vision - Boardwalk Photo** | 29.3 | 5.8 | 24.0 | 35.5 | Stable ✓ |
+| **Vision - Complex Plot** | 32.7 | 6.3 | 25.7 | 38.0 | Stable ✓ |
+| **Vision - Data Interpretation** | 28.8 | 8.8 | 18.8 | 35.4 | Medium variance |
+| **Overall Average** | 31.1 | 5.9 | 24.2 | 34.5 | 19% CV |
 
 **Gemma 3 12B Statistics** (3-run benchmark on RTX 5080 eGPU):
 
@@ -47,21 +56,23 @@ These models have been verified working with specific hardware configurations:
 | **Multi-turn** | 0.2 | 0.2 | 0.1 | 0.3 | High variance ⚠️ |
 | **Overall Average** | 10.3 | 3.5 | 8.1 | 14.4 | 43% CV |
 
-**Gemma 3 12B vs 4B Comparison**:
+**Model Comparison**:
 
-| Metric | Gemma 3 4B | Gemma 3 12B | Speedup |
-|--------|------------|-------------|----------|
-| **Avg Throughput** | 2.5 tok/s | 10.3 tok/s | **4.1x** |
-| **Vision Tasks** | 0.8-1.5 tok/s | 2.0-14.4 tok/s | **3-10x** |
-| **Text Tasks** | 3.3-7.1 tok/s | 12.6-25.1 tok/s | **2-4x** |
-| **Stability** | Consistent | Variable | See notes |
+| Metric | Gemma 3 4B | Gemma 3 12B | Molmo 7B | Best For |
+|--------|------------|-------------|----------|----------|
+| **Avg Throughput** | 2.5 tok/s | 10.3 tok/s | **31.1 tok/s** | **Molmo 7B (3x faster)** |
+| **Vision Tasks** | 0.8-1.5 tok/s | 2.0-14.4 tok/s | **28.8-32.7 tok/s** | **Molmo 7B** |
+| **Text Tasks** | 3.3-7.1 tok/s | 12.6-25.1 tok/s | N/A | **Gemma 3 12B** |
+| **Stability (CV)** | ~20% | 34% | 19% | **Molmo 7B / Gemma 4B** |
+| **VRAM Required** | 8GB | 14GB | 12GB | **Gemma 4B (lowest)** |
 
 **Key Findings**:
 
-- **Vision tasks** (charts, photos): Most stable performance, 2-14 tok/s
-- **Text generation** (chat, code): Fast and relatively stable, 12-16 tok/s
-- **Complex reasoning**: High variance (0.8-4.9 tok/s) suggests KV cache eviction
-- **Overall**: 12B is 4x faster than 4B on average, but with notable variance
+- **Molmo 7B is 3x faster than Gemma 3 12B** for vision tasks with excellent stability
+- **Gemma 3 12B excels at text reasoning** and structured outputs (12-25 tok/s)
+- **Gemma 3 4B is the most efficient** for limited VRAM (8GB) but significantly slower
+- **Vision tasks**: Molmo dominates (29-33 tok/s) vs Gemma 3 12B (2-14 tok/s)
+- **Complex reasoning**: Gemma 3 12B shows high variance due to KV cache pressure
 
 **Performance Notes**:
 
@@ -70,7 +81,16 @@ These models have been verified working with specific hardware configurations:
 - Prefix caching helps with repeated queries but may evict under memory pressure
 - Both models fit in 16GB VRAM with 4-bit quantization + FP8 KV cache
 
-**Recommendation**: Use Gemma 3 12B over 4B if you have 16GB VRAM — it's significantly faster for most tasks. Monitor vLLM metrics (`/metrics` endpoint) to track cache performance if you experience latency spikes.
+**Recommendations**:
+
+- **Vision-focused workflows**: Use **Molmo 7B** (3x faster than Gemma, 31 tok/s average)
+- **Text reasoning & structured outputs**: Use **Gemma 3 12B** (strong for code, JSON, multi-turn)
+- **Limited VRAM (<12GB)**: Use **Gemma 3 4B** (fits in 8GB but slower)
+- **General use with 16GB VRAM**: Start with **Molmo 7B** for vision, switch to Gemma 3 12B for text-heavy tasks
+
+Monitor vLLM metrics (`/metrics` endpoint) to track cache performance if you experience latency spikes.
+
+For detailed technical analysis of these performance differences, see [Performance Analysis: Molmo vs Gemma](https://github.com/lhzn-io/kanoa-mlops/blob/main/docs/source/performance-analysis.md) in the kanoa-mlops repository.
 
 ### Theoretically Supported
 

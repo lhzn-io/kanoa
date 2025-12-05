@@ -1,6 +1,6 @@
 # Getting Started with Local Inference
 
-Run models locally with full control, privacy, and zero API costs. We recommend **Gemma 3 12B** for 16GB GPUs (5x faster than 4B) or **Molmo 7B** for vision-focused tasks. The `kanoa-mlops` repository provides infrastructure for local hosting.
+Run models locally with full control, privacy, and zero API costs. We recommend **Molmo 7B** for vision tasks (31 tok/s, 3x faster than Gemma) or **Gemma 3 12B** for text reasoning (10.3 tok/s, strong for code/JSON). The `kanoa-mlops` repository provides infrastructure for local hosting.
 
 ## Prerequisites
 
@@ -86,11 +86,15 @@ print(f"Tokens: {result.usage.total_tokens}, Cost: ${result.usage.cost:.4f}")
 
 | Model | VRAM Required | Hardware Tested | Avg Throughput |
 |-------|---------------|-----------------|----------------|
+| **Molmo 7B** | 12GB (4-bit) | NVIDIA RTX 5080 (16GB) | **31.1 tok/s** (±5.9) |
 | **Gemma 3 12B** | 14GB (4-bit + FP8 KV) | NVIDIA RTX 5080 (16GB) | **10.3 tok/s** (±3.5) |
 | **Gemma 3 4B** | 8GB (4-bit) | NVIDIA RTX 5080 (16GB) | 2.5 tok/s |
-| **Molmo 7B** | 12GB (4-bit) | NVIDIA RTX 5080 (16GB) | ~3-5 tok/s |
 
-**Recommendation**: For 16GB VRAM, use Gemma 3 12B — it's **4x faster** than 4B on average, with vision tasks reaching 13+ tok/s.
+**Recommendations**:
+
+- **Vision-focused**: Use **Molmo 7B** — it's **3x faster** than Gemma 3 12B (31 tok/s average)
+- **Text reasoning/code**: Use **Gemma 3 12B** — better for structured outputs, multi-turn chat
+- **Limited VRAM**: Use **Gemma 3 4B** — fits in 8GB but significantly slower
 
 ### Minimum Requirements
 
@@ -110,8 +114,8 @@ See [vLLM Backend Reference](../backends/vllm.md#tested-models) for the complete
 
 **For 16GB VRAM:**
 
-- ✅ **Gemma 3 12B** (`google/gemma-3-12b-it`) — Best overall, 5x faster than 4B
-- ✅ **Molmo 7B** (`allenai/Molmo-7B-D-0924`) — Strong vision capabilities
+- ✅ **Molmo 7B** (`allenai/Molmo-7B-D-0924`) — Best for vision, 31 tok/s average, 3x faster than Gemma
+- ✅ **Gemma 3 12B** (`google/gemma-3-12b-it`) — Best for text reasoning, 10.3 tok/s average
 
 **For <16GB VRAM:**
 
@@ -121,19 +125,21 @@ See [vLLM Backend Reference](../backends/vllm.md#tested-models) for the complete
 
 Based on 3-run benchmark (RTX 5080 16GB):
 
-| Task Type | Gemma 3 4B | Gemma 3 12B (Mean ± SD) | Speedup |
-|-----------|------------|-------------------------|----------|
-| Vision (charts) | 1.5 tok/s | **13.6 ± 1.0 tok/s** | **9x** |
-| Vision (photos) | 1.0 tok/s | **2.2 ± 0.3 tok/s** | **2x** |
-| Basic chat | 3.3 tok/s | **12.6 ± 1.4 tok/s** | **4x** |
-| Code generation | 5.0 tok/s | **16.0 ± 2.9 tok/s** | **3x** |
-| **Overall Average** | **2.5 tok/s** | **10.3 ± 3.5 tok/s** | **4x** |
+| Task Type | Gemma 3 4B | Gemma 3 12B | Molmo 7B | Best Model |
+|-----------|------------|-------------|----------|------------|
+| **Vision (photos)** | 1.0 tok/s | 2.2 ± 0.3 tok/s | **29.3 ± 5.8 tok/s** | **Molmo 7B (13x)** |
+| **Vision (charts)** | 1.5 tok/s | 13.6 ± 1.0 tok/s | **32.7 ± 6.3 tok/s** | **Molmo 7B (2.4x)** |
+| **Vision (data viz)** | ~1 tok/s | ~10 tok/s | **28.8 ± 8.8 tok/s** | **Molmo 7B (2.9x)** |
+| **Basic chat** | 3.3 tok/s | **12.6 ± 1.4 tok/s** | Not tested | **Gemma 3 12B** |
+| **Code generation** | 5.0 tok/s | **16.0 ± 2.9 tok/s** | Not tested | **Gemma 3 12B** |
+| **Overall Average** | 2.5 tok/s | 10.3 ± 3.5 tok/s | **31.1 ± 5.9 tok/s** | **Molmo 7B (3x)** |
 
 **Performance Notes**:
 
-- Vision tasks (charts, plots) are most stable and fast on 12B (12-14 tok/s)
-- Text generation shows good performance with moderate variance
-- Complex reasoning tasks may show higher latency due to KV cache pressure
+- **Molmo 7B dominates vision tasks** (29-33 tok/s) — 3x faster than Gemma 3 12B overall
+- **Gemma 3 12B excels at text** reasoning, code, and structured outputs (12-25 tok/s)
+- **Molmo has better stability** (19% CV) vs Gemma 3 12B (34% CV)
+- Complex reasoning on Gemma may show higher latency due to KV cache pressure
 - Monitor vLLM `/metrics` endpoint to track cache hits and GPU utilization
 
 For a comprehensive list of models (including theoretical support), see the [vLLM Backend Reference](../backends/vllm.md).
