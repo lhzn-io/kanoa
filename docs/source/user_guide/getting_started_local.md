@@ -86,11 +86,11 @@ print(f"Tokens: {result.usage.total_tokens}, Cost: ${result.usage.cost:.4f}")
 
 | Model | VRAM Required | Hardware Tested | Avg Throughput |
 |-------|---------------|-----------------|----------------|
-| **Gemma 3 12B** | 14GB (4-bit + FP8 KV) | NVIDIA RTX 5080 (16GB) | **12.9 tok/s** |
+| **Gemma 3 12B** | 14GB (4-bit + FP8 KV) | NVIDIA RTX 5080 (16GB) | **10.3 tok/s** (±3.5) |
 | **Gemma 3 4B** | 8GB (4-bit) | NVIDIA RTX 5080 (16GB) | 2.5 tok/s |
 | **Molmo 7B** | 12GB (4-bit) | NVIDIA RTX 5080 (16GB) | ~3-5 tok/s |
 
-**Recommendation**: For 16GB VRAM, use Gemma 3 12B — it's **5x faster** than 4B despite being larger.
+**Recommendation**: For 16GB VRAM, use Gemma 3 12B — it's **4x faster** than 4B on average, with vision tasks reaching 13+ tok/s.
 
 ### Minimum Requirements
 
@@ -119,14 +119,22 @@ See [vLLM Backend Reference](../backends/vllm.md#tested-models) for the complete
 
 ### Performance Comparison
 
-Based on integration tests (RTX 5080 16GB):
+Based on 3-run benchmark (RTX 5080 16GB):
 
-| Task Type | Gemma 3 4B | Gemma 3 12B | Speedup |
-|-----------|------------|-------------|----------|
-| Vision (simple) | 1.5 tok/s | 5.1 tok/s | **3.4x** |
-| Vision (complex chart) | 0.8 tok/s | 23.8 tok/s | **30x** |
-| Text reasoning | 3.3-7.1 tok/s | 20.6-27.3 tok/s | **4-6x** |
-| **Average** | **2.5 tok/s** | **12.9 tok/s** | **5.2x** |
+| Task Type | Gemma 3 4B | Gemma 3 12B (Mean ± SD) | Speedup |
+|-----------|------------|-------------------------|----------|
+| Vision (charts) | 1.5 tok/s | **13.6 ± 1.0 tok/s** | **9x** |
+| Vision (photos) | 1.0 tok/s | **2.2 ± 0.3 tok/s** | **2x** |
+| Basic chat | 3.3 tok/s | **12.6 ± 1.4 tok/s** | **4x** |
+| Code generation | 5.0 tok/s | **16.0 ± 2.9 tok/s** | **3x** |
+| **Overall Average** | **2.5 tok/s** | **10.3 ± 3.5 tok/s** | **4x** |
+
+**Performance Notes**:
+
+- Vision tasks (charts, plots) are most stable and fast on 12B (12-14 tok/s)
+- Text generation shows good performance with moderate variance
+- Complex reasoning tasks may show higher latency due to KV cache pressure
+- Monitor vLLM `/metrics` endpoint to track cache hits and GPU utilization
 
 For a comprehensive list of models (including theoretical support), see the [vLLM Backend Reference](../backends/vllm.md).
 

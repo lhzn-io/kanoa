@@ -29,28 +29,48 @@ These models have been verified working with specific hardware configurations:
 |-------|------------|---------------|-----------------|----------------|--------|
 | **Molmo 7B-D** (Allen AI) | 7B | 12GB (4-bit) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [✓] Verified |
 | **Gemma 3 4B** (Google) | 4B | 8GB (4-bit) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [✓] Verified (2.5 tok/s) |
-| **Gemma 3 12B** (Google) | 12B | 14GB (4-bit + FP8 KV) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [✓] Verified (12.9 tok/s) |
+| **Gemma 3 12B** (Google) | 12B | 14GB (4-bit + FP8 KV) | NVIDIA RTX 5080 (eGPU, 16GB) | ✓ | [✓] Verified (10.3 tok/s avg) |
 | **Gemma 3 12B** (Google) | 12B | 24GB (fp16) | GCP L4 GPU (24GB) | ✓ | [ ] Planned |
 
 #### Performance Benchmarks (RTX 5080 16GB)
 
-**Gemma 3 12B vs 4B** — Surprisingly, the 12B model is **5.2x faster** on average:
+**Gemma 3 12B Statistics** (3-run benchmark on RTX 5080 eGPU):
+
+| Test | Mean (tok/s) | StdDev | Min | Max | Notes |
+|------|--------------|--------|-----|-----|-------|
+| **Vision - Boardwalk** | 2.2 | 0.3 | 2.0 | 2.5 | Stable ✓ |
+| **Vision - Chart** | 13.6 | 1.0 | 12.5 | 14.4 | Stable ✓ |
+| **Basic Chat** | 12.6 | 1.4 | 10.9 | 13.7 | Stable ✓ |
+| **Code Generation** | 16.0 | 2.9 | 14.3 | 19.4 | Medium variance |
+| **Reasoning** | 2.3 | 2.3 | 0.8 | 4.9 | High variance ⚠️ |
+| **Structured Output** | 25.1 | 18.0 | 13.5 | 45.8 | High variance ⚠️ |
+| **Multi-turn** | 0.2 | 0.2 | 0.1 | 0.3 | High variance ⚠️ |
+| **Overall Average** | 10.3 | 3.5 | 8.1 | 14.4 | 43% CV |
+
+**Gemma 3 12B vs 4B Comparison**:
 
 | Metric | Gemma 3 4B | Gemma 3 12B | Speedup |
 |--------|------------|-------------|----------|
-| **Avg Throughput** | 2.5 tok/s | 12.9 tok/s | **5.2x** |
-| **Vision Tasks** | 0.8-1.5 tok/s | 5.1-23.8 tok/s | **10-30x** |
-| **Text Tasks** | 3.3-7.1 tok/s | 20.6-27.3 tok/s | **4-6x** |
-| **Total Duration (7 tests)** | 343.9s | 62.4s | **5.5x** |
+| **Avg Throughput** | 2.5 tok/s | 10.3 tok/s | **4.1x** |
+| **Vision Tasks** | 0.8-1.5 tok/s | 2.0-14.4 tok/s | **3-10x** |
+| **Text Tasks** | 3.3-7.1 tok/s | 12.6-25.1 tok/s | **2-4x** |
+| **Stability** | Consistent | Variable | See notes |
 
 **Key Findings**:
 
-- 12B is dramatically faster despite larger size (better vLLM optimization)
-- Vision tasks benefit most: 3-30x faster on complex charts
-- Sub-second latency for short responses on 12B
-- Both fit in 16GB VRAM with 4-bit quantization + FP8 KV cache
+- **Vision tasks** (charts, photos): Most stable performance, 2-14 tok/s
+- **Text generation** (chat, code): Fast and relatively stable, 12-16 tok/s
+- **Complex reasoning**: High variance (0.8-4.9 tok/s) suggests KV cache eviction
+- **Overall**: 12B is 4x faster than 4B on average, but with notable variance
 
-**Recommendation**: Use Gemma 3 12B over 4B if you have 16GB VRAM — it's both faster and more capable.
+**Performance Notes**:
+
+- High variance in reasoning/multi-turn tasks indicates KV cache pressure
+- Vision tasks show excellent stability despite large image inputs
+- Prefix caching helps with repeated queries but may evict under memory pressure
+- Both models fit in 16GB VRAM with 4-bit quantization + FP8 KV cache
+
+**Recommendation**: Use Gemma 3 12B over 4B if you have 16GB VRAM — it's significantly faster for most tasks. Monitor vLLM metrics (`/metrics` endpoint) to track cache performance if you experience latency spikes.
 
 ### Theoretically Supported
 

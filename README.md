@@ -147,7 +147,7 @@ interpreter = AnalyticsInterpreter(
     model='allenai/Molmo-7B-D-0924'
 )
 
-# Gemma 3 12B (recommended for 16GB VRAM - 5x faster than 4B)
+# Gemma 3 12B (recommended for 16GB VRAM - 4x faster than 4B, 10+ tok/s avg)
 interpreter = AnalyticsInterpreter(
     backend='openai',
     api_base='http://localhost:8000/v1',
