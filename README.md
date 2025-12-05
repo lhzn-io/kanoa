@@ -140,14 +140,14 @@ Connect to any model hosted via vLLM's OpenAI-compatible API. We've tested with
 See `kanoa-mlops` for our local hosting setup.
 
 ```python
-# Molmo 7B
+# Molmo 7B (recommended for vision - 31 tok/s avg, 3x faster than Gemma)
 interpreter = AnalyticsInterpreter(
     backend='openai',
     api_base='http://localhost:8000/v1',
     model='allenai/Molmo-7B-D-0924'
 )
 
-# Gemma 3 12B (recommended for 16GB VRAM - 4x faster than 4B, 10+ tok/s avg)
+# Gemma 3 12B (recommended for text reasoning - 10.3 tok/s avg)
 interpreter = AnalyticsInterpreter(
     backend='openai',
     api_base='http://localhost:8000/v1',
