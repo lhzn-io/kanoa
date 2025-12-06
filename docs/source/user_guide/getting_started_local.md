@@ -147,6 +147,7 @@ For a comprehensive list of models (including theoretical support), see the [vLL
 ## Next Steps
 
 - **Model Selection**: Check [vLLM Backend Reference](../backends/vllm.md) for model options
+- **Performance Monitoring**: See [kanoa-mlops GPU Monitoring](https://github.com/lhzn-io/kanoa-mlops/blob/main/docs/source/gpu-monitoring.md) for Prometheus and Grafana setup
 - **Infrastructure Details**: See [kanoa-mlops repository](https://github.com/lhzn-io/kanoa-mlops) for advanced setup
 - **Knowledge Bases**: Learn about [Knowledge Bases Guide](knowledge_bases.md)
 - **Cost Tracking**: Understand [Cost Management](cost_management.md) for local models
