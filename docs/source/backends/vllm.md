@@ -88,7 +88,7 @@ These models have been verified working with specific hardware configurations:
 - **Limited VRAM (<12GB)**: Use **Gemma 3 4B** (fits in 8GB but slower)
 - **General use with 16GB VRAM**: Start with **Molmo 7B** for vision, switch to Gemma 3 12B for text-heavy tasks
 
-Monitor vLLM metrics (`/metrics` endpoint) to track cache performance if you experience latency spikes.
+Monitor vLLM metrics (`/metrics` endpoint) to track cache performance if you experience latency spikes. See the [GPU Metrics Monitoring](../user_guide/monitoring.md) guide for setting up Prometheus and Grafana to visualize these metrics in real-time.
 
 For detailed technical analysis of these performance differences, see [Performance Analysis: Molmo vs Gemma](https://github.com/lhzn-io/kanoa-mlops/blob/main/docs/source/performance-analysis.md) in the kanoa-mlops repository.
 
@@ -187,5 +187,6 @@ gemma = AnalyticsInterpreter(
 ## See Also
 
 - [Getting Started with Local Inference](../user_guide/getting_started_local.md)
+- [GPU Metrics Monitoring](../user_guide/monitoring.md) - Set up Prometheus and Grafana for vLLM metrics
 - [kanoa-mlops Repository](https://github.com/lhzn-io/kanoa-mlops)
 - [vLLM Documentation](https://docs.vllm.ai/)
