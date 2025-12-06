@@ -330,6 +330,16 @@ results = await interpreter.interpret_batch(
 
 ---
 
+### 3.4 Interactive Codelabs
+
+**Status**: Planned
+**Deliverables**:
+
+- [ ] "Zero to Hero" Codelab (General Quickstart)
+- [ ] "Local AI Analyst" Codelab (Ollama/vLLM)
+- [ ] "Enterprise RAG" Codelab (Vertex AI)
+- [ ] Integration with `claat` tool for generation
+
 ## Deferred Features
 
 ### Low Priority (Backlog)
