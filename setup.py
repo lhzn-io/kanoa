@@ -23,7 +23,7 @@ DEV_DEPS = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "python-dotenv>=1.0.0",
-    "ruff>=0.8.0",
+    "ruff~=0.14.0",  # Pin to 0.14.x to match pre-commit
     "mypy>=1.0.0",
     "pre-commit>=3.0.0",
     "types-setuptools",
