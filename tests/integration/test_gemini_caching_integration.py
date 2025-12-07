@@ -354,7 +354,7 @@ class TestGeminiCachingIntegration:
             pytest.skip(f"Skipping due to previous auth failure: {error}")
 
         print("\n" + "=" * 60)
-        print("📐 TEST: First Query (Cache Creation)")
+        print("[test] First Query (Cache Creation)")
         print("=" * 60)
 
         # Use data dict since interpret() requires fig or data
@@ -379,14 +379,14 @@ class TestGeminiCachingIntegration:
         assert len(result.text) > 50
         assert result.backend == "gemini"
 
-        print(f"\n🎓 Response: {result.text[:100]}...")
+        print(f"\n[model] {result.text[:100]}...")
         if result.usage:
             cost = result.usage.cost
             get_cost_tracker().record("test_first_query_creates_cache", cost)
-            print(f"💰 Cost: ${cost:.6f}")
-            print(f"📊 Input tokens: {result.usage.input_tokens}")
+            print(f"[cost] ${cost:.6f}")
+            print(f"[usage] Input tokens: {result.usage.input_tokens}")
             cached = result.usage.cached_tokens or 0
-            print(f"📊 Cached tokens: {cached}")
+            print(f"[usage] Cached tokens: {cached}")
 
             # For first query, we may or may not have cache (depends on implicit)
             # The key is that input_tokens should include KB content
@@ -406,7 +406,7 @@ class TestGeminiCachingIntegration:
             pytest.skip(f"Skipping due to previous auth failure: {error}")
 
         print("\n" + "=" * 60)
-        print("📐 TEST: Second Query (Cache Hit Expected)")
+        print("[test] Second Query (Cache Hit Expected)")
         print("=" * 60)
 
         # Use data dict since interpret() requires fig or data
@@ -430,21 +430,21 @@ class TestGeminiCachingIntegration:
         assert result.text is not None
         assert len(result.text) > 50
 
-        print(f"\n🎓 Response: {result.text[:100]}...")
+        print(f"\n[model] {result.text[:100]}...")
         if result.usage:
             cost = result.usage.cost
             get_cost_tracker().record("test_second_query_uses_cache", cost)
-            print(f"💰 Cost: ${cost:.6f}")
-            print(f"📊 Input tokens: {result.usage.input_tokens}")
+            print(f"[cost] ${cost:.6f}")
+            print(f"[usage] Input tokens: {result.usage.input_tokens}")
             cached = result.usage.cached_tokens or 0
-            print(f"📊 Cached tokens: {cached}")
+            print(f"[usage] Cached tokens: {cached}")
 
             # With implicit caching, second query should show cache hit
             if cached > 0:
                 savings = getattr(result.usage, "cache_savings", 0) or 0
-                print(f"✅ Cache HIT! Cached: {cached} tokens, Savings: ${savings:.6f}")
+                print(f"[cache] HIT! Cached: {cached} tokens, Savings: ${savings:.6f}")
             else:
-                print("⚠️ No cache hit (implicit caching may not have triggered)")
+                print("[cache] No cache hit (implicit caching may not have triggered)")
                 print("   This can happen if KB is below threshold or queries differ")
 
     def test_clear_cache_invalidates(self, interpreter_with_cache: Any) -> None:
@@ -455,7 +455,7 @@ class TestGeminiCachingIntegration:
             pytest.skip(f"Skipping due to previous auth failure: {error}")
 
         print("\n" + "=" * 60)
-        print("📐 TEST: Clear Cache")
+        print("[test] Clear Cache")
         print("=" * 60)
 
         # Clear the cache via the backend
@@ -491,11 +491,11 @@ class TestGeminiCachingIntegration:
         assert result.text is not None
         assert "arctic" in result.text.lower() or "2" in result.text
 
-        print(f"\n🎓 Response: {result.text[:100]}...")
+        print(f"\n[model] {result.text[:100]}...")
         if result.usage:
             cost = result.usage.cost
             get_cost_tracker().record("test_clear_cache_invalidates", cost)
-            print(f"💰 Cost: ${cost:.6f}")
+            print(f"[cost] ${cost:.6f}")
 
 
 class TestGeminiNoCachingBaseline:
@@ -537,7 +537,7 @@ class TestGeminiNoCachingBaseline:
             pytest.skip(f"Skipping due to previous auth failure: {error}")
 
         print("\n" + "=" * 60)
-        print("📐 TEST: No Cache Baseline")
+        print("[test] No Cache Baseline")
         print("=" * 60)
 
         # Use data dict since interpret() requires fig or data
@@ -561,10 +561,10 @@ class TestGeminiNoCachingBaseline:
         assert result.text is not None
         assert "4" in result.text
 
-        print(f"\n🎓 Response: {result.text[:50]}...")
+        print(f"\n[model] {result.text[:50]}...")
         if result.usage:
             cost = result.usage.cost
             get_cost_tracker().record("test_no_cache_direct_prompt", cost)
-            print(f"💰 Cost: ${cost:.6f}")
+            print(f"[cost] ${cost:.6f}")
             # Should have no cached tokens
             assert result.usage.cached_tokens is None or result.usage.cached_tokens == 0

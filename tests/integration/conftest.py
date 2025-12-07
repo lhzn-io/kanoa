@@ -125,7 +125,7 @@ class CostTracker:
             return
 
         print("\n" + "=" * 60)
-        print("💰 INTEGRATION TEST COST SUMMARY")
+        print("Integration Test Cost Summary")
         print("=" * 60)
         for test_name, cost in self._costs:
             # Shorten test name for display
@@ -233,7 +233,7 @@ def integration_test_safety(request):
     has_integration_tests = any(
         item.get_closest_marker(mark) is not None
         for item in session.items
-        for mark in ["integration", "gemini", "claude", "molmo", "openai"]
+        for mark in ["gemini", "claude", "openai"]
     )
 
     if has_integration_tests:

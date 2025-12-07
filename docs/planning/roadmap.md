@@ -1,7 +1,7 @@
 # kanoa Product Roadmap
 
-**Version:** 2.0
-**Date:** December 4, 2025
+**Version:** 2.1
+**Date:** December 7, 2025
 **Status:** Living Document
 
 ---
@@ -228,6 +228,21 @@ interpreter = AnalyticsInterpreter(
 
 ---
 
+### 1.6 Ollama Integration
+
+**Status**: In Progress
+**Timeline**: Immediate
+**Deliverables**:
+
+- [ ] Docker Compose service for Ollama (kanoa-mlops)
+- [ ] Makefile integration (`make serve-ollama`)
+- [ ] Documentation and HF Cache integration
+- [ ] Verification with Gemini 3 / Llama 3 models
+
+**Rationale**: Strategic integration for VSCode AI Chat compatibility.
+
+---
+
 ## Phase 2: Enterprise & Production (Q2 2025)
 
 **Goal**: Production-grade reliability, security, and enterprise features.
@@ -289,21 +304,6 @@ results = await interpreter.interpret_batch(
 ---
 
 ## Phase 3: Community & Ecosystem (Q3 2025)
-
-### 3.1 Ollama Integration
-
-**Status**: Deferred from Phase 2
-**Timeline**: 1-2 weeks
-**Deliverables**:
-
-- [ ] Test existing `OpenAIBackend` compatibility with Ollama
-- [ ] Example notebooks: Llama 3.2 Vision 11B, Qwen3-VL, LLaVA
-- [ ] Documentation: setup and model selection
-- [ ] Benefits: Easier local setup, CPU/Apple Silicon support
-
-**Rationale for Deferral**: Grounding capabilities are higher strategic priority.
-
----
 
 ### 3.2 Agent Development Kit (ADK) Evaluation
 
@@ -380,6 +380,10 @@ results = await interpreter.interpret_batch(
 ---
 
 ## Changelog
+
+### v2.1 (December 7, 2025)
+
+- **Ollama Integration**: Accelerated to Phase 1 (Immediate) for VSCode compatibility.
 
 ### v2.0 (December 4, 2025)
 

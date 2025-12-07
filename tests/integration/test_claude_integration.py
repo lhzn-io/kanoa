@@ -60,7 +60,7 @@ class TestClaudeIntegration:
         Verify that Claude can see a sine wave and identify it.
         """
         print("\n" + "=" * 50)
-        print("📐 TEST: Hello World (Vision) - Claude")
+        print("[test] Hello World (Vision) - Claude")
         print("=" * 50)
 
         # 1. Create artifact
@@ -74,7 +74,7 @@ class TestClaudeIntegration:
         context = "Verification test run"
         focus = "Identify the waveform shape"
 
-        print(f"\n💬 User: {context} | {focus}")
+        print(f"\n[user] {context} | {focus}")
 
         try:
             result = interpreter.interpret(fig=plt.gcf(), context=context, focus=focus)
@@ -83,7 +83,7 @@ class TestClaudeIntegration:
 
         # 3. Assertions (Golden Set check)
         print(
-            f"🎓 {result.metadata.get('model', 'AI')}: "
+            f"[model] {result.metadata.get('model', 'AI')}: "
             f"{result.text[:50].replace(chr(10), ' ')}..."
         )
 
@@ -97,14 +97,14 @@ class TestClaudeIntegration:
         assert result.usage is not None
         assert result.usage.cost > 0
 
-        print(f"\n💰 Cost: ${result.usage.cost:.6f}")
+        print(f"\n[cost] ${result.usage.cost:.6f}")
 
     def test_text_only_reasoning(self, interpreter: Any) -> None:
         """
         Verify text-only reasoning capabilities.
         """
         print("\n" + "=" * 50)
-        print("📐 TEST: Text Reasoning - Claude")
+        print("[test] Text Reasoning - Claude")
         print("=" * 50)
 
         data = {
@@ -114,26 +114,26 @@ class TestClaudeIntegration:
         context = "Water quality monitoring report"
         focus = "Identify the trend"
 
-        print(f"\n💬 User: {context} | {focus}")
+        print(f"\n[user] {context} | {focus}")
 
         result = interpreter.interpret(data=data, context=context, focus=focus)
 
         print(
-            f"🎓 {result.metadata.get('model', 'AI')}: "
+            f"[model] {result.metadata.get('model', 'AI')}: "
             f"{result.text[:50].replace(chr(10), ' ')}..."
         )
 
         assert "increase" in result.text.lower() or "growth" in result.text.lower()
         assert "Site C" in result.text
 
-        print(f"\n💰 Cost: ${result.usage.cost:.6f}")
+        print(f"\n[cost] ${result.usage.cost:.6f}")
 
     def test_knowledge_base_integration(self, interpreter: Any, tmp_path: Any) -> None:
         """
         Test Claude with text-based knowledge base.
         """
         print("\n" + "=" * 50)
-        print("📐 TEST: Knowledge Base Integration - Claude")
+        print("[test] Knowledge Base Integration - Claude")
         print("=" * 50)
 
         # Create temporary knowledge base
@@ -170,7 +170,7 @@ The sine wave represents simulated dive depth over time.
         )
 
         print(
-            f"🎓 {result.metadata.get('model', 'AI') if result.metadata else 'AI'}: "
+            f"[model] {result.metadata.get('model', 'AI') if result.metadata else 'AI'}: "
             f"{result.text[:50].replace(chr(10), ' ')}..."
         )
 
@@ -178,4 +178,4 @@ The sine wave represents simulated dive depth over time.
         assert "dive" in result.text.lower() or "depth" in result.text.lower()
 
         if result.usage:
-            print(f"\n💰 Cost: ${result.usage.cost:.6f}")
+            print(f"\n[cost] ${result.usage.cost:.6f}")

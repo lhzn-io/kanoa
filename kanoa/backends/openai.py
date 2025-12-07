@@ -4,7 +4,7 @@ from typing import Any, Optional
 import matplotlib.pyplot as plt
 
 from ..core.types import InterpretationResult, UsageInfo
-from ..pricing import get_model_pricing
+from ..pricing import USER_CONFIG_PATH, get_model_pricing
 from ..utils.logging import ilog_debug, ilog_info, ilog_warning
 from .base import BaseBackend
 
@@ -257,10 +257,16 @@ Use markdown formatting. Be concise but technically precise.
                 output_tokens / 1_000_000 * output_price
             )
         else:
-            # For local models or unknown models, we estimate cost
-            # This is a rough approximation: $0.10 per 1M tokens (both input/output)
-            cost_per_million = 0.10
-            cost = ((input_tokens + output_tokens) / 1_000_000) * cost_per_million
+            # For local models or unknown models, we assume zero cost
+            cost = 0.0
+
+            if not getattr(self, "_has_warned_pricing", False):
+                ilog_warning(
+                    f"No pricing found for model '{self.model}'. Cost reported as $0.0.\n"
+                    f"To enable cost tracking, add pricing to: {USER_CONFIG_PATH}",
+                    title="Pricing",
+                )
+                self._has_warned_pricing = True
 
         return UsageInfo(
             input_tokens=input_tokens, output_tokens=output_tokens, cost=cost
