@@ -106,7 +106,7 @@ class TestGeminiIntegration:
             pytest.skip(f"Skipping due to previous auth failure: {error}")
 
         print("\n" + "=" * 50)
-        print("📐 TEST: Hello World (Vision)")
+        print("[test] Hello World (Vision)")
         print("=" * 50)
 
         # 1. Create artifact
@@ -120,7 +120,7 @@ class TestGeminiIntegration:
         context = "Verification test run"
         focus = "Identify the waveform shape"
 
-        print(f"\n🔍 User: {context} | {focus}")
+        print(f"\n[user] {context} | {focus}")
 
         try:
             result = interpreter.interpret(fig=plt.gcf(), context=context, focus=focus)
@@ -134,7 +134,7 @@ class TestGeminiIntegration:
 
         # 3. Assertions (Golden Set check)
         model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
-        print(f"🎓 {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
+        print(f"[model] {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
         assert result.text is not None
         assert len(result.text) > 50
@@ -150,7 +150,7 @@ class TestGeminiIntegration:
         # Record and print cost
         cost = result.usage.cost
         get_cost_tracker().record("test_hello_world_generation", cost)
-        print(f"\n💰 Cost: ${cost:.6f}")
+        print(f"\n[cost] ${cost:.6f}")
 
     def test_text_only_reasoning(self, interpreter: Any) -> None:
         """
@@ -162,7 +162,7 @@ class TestGeminiIntegration:
             pytest.skip(f"Skipping due to previous auth failure: {error}")
 
         print("\n" + "=" * 50)
-        print("📐 TEST: Text Reasoning")
+        print("[test] Text Reasoning")
         print("=" * 50)
 
         data = {
@@ -172,7 +172,7 @@ class TestGeminiIntegration:
         context = "Water quality monitoring report"
         focus = "Identify the trend"
 
-        print(f"\n🔍 User: {context} | {focus}")
+        print(f"\n[user] {context} | {focus}")
 
         try:
             result = interpreter.interpret(data=data, context=context, focus=focus)
@@ -184,7 +184,7 @@ class TestGeminiIntegration:
             raise
 
         model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
-        print(f"🎓 {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
+        print(f"[model] {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
         assert "increase" in result.text.lower() or "growth" in result.text.lower()
         assert "Site C" in result.text
@@ -192,4 +192,4 @@ class TestGeminiIntegration:
         # Record and print cost
         cost = result.usage.cost
         get_cost_tracker().record("test_text_only_reasoning", cost)
-        print(f"\n💰 Cost: ${cost:.6f}")
+        print(f"\n[cost] ${cost:.6f}")

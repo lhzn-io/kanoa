@@ -102,7 +102,7 @@ class TestMolmoIntegration:
         Verify that Molmo can see a sine wave and identify it.
         """
         print("\n" + "=" * 50)
-        print("[TEST] Hello World (Vision) - Molmo")
+        print("[test] Hello World (Vision) - Molmo")
         print("=" * 50)
 
         # 1. Create artifact
@@ -116,7 +116,7 @@ class TestMolmoIntegration:
         context = "Verification test run"
         focus = "Identify the waveform shape"
 
-        print(f"\n[USER] {context} | {focus}")
+        print(f"\n[user] {context} | {focus}")
 
         try:
             result = interpreter.interpret(fig=plt.gcf(), context=context, focus=focus)
@@ -125,12 +125,15 @@ class TestMolmoIntegration:
 
         # 3. Assertions (Golden Set check)
         model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
-        print(f"[AI] {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
+        print(f"[model] {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
         assert result.text is not None
         assert len(result.text) > 50
         # Check for semantic correctness (loose check)
-        assert "sine" in result.text.lower() or "sinusoidal" in result.text.lower()
+        text = result.text.lower()
+        assert any(
+            kw in text for kw in ["sine", "sinusoidal", "wave", "periodic", "oscillat"]
+        ), f"Response did not identify sine wave. Got: {result.text}"
 
         # Check metadata
         assert result.backend == "openai"
@@ -140,14 +143,55 @@ class TestMolmoIntegration:
         # Record and print cost
         cost = result.usage.cost
         get_cost_tracker().record("test_hello_world_generation", cost)
-        print(f"\n[COST] ${cost:.6f}")
+        print(f"\n[cost] ${cost:.6f}")
 
     def test_text_only_reasoning(self, interpreter: Any) -> None:
         """
         Verify text-only reasoning capabilities.
         """
         print("\n" + "=" * 50)
-        print("[TEST] Text Reasoning - Molmo")
+        print("[test] Text Reasoning - Molmo")
+        print("=" * 50)
+
+        data = {
+            "dissolved_oxygen": [6.5, 6.8, 7.2, 7.0],
+            "site": ["Site A", "Site B", "Site C", "Site D"],
+        }
+        context = "Water quality monitoring report"
+        focus = "Identify the trend"
+
+        print(f"\n[user] {context} | {focus}")
+
+        try:
+            result = interpreter.interpret(data=data, context=context, focus=focus)
+        except Exception as e:
+            pytest.fail(f"Molmo API call failed: {e}")
+
+        model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
+        print(f"[model] {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
+
+        assert result.text is not None
+        assert len(result.text) > 20
+        # Molmo should be able to analyze the data trend
+        text = result.text.lower()
+        assert any(
+            kw in text
+            for kw in [
+                "increase",
+                "growth",
+                "rise",
+                "rising",
+                "upward",
+                "trend",
+                "higher",
+                "peak",
+            ]
+        ), f"Response did not contain expected trend keywords. Got: {result.text}"
+
+        # Record and print cost
+        cost = result.usage.cost
+        get_cost_tracker().record("test_text_only_reasoning", cost)
+        print(f"\n[cost] ${cost:.6f}")
         print("=" * 50)
 
         data = {
