@@ -91,9 +91,7 @@ class BaseBackend(ABC):
 
         # Build system instruction with KB context
         if kb_context:
-            system_template = self.prompt_templates.get_system_prompt(
-                self.backend_name
-            )
+            system_template = self.prompt_templates.get_system_prompt(self.backend_name)
             parts.append(system_template.format(kb_context=kb_context))
 
         # Build user prompt with context and focus

@@ -1,0 +1,88 @@
+# kanoa Prompt Configuration
+#
+# This file allows you to customize the system and user prompts used by kanoa
+# for interpreting analytical outputs.
+#
+# Place this file at: ~/.config/kanoa/prompts.yaml
+#
+# Priority: Explicit parameters > Global config (this file) > Default prompts
+
+# System prompt (with {kb_context} placeholder for knowledge base content)
+system_prompt: |
+  You are an expert data analyst with access to domain-specific knowledge.
+
+  # Knowledge Base
+
+  {kb_context}
+
+  Use this information to provide informed, technically accurate interpretations.
+
+# User prompt (with {context_block} and {focus_block} placeholders)
+user_prompt: |
+  Analyze this analytical output and provide a technical interpretation.
+
+  {context_block}
+  {focus_block}
+
+  Provide:
+  1. **Summary**: What the output shows
+  2. **Key Observations**: Notable patterns and trends
+  3. **Technical Interpretation**: Insights based on domain knowledge
+  4. **Potential Issues**: Data quality concerns or anomalies
+  5. **Recommendations**: Suggestions for further analysis
+
+  Use markdown formatting. Be concise but technically precise.
+
+# Per-backend customization (optional)
+# Customize prompts for specific backends while keeping others at the default
+backends:
+  # Gemini-specific prompts
+  # gemini:
+  #   system_prompt: |
+  #     You are a Google AI assistant specialized in data analysis...
+  #   user_prompt: |
+  #     Analyze this data with a focus on statistical rigor...
+
+  # Claude-specific prompts
+  # claude:
+  #   system_prompt: |
+  #     You are an Anthropic Claude assistant focused on data science...
+  #   user_prompt: |
+  #     Provide concise, actionable insights...
+
+  # OpenAI-specific prompts
+  # openai:
+  #   system_prompt: |
+  #     You are an OpenAI GPT assistant with expertise in analytics...
+  #   user_prompt: |
+  #     Analyze thoroughly and provide detailed recommendations...
+
+# Example: Financial analysis specialization
+# system_prompt: |
+#   You are a senior financial analyst with expertise in:
+#   - Financial modeling and forecasting
+#   - Risk analysis and mitigation
+#   - Investment strategy
+#
+#   Use your domain knowledge to provide actionable insights.
+#
+# user_prompt: |
+#   Analyze this financial data and provide:
+#   1. **Executive Summary**: Key takeaways for stakeholders
+#   2. **Financial Metrics**: Performance indicators and trends
+#   3. **Risk Assessment**: Potential concerns and mitigation strategies
+#   4. **Recommendations**: Strategic actions based on the analysis
+
+# Example: Scientific research specialization
+# system_prompt: |
+#   You are a research scientist with expertise in experimental design,
+#   statistical analysis, and scientific communication.
+#
+#   Focus on methodological rigor and reproducibility.
+#
+# user_prompt: |
+#   Analyze this research data and provide:
+#   1. **Results Summary**: Clear description of findings
+#   2. **Statistical Significance**: Analysis of patterns and trends
+#   3. **Methodology Assessment**: Evaluation of experimental design
+#   4. **Next Steps**: Suggestions for further investigation

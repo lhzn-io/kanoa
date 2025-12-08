@@ -246,9 +246,7 @@ class TestAnalyticsInterpreter:
             interpreter = AnalyticsInterpreter(backend="gemini")
             interpreter.kb = MagicMock()
 
-            prompt = interpreter.preview_prompt(
-                context="Sales data", include_kb=True
-            )
+            prompt = interpreter.preview_prompt(context="Sales data", include_kb=True)
 
             assert prompt == "Test prompt with KB"
             backend_instance.encode_kb.assert_called_once()
@@ -362,16 +360,19 @@ class TestAnalyticsInterpreter:
         """Test set_prompts() chaining with with_kb()."""
         MockBackendClass = MagicMock()
 
-        with patch(
-            "kanoa.core.interpreter._get_backend_class",
-            return_value=MockBackendClass,
-        ), patch("kanoa.core.interpreter.KnowledgeBaseManager"):
+        with (
+            patch(
+                "kanoa.core.interpreter._get_backend_class",
+                return_value=MockBackendClass,
+            ),
+            patch("kanoa.core.interpreter.KnowledgeBaseManager"),
+        ):
             interpreter = AnalyticsInterpreter(backend="gemini")
 
             # Test chaining set_prompts with with_kb
-            result = interpreter.set_prompts(
-                system_prompt="Custom prompt"
-            ).with_kb(kb_content="Test KB")
+            result = interpreter.set_prompts(system_prompt="Custom prompt").with_kb(
+                kb_content="Test KB"
+            )
 
             # Result should be a new interpreter instance from with_kb
             assert result is not interpreter
