@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 
 
+@pytest.mark.integration
 def test_cli_help_without_gemini():
     """Test that --help works even when gemini backend is not installed."""
     # Mock the import to simulate gemini not being installed
@@ -38,6 +39,7 @@ def test_cli_help_without_gemini():
         assert "gemini" not in output.lower() or "plugin" in output.lower()
 
 
+@pytest.mark.integration
 def test_cli_gemini_command_without_backend():
     """Test that using gemini command without backend shows helpful error."""
     import builtins
@@ -64,6 +66,19 @@ def test_cli_gemini_command_without_backend():
         error_output = captured_stderr.getvalue()
         assert "not installed" in error_output.lower()
         assert "pip install kanoa[gemini]" in error_output
+
+
+def test_cli_help_shows_available_commands():
+    """Simple unit test that CLI help works with available backends."""
+    from kanoa.cli import main
+
+    captured_output = StringIO()
+    with patch("sys.stdout", captured_output), pytest.raises(SystemExit):
+        main(["--help"])
+
+    output = captured_output.getvalue()
+    assert "kanoa:" in output
+    assert "Command to run" in output or "positional arguments" in output
 
 
 if __name__ == "__main__":
