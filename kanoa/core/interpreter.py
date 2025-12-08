@@ -66,6 +66,8 @@ class AnalyticsInterpreter:
         max_tokens: int = 3000,
         enable_caching: bool = True,
         track_costs: bool = True,
+        system_prompt: Optional[str] = None,
+        user_prompt: Optional[str] = None,
         **backend_kwargs: Any,
     ):
         """
@@ -79,12 +81,36 @@ class AnalyticsInterpreter:
             max_tokens: Maximum tokens for response
             enable_caching: Enable context caching for cost savings
             track_costs: Track token usage and costs
+            system_prompt: Custom system prompt template (overrides default).
+                Use {kb_context} placeholder for knowledge base content.
+            user_prompt: Custom user prompt template (overrides default).
+                Use {context_block} and {focus_block} placeholders.
             **backend_kwargs: Additional backend-specific arguments
+
+        Example:
+            >>> # Use custom prompts for financial analysis
+            >>> interp = AnalyticsInterpreter(
+            ...     system_prompt="You are a financial analyst...",
+            ...     user_prompt="Analyze for actionable insights..."
+            ... )
 
         Raises:
             ImportError: If the requested backend's dependencies aren't installed
             ValueError: If the backend name is unknown
         """
+        # Create custom prompt templates if provided
+        from ..utils.prompts import PromptTemplates
+
+        prompt_templates = None
+        if system_prompt or user_prompt:
+            # Get defaults first
+            from ..utils.prompts import DEFAULT_PROMPTS
+
+            prompt_templates = PromptTemplates(
+                system_prompt=system_prompt or DEFAULT_PROMPTS.system_prompt,
+                user_prompt=user_prompt or DEFAULT_PROMPTS.user_prompt,
+            )
+
         # Initialize backend (lazy import handles missing deps)
         backend_class = _get_backend_class(backend)
 
@@ -93,6 +119,7 @@ class AnalyticsInterpreter:
             api_key=api_key,
             max_tokens=max_tokens,
             enable_caching=enable_caching,
+            prompt_templates=prompt_templates,
             **backend_kwargs,
         )
         # Initialize knowledge base
@@ -384,3 +411,48 @@ class AnalyticsInterpreter:
             kb_context=kb_context,
             custom_prompt=custom_prompt,
         )
+
+    def set_prompts(
+        self,
+        system_prompt: Optional[str] = None,
+        user_prompt: Optional[str] = None,
+    ) -> "AnalyticsInterpreter":
+        """
+        Update prompt templates at runtime (chainable).
+
+        This method allows you to modify the system and/or user prompt
+        templates after the interpreter has been initialized.
+
+        Args:
+            system_prompt: New system prompt template (or None to keep current).
+                Use {kb_context} placeholder for knowledge base content.
+            user_prompt: New user prompt template (or None to keep current).
+                Use {context_block} and {focus_block} placeholders.
+
+        Example:
+            >>> interp = AnalyticsInterpreter()
+            >>> interp.set_prompts(
+            ...     user_prompt="Provide exactly 3 bullet points..."
+            ... ).interpret(data=df)
+
+            >>> # Chain multiple configuration calls
+            >>> interp.set_prompts(
+            ...     system_prompt="You are a financial analyst..."
+            ... ).with_kb("./financial_kb")
+
+        Returns:
+            Self for method chaining
+        """
+        from ..utils.prompts import PromptTemplates
+
+        # Get current templates
+        current = self.backend.prompt_templates
+
+        # Update with new values
+        self.backend.prompt_templates = PromptTemplates(
+            system_prompt=system_prompt or current.system_prompt,
+            user_prompt=user_prompt or current.user_prompt,
+            backend_overrides=current.backend_overrides,
+        )
+
+        return self
