@@ -154,8 +154,8 @@ def test_prompt_config_reload() -> None:
 
     # Reload should reset loaded flag
     config.reload()
-    assert config._loaded is False
+    assert not config._loaded
 
     # Next access should reload
-    _ = config.templates
-    assert config._loaded is True
+    _ = config.templates  # type: ignore[unreachable]
+    assert config._loaded
