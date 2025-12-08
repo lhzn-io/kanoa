@@ -102,14 +102,22 @@ class AnalyticsInterpreter:
         from ..utils.prompts import PromptTemplates
 
         prompt_templates = None
+
+        # Priority: explicit params > global config > defaults
         if system_prompt or user_prompt:
-            # Get defaults first
+            # Explicit parameters provided
             from ..utils.prompts import DEFAULT_PROMPTS
 
             prompt_templates = PromptTemplates(
                 system_prompt=system_prompt or DEFAULT_PROMPTS.system_prompt,
                 user_prompt=user_prompt or DEFAULT_PROMPTS.user_prompt,
             )
+        else:
+            # Check for global configuration
+            from ..config import options
+
+            if options.prompts.templates:
+                prompt_templates = options.prompts.templates
 
         # Initialize backend (lazy import handles missing deps)
         backend_class = _get_backend_class(backend)
