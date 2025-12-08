@@ -35,7 +35,8 @@ user_prompt: |
 
 # Per-backend customization (optional)
 # Customize prompts for specific backends while keeping others at the default
-backends:
+# Uncomment and modify the examples below to enable backend-specific prompts
+backends: {}
   # Gemini-specific prompts
   # gemini:
   #   system_prompt: |
