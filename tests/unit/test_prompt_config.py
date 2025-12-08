@@ -20,7 +20,7 @@ def test_load_prompt_config_basic() -> None:
         f.write(
             """
 system_prompt: |
-  You are a financial analyst...
+  You are an environmental data scientist...
 
 user_prompt: |
   Analyze this data...
@@ -32,7 +32,7 @@ user_prompt: |
     try:
         templates = load_prompt_config(config_path)
         assert templates is not None
-        assert "financial analyst" in templates.system_prompt
+        assert "environmental data scientist" in templates.system_prompt
         assert "Analyze this data" in templates.user_prompt
     finally:
         config_path.unlink()

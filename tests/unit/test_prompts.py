@@ -45,8 +45,8 @@ def test_prompt_templates_get_methods() -> None:
 
 def test_prompt_templates_backend_overrides() -> None:
     """Test backend-specific prompt overrides."""
-    custom_system = "You are a financial analyst..."
-    custom_user = "Analyze this financial data..."
+    custom_system = "You are an inertial navigation specialist..."
+    custom_user = "Analyze this sensor data..."
 
     templates = PromptTemplates(
         backend_overrides={

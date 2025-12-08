@@ -88,10 +88,10 @@ class AnalyticsInterpreter:
             **backend_kwargs: Additional backend-specific arguments
 
         Example:
-            >>> # Use custom prompts for financial analysis
+            >>> # Use custom prompts for environmental analysis
             >>> interp = AnalyticsInterpreter(
-            ...     system_prompt="You are a financial analyst...",
-            ...     user_prompt="Analyze for actionable insights..."
+            ...     system_prompt="You are an environmental data scientist...",
+            ...     user_prompt="Analyze for ecological trends and impacts..."
             ... )
 
         Raises:
@@ -445,8 +445,8 @@ class AnalyticsInterpreter:
 
             >>> # Chain multiple configuration calls
             >>> interp.set_prompts(
-            ...     system_prompt="You are a financial analyst..."
-            ... ).with_kb("./financial_kb")
+            ...     system_prompt="You are an environmental data scientist..."
+            ... ).with_kb("./conservation_kb")
 
         Returns:
             Self for method chaining

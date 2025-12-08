@@ -62,8 +62,8 @@ class PromptTemplates:
         'You are an expert data analyst...'
 
         >>> # Customize for specific domain
-        >>> financial_templates = PromptTemplates(
-        ...     system_prompt="You are a financial analyst..."
+        >>> environmental_templates = PromptTemplates(
+        ...     system_prompt="You are an environmental data scientist..."
         ... )
     """
 

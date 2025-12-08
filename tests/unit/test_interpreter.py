@@ -280,7 +280,7 @@ class TestAnalyticsInterpreter:
             "kanoa.core.interpreter._get_backend_class",
             return_value=MockBackendClass,
         ):
-            custom_system = "You are a financial analyst..."
+            custom_system = "You are an environmental data scientist..."
             custom_user = "Analyze this data..."
 
             interpreter = AnalyticsInterpreter(
