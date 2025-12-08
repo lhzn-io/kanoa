@@ -315,3 +315,72 @@ class AnalyticsInterpreter:
         return cast(
             "Dict[str, Any]", cast("Any", self.backend).get_cache_status(kb_context)
         )
+
+    def get_prompts(self) -> Dict[str, str]:
+        """
+        Get the current prompt templates used by this interpreter.
+
+        Returns a dictionary with the active prompt templates:
+        - system_prompt: Template for system instruction (with {kb_context} placeholder)
+        - user_prompt: Template for user prompt (with {context_block}, {focus_block} placeholders)
+
+        Example:
+            >>> interp = AnalyticsInterpreter()
+            >>> prompts = interp.get_prompts()
+            >>> print(prompts["system_prompt"])
+            You are an expert data analyst...
+
+        Returns:
+            Dict[str, str]: Dictionary with 'system_prompt' and 'user_prompt' keys
+        """
+        return {
+            "system_prompt": self.backend.prompt_templates.get_system_prompt(
+                self.backend_name
+            ),
+            "user_prompt": self.backend.prompt_templates.get_user_prompt(
+                self.backend_name
+            ),
+        }
+
+    def preview_prompt(
+        self,
+        context: Optional[str] = None,
+        focus: Optional[str] = None,
+        include_kb: bool = True,
+        custom_prompt: Optional[str] = None,
+    ) -> str:
+        """
+        Preview the exact prompt that would be sent to the LLM.
+
+        This method builds the complete prompt using the current templates
+        and configuration, allowing you to see exactly what the AI will receive.
+
+        Args:
+            context: Brief description of the analytical output
+            focus: Specific aspects to analyze
+            include_kb: Whether to include knowledge base context
+            custom_prompt: Custom prompt to preview (overrides templates)
+
+        Example:
+            >>> interp = AnalyticsInterpreter(kb_path="./my_kb")
+            >>> prompt = interp.preview_prompt(
+            ...     context="Sales data Q4 2024",
+            ...     focus="YoY growth trends"
+            ... )
+            >>> print(prompt)
+
+        Returns:
+            str: The complete rendered prompt string
+        """
+        # Get KB context if requested
+        kb_context = None
+        if include_kb and self.kb:
+            kb_context = self.backend.encode_kb(self.kb)
+
+        # Build prompt using backend's method
+        return self.backend._build_prompt(
+            context=context,
+            focus=focus,
+            kb_context=kb_context,
+            custom_prompt=custom_prompt,
+        )
