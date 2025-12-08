@@ -46,7 +46,7 @@ class TestClaudeIntegration:
         """
         try:
             return AnalyticsInterpreter(
-                backend="claude", model="claude-haiku-4-5-20251022"
+                backend="claude", model="claude-3-haiku-20240307"
             )
         except Exception as e:
             pytest.skip(
@@ -151,7 +151,7 @@ The sine wave represents simulated dive depth over time.
         # Initialize interpreter with KB (using Haiku for cost savings)
         kb_interpreter = AnalyticsInterpreter(
             backend="claude",
-            model="claude-haiku-4-5-20251022",
+            model="claude-3-haiku-20240307",
             kb_path=str(kb_dir),
             kb_type="text",
         )

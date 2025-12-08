@@ -7,6 +7,7 @@ CORE_DEPS = [
     "matplotlib>=3.5.0",
     "pandas>=1.3.0",
     "pydantic>=2.0.0",
+    "PyYAML>=6.0.0",
 ]
 
 # Backend-specific dependencies
@@ -27,6 +28,7 @@ DEV_DEPS = [
     "mypy>=1.0.0",
     "pre-commit>=3.0.0",
     "types-setuptools",
+    "types-PyYAML",
     "detect-secrets>=1.4.0",
     "markitdown>=0.0.1",
 ]
