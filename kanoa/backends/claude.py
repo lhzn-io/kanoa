@@ -226,48 +226,10 @@ class ClaudeBackend(BaseBackend):
         kb_context: Optional[str],
         custom_prompt: Optional[str],
     ) -> str:
-        if custom_prompt:
-            return custom_prompt
-
-        parts = []
-
-        if kb_context:
-            parts.append(
-                f"""You are an expert data analyst with access to \
-domain-specific knowledge.
-
-# Knowledge Base
-
-{kb_context}
-
-Use this information to provide informed, technically accurate \
-interpretations.
-"""
-            )
-
-        parts.append(
-            "Analyze this analytical output and provide a technical interpretation."
+        """Build Claude-optimized prompt using centralized templates."""
+        return self._build_prompt_from_templates(
+            context, focus, kb_context, custom_prompt
         )
-
-        if context:
-            parts.append(f"\n**Context**: {context}")
-
-        if focus:
-            parts.append(f"\n**Analysis Focus**: {focus}")
-
-        parts.append(
-            """
-Provide:
-1. **Summary**: What the output shows
-2. **Key Observations**: Notable patterns and trends
-3. **Technical Interpretation**: Insights based on domain knowledge
-4. **Potential Issues**: Data quality concerns or anomalies
-5. **Recommendations**: Suggestions for further analysis
-
-Use markdown formatting. Be concise but technically precise.
-"""
-        )
-        return "\n".join(parts)
 
     def _calculate_usage(self, usage_data: Any) -> UsageInfo:
         input_tokens = usage_data.input_tokens
