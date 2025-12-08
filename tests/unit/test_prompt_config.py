@@ -2,9 +2,6 @@
 
 import tempfile
 from pathlib import Path
-from typing import Any
-
-import pytest
 
 from kanoa.config import PromptConfig
 from kanoa.prompt_config import get_global_prompts, load_prompt_config
@@ -68,7 +65,10 @@ backends:
 
         # Check backend overrides
         assert "gemini" in templates.backend_overrides
-        assert "Google AI assistant" in templates.backend_overrides["gemini"]["system_prompt"]
+        assert (
+            "Google AI assistant"
+            in templates.backend_overrides["gemini"]["system_prompt"]
+        )
         assert "claude" in templates.backend_overrides
         assert "Be concise" in templates.backend_overrides["claude"]["user_prompt"]
     finally:
