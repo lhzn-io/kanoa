@@ -6,8 +6,6 @@ import argparse
 import sys
 from typing import List, Optional
 
-from kanoa.tools import gemini_cache
-
 
 def main(args: Optional[List[str]] = None) -> None:
     """Main entry point for the kanoa CLI."""
@@ -19,15 +17,23 @@ def main(args: Optional[List[str]] = None) -> None:
     )
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
-    # --- Gemini Subcommand ---
-    gemini_parser = subparsers.add_parser("gemini", help="Gemini backend tools")
-    gemini_subparsers = gemini_parser.add_subparsers(
-        dest="subcommand", help="Gemini tools"
-    )
+    # --- Gemini Subcommand (conditional on backend availability) ---
+    try:
+        from kanoa.tools import gemini_cache
 
-    # Gemini Cache Tool
-    cache_parser = gemini_subparsers.add_parser("cache", help="Manage context caches")
-    gemini_cache.register_subcommand(cache_parser)
+        gemini_parser = subparsers.add_parser("gemini", help="Gemini backend tools")
+        gemini_subparsers = gemini_parser.add_subparsers(
+            dest="subcommand", help="Gemini tools"
+        )
+
+        # Gemini Cache Tool
+        cache_parser = gemini_subparsers.add_parser(
+            "cache", help="Manage context caches"
+        )
+        gemini_cache.register_subcommand(cache_parser)
+        gemini_available = True
+    except ImportError:
+        gemini_available = False
 
     # --- Load Plugins ---
     if sys.version_info < (3, 10):
@@ -54,6 +60,16 @@ def main(args: Optional[List[str]] = None) -> None:
 
     # Dispatch
     if parsed_args.command == "gemini":
+        if not gemini_available:
+            print(
+                "Error: Gemini backend not installed. "
+                "Install with: pip install kanoa[gemini]",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        from kanoa.tools import gemini_cache
+
         if parsed_args.subcommand == "cache":
             gemini_cache.handle_command(parsed_args)
         else:
