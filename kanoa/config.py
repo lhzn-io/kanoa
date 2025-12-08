@@ -4,7 +4,54 @@ Global configuration and options for kanoa.
 
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+
+if TYPE_CHECKING:
+    from .utils.prompts import PromptTemplates
+
+
+class PromptConfig:
+    """
+    Global prompt configuration.
+
+    This class provides access to globally configured prompt templates,
+    loaded from ~/.config/kanoa/prompts.yaml.
+
+    Attributes:
+        templates: PromptTemplates instance loaded from config file, or None
+
+    Example:
+        >>> from kanoa.config import options
+        >>> # Check if custom prompts are configured
+        >>> if options.prompts.templates:
+        ...     print("Using custom prompts")
+        >>> else:
+        ...     print("Using default prompts")
+    """
+
+    def __init__(self) -> None:
+        self._templates: Optional["PromptTemplates"] = None
+        self._loaded: bool = False
+
+    @property
+    def templates(self) -> Optional["PromptTemplates"]:
+        """
+        Get global prompt templates (lazy loaded).
+
+        Returns:
+            PromptTemplates instance if config file exists, None otherwise
+        """
+        if not self._loaded:
+            from .prompt_config import get_global_prompts
+
+            self._templates = get_global_prompts()
+            self._loaded = True
+        return self._templates
+
+    def reload(self) -> None:
+        """Reload prompt configuration from disk."""
+        self._loaded = False
+        self._templates = None
 
 
 class Options:
@@ -55,6 +102,10 @@ class Options:
 
         log_handlers (List): Custom log handlers for remote logging (Datadog, etc.).
             Example: [DatadogHandler(), PrometheusHandler()]
+
+        prompts (PromptConfig): Global prompt configuration.
+            Access to globally configured prompt templates loaded from
+            ~/.config/kanoa/prompts.yaml
     """
 
     def __init__(self) -> None:
@@ -96,6 +147,9 @@ class Options:
         self.token_reject_threshold = 200_000
         # Auto-approve large requests (useful for scripts)
         self.auto_approve = False
+
+        # Prompt Configuration
+        self.prompts = PromptConfig()
 
     @property
     def kb_home(self) -> Path:
