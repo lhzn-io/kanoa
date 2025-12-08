@@ -112,7 +112,7 @@ class ClaudeBackend(BaseBackend):
         verbose: int = 0,
         **kwargs: Any,
     ) -> None:
-        super().__init__(api_key, max_tokens, enable_caching)
+        super().__init__(api_key, max_tokens, enable_caching, **kwargs)  # Pass kwargs
         self.client = Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
         self.model = model
         self.verbose = verbose

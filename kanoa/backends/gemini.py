@@ -113,7 +113,9 @@ class GeminiBackend(BaseBackend):
             verbose: Verbosity level (0=Silent, 1=Info, 2=Debug)
             **kwargs: Additional args (project, location for Vertex AI)
         """
-        super().__init__(api_key, max_tokens, enable_caching)
+        super().__init__(
+            api_key, max_tokens, enable_caching, **kwargs
+        )  # Pass kwargs to parent
 
         # Normalize verbosity
         _v = verbose if verbose is not None else options.verbose
