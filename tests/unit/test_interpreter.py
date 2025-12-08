@@ -187,3 +187,89 @@ class TestAnalyticsInterpreter:
             interpreter.kb = MagicMock()
             interpreter.reload_knowledge_base()
             cast("Any", interpreter.kb).reload.assert_called_once()
+
+    def test_get_prompts(self) -> None:
+        """Test get_prompts() method returns prompt templates."""
+        MockBackendClass = MagicMock()
+        backend_instance = MockBackendClass.return_value
+
+        # Mock the prompt_templates attribute
+        from kanoa.utils.prompts import PromptTemplates
+
+        backend_instance.prompt_templates = PromptTemplates()
+
+        with patch(
+            "kanoa.core.interpreter._get_backend_class",
+            return_value=MockBackendClass,
+        ):
+            interpreter = AnalyticsInterpreter(backend="gemini")
+            prompts = interpreter.get_prompts()
+
+            assert "system_prompt" in prompts
+            assert "user_prompt" in prompts
+            assert "You are an expert data analyst" in prompts["system_prompt"]
+            assert "Analyze this analytical output" in prompts["user_prompt"]
+
+    def test_preview_prompt_without_kb(self) -> None:
+        """Test preview_prompt() without knowledge base."""
+        MockBackendClass = MagicMock()
+        backend_instance = MockBackendClass.return_value
+        backend_instance._build_prompt.return_value = "Test prompt"
+
+        with patch(
+            "kanoa.core.interpreter._get_backend_class",
+            return_value=MockBackendClass,
+        ):
+            interpreter = AnalyticsInterpreter(backend="gemini")
+            prompt = interpreter.preview_prompt(
+                context="Sales data", focus="YoY growth"
+            )
+
+            assert prompt == "Test prompt"
+            backend_instance._build_prompt.assert_called_once()
+            call_args = backend_instance._build_prompt.call_args
+            assert call_args[1]["context"] == "Sales data"
+            assert call_args[1]["focus"] == "YoY growth"
+            assert call_args[1]["kb_context"] is None
+
+    def test_preview_prompt_with_kb(self) -> None:
+        """Test preview_prompt() with knowledge base."""
+        MockBackendClass = MagicMock()
+        backend_instance = MockBackendClass.return_value
+        backend_instance._build_prompt.return_value = "Test prompt with KB"
+        backend_instance.encode_kb.return_value = "KB content"
+
+        with patch(
+            "kanoa.core.interpreter._get_backend_class",
+            return_value=MockBackendClass,
+        ):
+            interpreter = AnalyticsInterpreter(backend="gemini")
+            interpreter.kb = MagicMock()
+
+            prompt = interpreter.preview_prompt(
+                context="Sales data", include_kb=True
+            )
+
+            assert prompt == "Test prompt with KB"
+            backend_instance.encode_kb.assert_called_once()
+            backend_instance._build_prompt.assert_called_once()
+            call_args = backend_instance._build_prompt.call_args
+            assert call_args[1]["kb_context"] == "KB content"
+
+    def test_preview_prompt_custom(self) -> None:
+        """Test preview_prompt() with custom prompt."""
+        MockBackendClass = MagicMock()
+        backend_instance = MockBackendClass.return_value
+        backend_instance._build_prompt.return_value = "Custom prompt"
+
+        with patch(
+            "kanoa.core.interpreter._get_backend_class",
+            return_value=MockBackendClass,
+        ):
+            interpreter = AnalyticsInterpreter(backend="gemini")
+            prompt = interpreter.preview_prompt(custom_prompt="Custom prompt")
+
+            assert prompt == "Custom prompt"
+            backend_instance._build_prompt.assert_called_once()
+            call_args = backend_instance._build_prompt.call_args
+            assert call_args[1]["custom_prompt"] == "Custom prompt"
