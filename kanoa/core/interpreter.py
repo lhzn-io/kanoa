@@ -399,8 +399,8 @@ class AnalyticsInterpreter:
         Example:
             >>> interp = AnalyticsInterpreter(kb_path="./my_kb")
             >>> prompt = interp.preview_prompt(
-            ...     context="Sales data Q4 2024",
-            ...     focus="YoY growth trends"
+            ...     context="Inertial sensor calibration data",
+            ...     focus="Drift compensation and alignment"
             ... )
             >>> print(prompt)
 

@@ -222,14 +222,14 @@ class TestAnalyticsInterpreter:
         ):
             interpreter = AnalyticsInterpreter(backend="gemini")
             prompt = interpreter.preview_prompt(
-                context="Sales data", focus="YoY growth"
+                context="Temperature sensor array data", focus="Anomaly detection"
             )
 
             assert prompt == "Test prompt"
             backend_instance._build_prompt.assert_called_once()
             call_args = backend_instance._build_prompt.call_args
-            assert call_args[1]["context"] == "Sales data"
-            assert call_args[1]["focus"] == "YoY growth"
+            assert call_args[1]["context"] == "Temperature sensor array data"
+            assert call_args[1]["focus"] == "Anomaly detection"
             assert call_args[1]["kb_context"] is None
 
     def test_preview_prompt_with_kb(self) -> None:
@@ -246,7 +246,9 @@ class TestAnalyticsInterpreter:
             interpreter = AnalyticsInterpreter(backend="gemini")
             interpreter.kb = MagicMock()
 
-            prompt = interpreter.preview_prompt(context="Sales data", include_kb=True)
+            prompt = interpreter.preview_prompt(
+                context="Biodiversity monitoring data", include_kb=True
+            )
 
             assert prompt == "Test prompt with KB"
             backend_instance.encode_kb.assert_called_once()
