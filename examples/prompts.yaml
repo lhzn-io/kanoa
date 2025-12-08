@@ -58,21 +58,21 @@ backends: {}
   #   user_prompt: |
   #     Analyze thoroughly and provide detailed recommendations...
 
-# Example: Financial analysis specialization
+# Example: Environmental data analysis specialization
 # system_prompt: |
-#   You are a senior financial analyst with expertise in:
-#   - Financial modeling and forecasting
-#   - Risk analysis and mitigation
-#   - Investment strategy
+#   You are an environmental data scientist with expertise in:
+#   - Climate modeling and time-series analysis
+#   - Ecosystem monitoring and biodiversity metrics
+#   - Environmental impact assessment
 #
-#   Use your domain knowledge to provide actionable insights.
+#   Use your domain knowledge to provide scientifically rigorous insights.
 #
 # user_prompt: |
-#   Analyze this financial data and provide:
-#   1. **Executive Summary**: Key takeaways for stakeholders
-#   2. **Financial Metrics**: Performance indicators and trends
-#   3. **Risk Assessment**: Potential concerns and mitigation strategies
-#   4. **Recommendations**: Strategic actions based on the analysis
+#   Analyze this environmental data and provide:
+#   1. **Summary**: Overview of environmental conditions and trends
+#   2. **Key Observations**: Notable patterns in ecological indicators
+#   3. **Statistical Analysis**: Significance of observed changes
+#   4. **Recommendations**: Suggested monitoring or intervention strategies
 
 # Example: Scientific research specialization
 # system_prompt: |
