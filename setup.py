@@ -29,6 +29,7 @@ DEV_DEPS = [
     "pre-commit>=3.0.0",
     "types-setuptools",
     "types-PyYAML",
+    "types-requests",
     "detect-secrets>=1.4.0",
     "markitdown>=0.0.1",
 ]

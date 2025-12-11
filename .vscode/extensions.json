@@ -2,6 +2,7 @@
     "recommendations": [
         "ms-python.python",
         "charliermarsh.ruff",
+        "ms-python.mypy-type-checker",
         "DavidAnson.vscode-markdownlint",
         "tamasfe.even-better-toml",
         "bierner.markdown-mermaid"
