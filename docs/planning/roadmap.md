@@ -36,6 +36,7 @@
 - [x] **Gemini 3 Pro**: Native PDF vision, 2M context, context caching
 - [x] **Claude Sonnet 4.5**: Proven reliability, prompt caching
 - [x] **OpenAI/vLLM**: GPT-5.1 and local inference (Molmo, Gemma 3)
+- [ ] **Advanced Local Models**: Llama 4, Olmo 3, Ministral 3 (Jetson Thor optimized) — *Verification Underway*
 
 #### Knowledge Base
 
