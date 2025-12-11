@@ -200,7 +200,7 @@ If you are an AI assistant (GitHub Copilot, Antigravity, etc.):
 3. **Do not hallucinate APIs.** Check `kanoa/core/interpreter.py` for the source of truth.
 4. **Keep responses concise.**
 
-### 5. Tooling
+### 6. Tooling
 
 - We use **Ruff** for linting and formatting, and **mypy** for type checking.
 - Run all checks with:
@@ -265,6 +265,53 @@ make check-any-usage
 ```
 
 For detailed guidelines, examples, and migration strategies, see the full [Type Annotation Policy](docs/TYPE_ANNOTATION_POLICY.md).
+
+### 7. Architecture Patterns
+
+When extending `kanoa`, follow established patterns for consistency.
+
+#### Configuration Features
+
+Follow the **pricing override pattern** (`kanoa/pricing.py`) when adding user-configurable features:
+
+1. **Centralize defaults** in `kanoa/utils/<feature>.py`
+2. **Runtime config class** in `kanoa/config.py`
+3. **YAML support** at `~/.config/kanoa/<feature>.yaml`
+4. **Constructor overrides** for per-instance customization
+
+**Priority order**: Defaults → YAML → Runtime → Constructor params
+
+**Example reference**: See `kanoa/pricing.py` and `kanoa/config.py` for the pricing configuration implementation.
+
+#### Backward Compatibility
+
+⚠️ **CRITICAL**: All new parameters MUST be optional. Existing behavior must remain unchanged unless users explicitly opt in.
+
+#### Chainable Methods
+
+Configuration methods should return `self` to enable method chaining.
+
+**Example pattern**:
+
+```python
+def set_option(self, value: str) -> "ClassName":
+    self._option = value
+    return self
+```
+
+#### Inspection Methods
+
+Provide `get_<feature>()` and `preview_<feature>()` methods for transparency.
+
+**Rationale**: Users need visibility for debugging and cost management.
+
+#### Error Handling
+
+- Use custom exceptions from `kanoa/core/` (e.g., `TokenLimitExceeded`)
+- Validate early, fail fast with actionable messages
+- Include available options in error messages (e.g., "Supported models: gemini-2.0-flash, claude-3-5-sonnet")
+
+**For detailed examples, see existing implementations in the codebase.**
 
 ## Managing API Costs During Development
 

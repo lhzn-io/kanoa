@@ -16,6 +16,7 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
     *   This is a library for interpreting data science outputs.
     *   It supports multiple backends: Gemini, Claude, Molmo.
     *   It supports Knowledge Bases (Text/PDF).
+    *   **Architecture**: Follow patterns in `kanoa/pricing.py` for config features. See CONTRIBUTING.md § "Architecture Patterns".
 
 3.  **Response Format**:
     *   Be concise.
