@@ -15,6 +15,7 @@ markers = [
   "claude: marks tests that use the Claude backend",
   "openai: marks tests that use the OpenAI backend",
   "molmo: marks tests that use the Molmo backend",
+  "vertex: marks tests that use the Vertex AI backend",
 ]
 
 # =============================================================================
@@ -185,6 +186,7 @@ module = [
   "google.cloud.*",
   "anthropic.*",
   "IPython.*",
+  "vertexai.*",
 ]
 ignore_missing_imports = true
 

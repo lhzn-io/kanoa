@@ -47,8 +47,20 @@ pytest -m integration --force-integration      # Bypass rate limits
 | `test_claude_integration.py` | claude-haiku-4-5 | $0.008 |
 | `test_gemini_caching_integration.py` | gemini-3-pro-preview | $0.038 |
 | `test_gemini_cache_persistence.py` | gemini-3-pro-preview | $0.024 |
+| `test_vertex_rag_integration.py` | gemini-3-pro-preview | ~$0.02 + storage |
 
 Caching tests use paid tier to validate core feature (75% cost savings in production).
+
+### Vertex AI RAG Tests
+
+Vertex AI tests require specific CLI flags to point to your GCP resources:
+
+```bash
+pytest tests/integration/test_vertex_rag_integration.py \
+  --vertex-project=your-project-id \
+  --vertex-display-name="your-kb-name" \
+  --vertex-gcs-uri="gs://your-bucket/files/"
+```
 
 ## Adding Integration Tests
 

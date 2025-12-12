@@ -4,6 +4,7 @@ from typing import Any, Dict, Literal, Optional, Tuple, Type, Union
 import matplotlib.pyplot as plt
 
 from ..backends.base import BaseBackend
+from ..knowledge_base.base import BaseKnowledgeBase
 from ..knowledge_base.manager import KnowledgeBaseManager
 from .types import InterpretationResult
 
@@ -68,6 +69,8 @@ class AnalyticsInterpreter:
         track_costs: bool = True,
         system_prompt: Optional[str] = None,
         user_prompt: Optional[str] = None,
+        grounding_mode: str = "local",
+        knowledge_base: Optional[BaseKnowledgeBase] = None,
         **backend_kwargs: Any,
     ):
         """
@@ -85,18 +88,35 @@ class AnalyticsInterpreter:
                 Use {kb_context} placeholder for knowledge base content.
             user_prompt: Custom user prompt template (overrides default).
                 Use {context_block} and {focus_block} placeholders.
+            grounding_mode: Knowledge base grounding strategy.
+                - 'local': Load KB files into context (default, traditional approach)
+                - 'rag_engine': Use Vertex AI RAG Engine for semantic retrieval
+            knowledge_base: BaseKnowledgeBase instance (required if grounding_mode='rag_engine')
             **backend_kwargs: Additional backend-specific arguments
 
         Example:
-            >>> # Use custom prompts for environmental analysis
+            >>> # Traditional KB grounding (context stuffing)
             >>> interp = AnalyticsInterpreter(
-            ...     system_prompt="You are an environmental data scientist...",
-            ...     user_prompt="Analyze for ecological trends and impacts..."
+            ...     kb_path="kbs/papers/",
+            ...     grounding_mode="local"
+            ... )
+            >>>
+            >>> # RAG Engine grounding (semantic retrieval)
+            >>> from kanoa.knowledge_base.vertex_rag import VertexRAGKnowledgeBase
+            >>> rag_kb = VertexRAGKnowledgeBase(
+            ...     project_id="my-project",
+            ...     corpus_display_name="research-papers"
+            ... )
+            >>> rag_kb.create_corpus()
+            >>> rag_kb.import_files("gs://my-bucket/papers/")
+            >>> interp = AnalyticsInterpreter(
+            ...     grounding_mode="rag_engine",
+            ...     knowledge_base=rag_kb
             ... )
 
         Raises:
             ImportError: If the requested backend's dependencies aren't installed
-            ValueError: If the backend name is unknown
+            ValueError: If the backend name is unknown or invalid grounding_mode
         """
         # Create custom prompt templates if provided
         from ..utils.prompts import PromptTemplates
@@ -130,9 +150,34 @@ class AnalyticsInterpreter:
             prompt_templates=prompt_templates,
             **backend_kwargs,
         )
-        # Initialize knowledge base
+
+        # Validate grounding mode
+        if grounding_mode not in ("local", "rag_engine"):
+            msg = (
+                f"Invalid grounding_mode: {grounding_mode}. "
+                "Must be 'local' or 'rag_engine'."
+            )
+            raise ValueError(msg)
+
+        if grounding_mode == "rag_engine" and knowledge_base is None:
+            msg = (
+                "knowledge_base is required when grounding_mode='rag_engine'. "
+                "Provide a VertexRAGKnowledgeBase instance."
+            )
+            raise ValueError(msg)
+
+        self.grounding_mode = grounding_mode
+        self.knowledge_base = knowledge_base
+
+        # Initialize knowledge base (for local mode)
         self.kb: Optional[KnowledgeBaseManager] = None
         if kb_path or kb_content:
+            if grounding_mode == "rag_engine":
+                msg = (
+                    "Cannot use kb_path/kb_content with grounding_mode='rag_engine'. "
+                    "Use knowledge_base instead."
+                )
+                raise ValueError(msg)
             self.kb = KnowledgeBaseManager(kb_path=kb_path, kb_content=kb_content)
 
         # Cost tracking - delegated to backend
@@ -219,8 +264,51 @@ class AnalyticsInterpreter:
 
         # Get knowledge base context
         kb_context = None
-        if include_kb and self.kb:
-            kb_context = self.backend.encode_kb(self.kb)
+        grounding_sources = None
+
+        if include_kb:
+            if self.grounding_mode == "local" and self.kb:
+                # Traditional: Load full KB into context
+                kb_context = self.backend.encode_kb(self.kb)
+            elif self.grounding_mode == "rag_engine" and self.knowledge_base:
+                # RAG Engine: Retrieve relevant chunks based on query
+                # Build query from context + focus
+                query_parts = []
+                if context:
+                    query_parts.append(context)
+                if focus:
+                    query_parts.append(focus)
+                query = " ".join(query_parts) if query_parts else "relevant information"
+
+                # Retrieve from corpus
+                try:
+                    from ..core.types import GroundingSource
+
+                    results = self.knowledge_base.retrieve(query)
+                    grounding_sources = [
+                        GroundingSource(
+                            uri=r["source_uri"] or "unknown",
+                            score=r["score"],
+                            text=r["text"],
+                            chunk_id=r["chunk_id"],
+                        )
+                        for r in results
+                    ]
+
+                    # Format retrieved context for backend
+                    kb_context = "\n\n".join(
+                        [
+                            f"[Source: {s.uri} (score: {s.score:.2f})]\n{s.text}"
+                            for s in grounding_sources
+                        ]
+                    )
+                except Exception as e:
+                    from ..utils.logging import ilog_warning
+
+                    ilog_warning(
+                        f"RAG retrieval failed: {e}. Proceeding without grounding.",
+                        source="kanoa.core.interpreter",
+                    )
 
         # Call backend (logs will go to active stream or handlers)
         result = self.backend.interpret(
@@ -232,6 +320,10 @@ class AnalyticsInterpreter:
             custom_prompt=custom_prompt,
             **kwargs,
         )
+
+        # Attach grounding sources to result
+        if grounding_sources:
+            result.grounding_sources = grounding_sources
 
         # Auto-display
         if display_result:

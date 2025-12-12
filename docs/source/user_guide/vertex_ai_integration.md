@@ -259,7 +259,45 @@ result = interpreter.interpret(
 
 **Cost**: ~$0.01-0.02 per interpretation + corpus storage (~$0.40/GB/month)
 
-#### RAG Engine Workflow
+#### Managing RAG Corpora with CLI
+
+`kanoa` provides a powerful CLI for managing your Vertex AI RAG corpora, making it easy to create, inspect, and test your knowledge bases without writing code.
+
+**List Corpora**:
+
+```bash
+kanoa vertex rag list --project <PROJECT_ID>
+```
+
+**Create Corpus**:
+
+```bash
+kanoa vertex rag create --project <PROJECT_ID> --display-name "my-knowledge-base"
+```
+
+**Import Files**:
+
+```bash
+kanoa vertex rag import \
+    --project <PROJECT_ID> \
+    --display-name "my-knowledge-base" \
+    --gcs-uri "gs://my-bucket/docs/"
+```
+
+**Interactive Chat (Test Retrieval)**:
+Test your RAG corpus with an interactive chat session. This is great for verifying that the correct documents are being retrieved before integrating with your code.
+
+```bash
+kanoa vertex rag chat --project <PROJECT_ID> --display-name "my-knowledge-base"
+```
+
+**Delete Corpus**:
+
+```bash
+kanoa vertex rag delete --project <PROJECT_ID> --display-name "my-knowledge-base"
+```
+
+#### RAG Engine Workflow in Python
 
 ##### Initial Setup
 
@@ -290,7 +328,7 @@ interpreter = AnalyticsInterpreter(
     }
 )
 
-# First call triggers corpus creation
+# First call triggers corpus creation if it doesn't exist
 print("Creating RAG corpus... (one-time setup)")
 result = interpreter.interpret(
     fig=my_plot,

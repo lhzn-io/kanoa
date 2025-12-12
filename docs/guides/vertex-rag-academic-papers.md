@@ -57,6 +57,7 @@ pip install kanoa[vertexai]
 ```
 
 This installs:
+
 - `kanoa` core library
 - `google-cloud-aiplatform` SDK for RAG Engine
 - `google` GenAI SDK for Gemini
@@ -67,7 +68,7 @@ This installs:
 
 ```bash
 # Create a GCS bucket
-gsutil mb -p my-research-project -l us-central1 gs://my-research-papers
+gsutil mb -p my-research-project -l us-east1 gs://my-research-papers
 
 # Upload your papers
 gsutil -m cp papers/*.pdf gs://my-research-papers/ml-interpretability/
@@ -79,6 +80,7 @@ gsutil ls gs://my-research-papers/ml-interpretability/
 **Option B: Use Google Drive**
 
 Upload papers to a Google Drive folder and note the folder URL:
+
 ```
 https://drive.google.com/drive/folders/1aBcD3FgH...
 ```
@@ -88,9 +90,79 @@ You'll need to share this folder with the RAG Engine service account (shown late
 **Option C: Local Files (Auto-uploaded)**
 
 kanoa can automatically upload local files to a staging bucket:
+
 ```python
 rag_kb.import_files(Path("/local/research/papers"))
 ```
+
+---
+
+## Limitations and Workarounds
+
+### Multimodal Content (Charts, Tables, Diagrams)
+
+**PDF Processing (as of December 2025):**
+
+Vertex AI RAG Engine uses an integrated **layout parser** (Document AI technology) that intelligently processes academic PDFs:
+
+**What works well for academic papers:**
+
+- Text extraction preserving document structure (abstracts, sections, references)
+- **Table detection and extraction** (experimental results tables are indexed)
+- Multi-column paper layouts with correct reading order
+- Mathematical notation and equations (as text)
+- OCR for scanned papers
+
+**Current limitations:**
+
+- **Visual semantics** of charts/plots (trend analysis, pattern recognition)
+- **Image understanding** of diagrams (architectural figures, flow charts)
+- Cross-referencing figure captions to visual content
+
+**Recommendation:** Best for papers where key results are in tables or text descriptions. For visual analysis of plots/diagrams, use local KB mode with Gemini File API vision.
+
+**Impact on Academic Papers:**
+
+For papers with heavy visual content (experimental results, architectural diagrams), consider:
+
+1. **Hybrid approach** (recommended for most use cases):
+
+   ```python
+   # Use RAG for literature review and methods grounding
+   rag_kb = VertexRAGKnowledgeBase(
+       project_id="my-project",
+       corpus_display_name="ml-papers-text",
+   )
+   interp_rag = AnalyticsInterpreter(
+       grounding_mode="rag_engine",
+       knowledge_base=rag_kb,
+   )
+
+   # For visual content, fall back to local KB with Gemini vision
+   if needs_chart_comparison:
+       interp_local = AnalyticsInterpreter(kb_path="papers/")
+       result = interp_local.interpret(
+           fig=plot,
+           context="Compare to Figure 3 in Smith et al. 2024",
+       )
+   ```
+
+2. **Full vision mode** (if visual content is critical):
+
+   ```python
+   # Use local KB exclusively for full Gemini vision capabilities
+   interp = AnalyticsInterpreter(
+       backend="gemini",
+       kb_path="papers/",  # Local PDFs get Gemini vision
+   )
+   ```
+
+**Cost trade-off:**
+
+- RAG Engine (text-only): $0.38/month for 50 papers
+- Local KB (full vision): $21.80/month for 50 papers (frequent queries)
+
+**Future:** Multimodal RAG preprocessing (Phase 2) may enable visual element indexing via Document AI.
 
 ---
 
@@ -100,6 +172,20 @@ rag_kb.import_files(Path("/local/research/papers"))
 
 This is a **one-time setup** per research project. The corpus persists in GCP until you delete it.
 
+#### Option 1: Using CLI (Recommended)
+
+The easiest way to create and manage your corpus is via the `kanoa` CLI:
+
+```bash
+# Create the corpus
+kanoa vertex rag create \
+    --project "my-research-project" \
+    --display-name "ml-interpretability-papers" \
+    --region "us-east1"
+```
+
+#### Option 2: Using Python SDK
+
 ```python
 from kanoa.knowledge_base.vertex_rag import VertexRAGKnowledgeBase
 
@@ -108,7 +194,7 @@ from kanoa.knowledge_base.vertex_rag import VertexRAGKnowledgeBase
 rag_kb = VertexRAGKnowledgeBase(
     # Billing & project settings (REQUIRED)
     project_id="my-research-project",  # Your GCP project ID
-    location="us-central1",             # GCP region
+    location="us-east1",             # GCP region
 
     # Corpus identifier (REQUIRED)
     # This name is used to:
@@ -135,8 +221,9 @@ print(f"Created corpus: {corpus_name}")
 ```
 
 **Output:**
+
 ```
-Created corpus: projects/my-research-project/locations/us-central1/ragCorpora/1234567890
+Created corpus: projects/my-research-project/locations/us-east1/ragCorpora/1234567890
 ```
 
 **Why These Parameters Are Required:**
@@ -148,7 +235,19 @@ Created corpus: projects/my-research-project/locations/us-central1/ragCorpora/12
 
 Import papers from GCS, Google Drive, or local files:
 
-#### Option A: From Google Cloud Storage
+#### Option A: From Google Cloud Storage (CLI Recommended)
+
+**Using CLI:**
+
+```bash
+kanoa vertex rag import \
+    --project "my-research-project" \
+    --display-name "ml-interpretability-papers" \
+    --gcs-uri "gs://my-research-papers/ml-interpretability/" \
+    --region "us-east1"
+```
+
+**Using Python:**
 
 ```python
 # Import entire folder
@@ -540,7 +639,7 @@ from vertexai import rag
 import vertexai
 
 # List all corpora in a project
-vertexai.init(project="my-research-project", location="us-central1")
+vertexai.init(project="my-research-project", location="us-east1")
 
 all_corpora = rag.list_corpora()
 print("Existing corpora:")
@@ -549,6 +648,7 @@ for corpus in all_corpora:
 ```
 
 **Output:**
+
 ```
 Existing corpora:
   - ml-interpretability: projects/.../ragCorpora/1234567890
@@ -580,7 +680,7 @@ from kanoa.knowledge_base.vertex_rag import VertexRAGKnowledgeBase
 # Reconnect to existing corpus
 rag_kb = VertexRAGKnowledgeBase(
     project_id="my-research-project",
-    location="us-central1",
+    location="us-east1",
     corpus_display_name="ml-interpretability-papers",  # Same name
 )
 
@@ -639,6 +739,7 @@ rag_kb = VertexRAGKnowledgeBase(
 ```
 
 **Why these defaults?**
+
 - **512 tokens** fits most complete thoughts in academic writing (1-2 paragraphs = single concept)
 - **100 token overlap** ensures key sentences appear in multiple chunks, preventing boundary splits
 
@@ -649,6 +750,7 @@ rag_kb = VertexRAGKnowledgeBase(
 Your queries ask for full methods ("Explain the complete SHAP algorithm") but retrieved chunks cut off mid-explanation.
 
 **Solution: Increase chunk size**
+
 ```python
 chunk_size=640-768,      # Larger chunks capture full method sections
 chunk_overlap=128-150,   # Maintain 20% overlap ratio
@@ -659,6 +761,7 @@ chunk_overlap=128-150,   # Maintain 20% overlap ratio
 Your queries are focused ("What is SHAP?") but retrieved chunks include 3-4 unrelated topics, diluting relevance.
 
 **Solution: Decrease chunk size**
+
 ```python
 chunk_size=384-448,      # Smaller, more focused chunks
 chunk_overlap=75-100,    # Maintain 20% overlap ratio
@@ -680,6 +783,7 @@ chunk_overlap=75-100,    # Maintain 20% overlap ratio
 - **30-40%**: Dense cross-references (legal docs, specs)
 
 **Why overlap matters:** Without overlap, important sentences at chunk boundaries get split:
+
 - Chunk 1: "The study found that SHAP"
 - Chunk 2: "outperforms LIME in all scenarios"
 - Neither chunk makes sense alone!
@@ -709,6 +813,7 @@ Chunking affects embedding costs (one-time) and storage costs (ongoing):
 #### When to Keep Defaults
 
 For 50 academic papers on ML interpretability, **512/100 is optimal** if your queries include:
+
 - Mix of simple and complex questions
 - Typical paragraph-level concepts (most papers)
 - Standard academic writing structure
@@ -718,6 +823,7 @@ For 50 academic papers on ML interpretability, **512/100 is optimal** if your qu
 #### Advanced: Domain-Specific Chunking
 
 **Papers with complex figures/tables:**
+
 ```python
 # Use Document AI Layout Parser (future feature)
 # Extracts figures separately for better grounding
@@ -726,6 +832,7 @@ use_layout_parser=True,
 ```
 
 **Multi-language corpora:**
+
 ```python
 # Adjust for language (Chinese ~2 chars/token vs English ~4)
 chunk_size=256,  # Same character count as English 512
@@ -796,7 +903,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 PROJECT_ID = "my-research-project"
-LOCATION = "us-central1"
+LOCATION = "us-east1"
 
 # %% Cell 2: Create RAG Corpus (ONE-TIME SETUP)
 rag_kb = VertexRAGKnowledgeBase(
@@ -906,11 +1013,13 @@ if result.usage:
 **Solution:**
 
 1. Get your project number:
+
    ```bash
    gcloud projects describe my-research-project --format="value(projectNumber)"
    ```
 
 2. Service account format:
+
    ```
    service-{PROJECT_NUMBER}@gcp-sa-vertex-rag.iam.gserviceaccount.com
    ```
@@ -933,7 +1042,7 @@ List all corpora in your project:
 from vertexai import rag
 import vertexai
 
-vertexai.init(project="my-research-project", location="us-central1")
+vertexai.init(project="my-research-project", location="us-east1")
 
 # List existing corpora
 corpora = rag.list_corpora()
@@ -951,7 +1060,7 @@ Use exact `display_name` when reconnecting.
 
 **Solution:**
 
-- Use GCS in same region as Vertex AI (e.g., both in `us-central1`)
+- Use GCS in same region as Vertex AI (e.g., both in `us-east1`)
 - Import in batches of 10-20 papers
 - Monitor progress with `list_files()`
 
@@ -962,16 +1071,19 @@ Use exact `display_name` when reconnecting.
 **Solutions:**
 
 1. **Lower similarity threshold:**
+
    ```python
    similarity_threshold=0.5  # Instead of 0.7
    ```
 
 2. **Increase top_k:**
+
    ```python
    top_k=10  # Retrieve more chunks
    ```
 
 3. **Adjust chunk size:**
+
    ```python
    chunk_size=256  # Smaller chunks = more granular matching
    ```
@@ -1015,6 +1127,7 @@ print(f"Output tokens: {result.usage.output_tokens:,}")
 ### 1. Corpus Organization
 
 **Do:**
+
 - One corpus per research domain (e.g., "ml-interpretability", "healthcare-ai")
 - 20-100 papers per corpus (sweet spot for performance)
 - Use descriptive, kebab-case `corpus_display_name` (you'll reuse it)
@@ -1025,6 +1138,7 @@ print(f"Output tokens: {result.usage.output_tokens:,}")
   - Allows comparing interpretations against different literature snapshots
 
 **Don't:**
+
 - Mix unrelated research areas in one corpus (degrades retrieval precision)
 - Create separate corpora for slight variations (wasteful - just add files incrementally)
 - Use special characters or spaces in corpus names (stick to alphanumeric + hyphens)
@@ -1057,11 +1171,13 @@ corpus_display_name="ml-platform-docs"
 ### 2. Paper Preparation
 
 **Do:**
+
 - Use clean, text-searchable PDFs (not scanned images)
 - Include full papers with references
 - Organize in GCS folders by topic
 
 **Don't:**
+
 - Include presentation slides (low information density)
 - Use PDFs with DRM restrictions
 - Include duplicate papers
@@ -1069,11 +1185,13 @@ corpus_display_name="ml-platform-docs"
 ### 3. Query Design
 
 **Do:**
+
 - Reference specific concepts you expect in papers
 - Use domain terminology (e.g., "SHAP values", "attention mechanisms")
 - Ask for citations explicitly in `focus` parameter
 
 **Don't:**
+
 - Ask generic questions unrelated to corpus content
 - Assume model knows your papers without retrieval
 - Expect verbatim quotes (chunks are paraphrased)
@@ -1081,11 +1199,13 @@ corpus_display_name="ml-platform-docs"
 ### 4. Cost Management
 
 **Do:**
+
 - Reuse corpora across sessions (one-time import cost)
 - Start with `gemini-2.0-flash-exp` (10x cheaper than Pro)
 - Monitor `total_cost` attribute on interpreter
 
 **Don't:**
+
 - Recreate corpus for every experiment
 - Use `top_k=20` unless necessary
 - Ignore retrieval quality (low scores = wasted tokens)
@@ -1105,6 +1225,7 @@ corpus_display_name="ml-platform-docs"
 | **Monthly total** | **$21.80** |
 
 **Limitations:**
+
 - Limited to ~200K tokens (40 papers max with Gemini 2M context)
 - Loads entire corpus even if only 1-2 papers relevant
 - Cache expires after 1 hour (frequent reloads)
@@ -1122,6 +1243,7 @@ corpus_display_name="ml-platform-docs"
 | **Subsequent months** | **$1.90** |
 
 **Benefits:**
+
 - Scales to 1000s of papers (no context limit)
 - Retrieves only relevant sections (efficient)
 - Persistent corpus (no expiration)

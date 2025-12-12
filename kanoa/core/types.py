@@ -1,5 +1,22 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
+
+
+@dataclass
+class GroundingSource:
+    """Source attribution for RAG-grounded responses.
+
+    Attributes:
+        uri: Source document URI (e.g., GCS path).
+        score: Relevance score (0-1) from semantic retrieval.
+        text: Excerpt from the source document.
+        chunk_id: Unique identifier for the retrieved chunk.
+    """
+
+    uri: str
+    score: float
+    text: str
+    chunk_id: Optional[str] = None
 
 
 @dataclass
@@ -40,3 +57,4 @@ class InterpretationResult:
     backend: str
     usage: Optional[UsageInfo] = None
     metadata: Optional[Dict[str, Any]] = None
+    grounding_sources: Optional[List[GroundingSource]] = None

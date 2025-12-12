@@ -222,6 +222,49 @@ def pytest_addoption(parser):
         default=False,
         help="Force run integration tests, bypassing rate limits",
     )
+    parser.addoption(
+        "--vertex-project",
+        action="store",
+        default=os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("GCP_PROJECT"),
+        help="GCP Project ID for Vertex AI tests",
+    )
+    parser.addoption(
+        "--vertex-location",
+        action="store",
+        default="us-east1",
+        help="GCP Location for Vertex AI tests",
+    )
+    parser.addoption(
+        "--vertex-display-name",
+        action="store",
+        help="Display name for the RAG corpus",
+    )
+    parser.addoption(
+        "--vertex-gcs-uri",
+        action="store",
+        help="GCS URI for importing files (e.g., gs://bucket/path/)",
+    )
+
+
+@pytest.fixture(scope="session")
+def vertex_config(request):
+    """Fixture to get Vertex AI configuration from CLI options."""
+    project = request.config.getoption("--vertex-project")
+    location = request.config.getoption("--vertex-location")
+    corpus_display_name = request.config.getoption("--vertex-display-name")
+    gcs_uri = request.config.getoption("--vertex-gcs-uri")
+
+    if not project:
+        pytest.skip("Skipping Vertex AI tests: --vertex-project not provided")
+    if not corpus_display_name:
+        pytest.skip("Skipping Vertex AI tests: --vertex-display-name not provided")
+
+    return {
+        "project_id": project,
+        "location": location,
+        "corpus_display_name": corpus_display_name,
+        "gcs_uri": gcs_uri,
+    }
 
 
 @pytest.fixture(scope="session", autouse=True)

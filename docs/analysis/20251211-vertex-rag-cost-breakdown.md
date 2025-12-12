@@ -9,11 +9,11 @@
 
 **Good News:** Vertex AI RAG Engine itself is **FREE**. You only pay for underlying infrastructure:
 
-1. ✅ **GCS Storage**: $0.020/GB/month (one-time upload, ongoing storage)
-2. ✅ **Embedding Generation**: $0.025/1M tokens (one-time indexing cost)
-3. ✅ **Vector DB Storage**: ~$0.30-0.50/GB/month (Spanner-backed)
-4. ❌ **NO per-query fees** (retrieval is included in vector DB cost)
-5. ❌ **NO mileage-based costs** for queries (unlimited retrievals)
+1. ** **GCS Storage**: $0.020/GB/month (one-time upload, ongoing storage)
+2. ** **Embedding Generation**: $0.025/1M tokens (one-time indexing cost)
+3. ** **Vector DB Storage**: ~$0.30-0.50/GB/month (Spanner-backed)
+4. ** **NO per-query fees** (retrieval is included in vector DB cost)
+5. ** **NO mileage-based costs** for queries (unlimited retrievals)
 
 **Total for 50 PDFs (~200MB, ~500K tokens):**
 - **Setup (one-time)**: ~$0.50
@@ -39,10 +39,10 @@
 - Cost: `0.2 GB × $0.020 = $0.004/month`
 
 **Key Points:**
-- ✅ **One-time upload** (free ingress to GCS)
-- ✅ **No download fees** when RAG Engine reads files (internal GCP traffic)
-- ✅ **Ongoing cost** as long as files remain in bucket
-- ⚠️ **Tip**: Delete test PDFs after validation to avoid lingering costs
+- ** **One-time upload** (free ingress to GCS)
+- ** **No download fees** when RAG Engine reads files (internal GCP traffic)
+- ** **Ongoing cost** as long as files remain in bucket
+- WARNING: **Tip**: Delete test PDFs after validation to avoid lingering costs
 
 **No Mileage Costs:**
 - Reading PDFs from GCS for indexing = **FREE** (internal GCP traffic)
@@ -66,9 +66,9 @@
 - Cost: `2M chars × ($0.025/1M) = $0.05`
 
 **Key Points:**
-- ✅ **One-time cost** when importing files to corpus
-- ✅ **No re-indexing charges** for queries (embeddings are stored)
-- ⚠️ **Incremental cost** when adding new PDFs to existing corpus
+- ** **One-time cost** when importing files to corpus
+- ** **No re-indexing charges** for queries (embeddings are stored)
+- WARNING: **Incremental cost** when adding new PDFs to existing corpus
 - 💡 **Chunking impact**: 512-token chunks with 100 overlap = ~20% more embeddings than raw tokens
 
 **Per-PDF Indexing Cost:**
@@ -109,9 +109,9 @@
 - Cost: **~$0.30-0.40/month** (Basic Tier sufficient)
 
 **Key Points:**
-- ✅ **Managed service** (no provisioning, scaling automatic)
-- ✅ **Includes backups** (no separate backup charges)
-- ❌ **NO per-query charges** (unlimited retrievals included in DB cost)
+- ** **Managed service** (no provisioning, scaling automatic)
+- ** **Includes backups** (no separate backup charges)
+- ** **NO per-query charges** (unlimited retrievals included in DB cost)
 - 💡 **Scales with corpus size**, not query volume
 
 **No Mileage Costs:**
@@ -130,9 +130,9 @@
 - Query embedding generation: Included in vector DB tier
 
 **Key Points:**
-- ✅ **Unlimited queries** per month (no mileage fees!)
-- ✅ **retrieveContexts API** is free (no LLM invocation)
-- ⚠️ **Only pay for Gemini calls** when using retrieved chunks for generation
+- ** **Unlimited queries** per month (no mileage fees!)
+- ** **retrieveContexts API** is free (no LLM invocation)
+- WARNING: **Only pay for Gemini calls** when using retrieved chunks for generation
 
 **Example:**
 - 1,000 queries/month: **$0.00**
@@ -172,8 +172,8 @@
 - Subsequent queries (cached prompt): `(500 new × $0.075/1M) + (2.5K cached × $0.01875/1M) + (400 out × $0.30/1M) = $0.000205`
 
 **Key Points:**
-- ✅ **Only cost that scales with query volume**
-- ✅ **Much cheaper than context stuffing** (2.5K vs 500K tokens)
+- ** **Only cost that scales with query volume**
+- ** **Much cheaper than context stuffing** (2.5K vs 500K tokens)
 - 💡 **Use flash models** for cost efficiency (10x cheaper than Pro)
 
 ---
@@ -362,8 +362,8 @@ gsutil lifecycle set lifecycle.json gs://your-test-bucket
 
 ### 1. GCS Egress (Usually Free for RAG)
 
-- ✅ **Free**: GCS → Vertex AI (same region, internal traffic)
-- ⚠️ **Charged**: Downloading PDFs to local machine
+- ** **Free**: GCS → Vertex AI (same region, internal traffic)
+- WARNING: **Charged**: Downloading PDFs to local machine
 - 💡 **Tip**: Keep PDFs in GCS, don't download unless needed
 
 ### 2. Multi-Region Deployments
@@ -386,21 +386,21 @@ gsutil lifecycle set lifecycle.json gs://your-test-bucket
 
 ---
 
-## No Mileage-Based Fees! ✅
+## No Mileage-Based Fees! **
 
 **Great News:** Vertex AI RAG Engine does **NOT** charge for:
 
-- ❌ Number of queries/retrievals per month
-- ❌ Number of semantic searches
-- ❌ Number of corpus accesses
-- ❌ Data transfer within GCP (GCS → Vertex AI)
-- ❌ Retrieval API calls (`retrieveContexts`)
+- ** Number of queries/retrievals per month
+- ** Number of semantic searches
+- ** Number of corpus accesses
+- ** Data transfer within GCP (GCS → Vertex AI)
+- ** Retrieval API calls (`retrieveContexts`)
 
 **You ONLY pay for:**
 
-1. ✅ **Storage** (GCS + vector DB) - fixed monthly cost
-2. ✅ **Embeddings** (one-time indexing) - only when adding files
-3. ✅ **Gemini calls** (generation) - only when interpreting with LLM
+1. ** **Storage** (GCS + vector DB) - fixed monthly cost
+2. ** **Embeddings** (one-time indexing) - only when adding files
+3. ** **Gemini calls** (generation) - only when interpreting with LLM
 
 **This is fundamentally different from:**
 
@@ -478,11 +478,11 @@ client = billing.CloudBillingClient()
 
 | Cost Dimension | Billed By | Frequency | Scales With | Mileage Fees? |
 |----------------|-----------|-----------|-------------|---------------|
-| **GCS Storage** | GB/month | Monthly | Corpus size | ❌ No |
-| **Embeddings** | Characters | One-time | # of documents | ❌ No |
-| **Vector DB** | Tier/GB | Monthly | Corpus size | ❌ No |
-| **Retrieval** | N/A | Free | N/A | ❌ No |
-| **Gemini Calls** | Tokens | Per query | Query volume | ✅ Yes* |
+| **GCS Storage** | GB/month | Monthly | Corpus size | ** No |
+| **Embeddings** | Characters | One-time | # of documents | ** No |
+| **Vector DB** | Tier/GB | Monthly | Corpus size | ** No |
+| **Retrieval** | N/A | Free | N/A | ** No |
+| **Gemini Calls** | Tokens | Per query | Query volume | ** Yes* |
 
 *Only component with per-query cost, but unrelated to RAG (standard Gemini pricing)
 

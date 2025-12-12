@@ -35,6 +35,16 @@ def main(args: Optional[List[str]] = None) -> None:
     except ImportError:
         gemini_available = False
 
+    # --- Vertex AI Subcommand ---
+    try:
+        from kanoa.tools import vertex_rag
+
+        vertex_parser = subparsers.add_parser("vertex", help="Vertex AI tools")
+        vertex_rag.register_subcommand(vertex_parser)
+        vertex_available = True
+    except ImportError:
+        vertex_available = False
+
     # --- Load Plugins ---
     if sys.version_info < (3, 10):
         from importlib_metadata import entry_points
@@ -94,6 +104,18 @@ def main(args: Optional[List[str]] = None) -> None:
             gemini_cache.handle_command(parsed_args)
         else:
             gemini_parser.print_help()
+    elif parsed_args.command == "vertex":
+        if not vertex_available:
+            print(
+                "Error: Vertex AI tools not available. "
+                "Install with: pip install kanoa[vertexai]",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        from kanoa.tools import vertex_rag
+
+        vertex_rag.handle_command(parsed_args)
     elif hasattr(parsed_args, "func"):
         parsed_args.func(parsed_args)
     else:

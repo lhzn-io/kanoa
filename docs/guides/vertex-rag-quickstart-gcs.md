@@ -35,10 +35,11 @@ BILLING_ACCOUNT="01ABCD-234567-89ABCD"  # Replace with your billing account
 gcloud billing projects link $PROJECT_ID \
   --billing-account=$BILLING_ACCOUNT
 
-echo "✓ Created project: $PROJECT_ID"
+echo "OK: Created project: $PROJECT_ID"
 ```
 
 **Alternative:** Use existing project if you have one:
+
 ```bash
 PROJECT_ID="your-existing-project"
 gcloud config set project $PROJECT_ID
@@ -56,7 +57,7 @@ gcloud services enable storage.googleapis.com
 # Verify
 gcloud services list --enabled | grep -E "aiplatform|storage"
 
-echo "✓ APIs enabled"
+echo "OK: APIs enabled"
 ```
 
 ---
@@ -64,9 +65,9 @@ echo "✓ APIs enabled"
 ## Step 3: Create GCS Bucket & Upload PDFs (3 min)
 
 ```bash
-# Create bucket in same region as Vertex AI (recommended: us-central1)
+# Create bucket in same region as Vertex AI (recommended: us-east1)
 BUCKET_NAME="${PROJECT_ID}-rag-papers"
-gsutil mb -p $PROJECT_ID -l us-central1 gs://$BUCKET_NAME
+gsutil mb -p $PROJECT_ID -l us-east1 gs://$BUCKET_NAME
 
 # Upload your test PDFs
 # Option A: Upload from local directory
@@ -79,10 +80,11 @@ gsutil cp paper2.pdf gs://$BUCKET_NAME/papers/
 # Verify upload
 gsutil ls gs://$BUCKET_NAME/papers/
 
-echo "✓ Uploaded PDFs to gs://$BUCKET_NAME/papers/"
+echo "OK: Uploaded PDFs to gs://$BUCKET_NAME/papers/"
 ```
 
 **Recommended Test Papers:**
+
 - 5-10 PDFs, each 1-5 MB
 - Text-searchable (not scanned images)
 - Related topic (e.g., all ML papers, all healthcare papers)
@@ -96,7 +98,7 @@ echo "✓ Uploaded PDFs to gs://$BUCKET_NAME/papers/"
 gcloud auth application-default login
 
 # Verify credentials
-gcloud auth application-default print-access-token > /dev/null && echo "✓ ADC configured"
+gcloud auth application-default print-access-token > /dev/null && echo "OK: ADC configured"
 ```
 
 **Important:** This allows local Python scripts to authenticate as you with your GCP permissions.
@@ -115,10 +117,57 @@ pip install google-cloud-aiplatform
 
 ---
 
-## Step 6: Test RAG Corpus Creation (Python)
+## Step 6: Test RAG Corpus Creation (CLI)
 
-Create a test script `test_rag.py`:
+Instead of writing Python scripts, you can use the `kanoa` CLI to manage your RAG corpus.
 
+**1. Create the Corpus**
+
+```bash
+kanoa vertex rag create \
+    --project $PROJECT_ID \
+    --display-name "test-papers-kb" \
+    --region $LOCATION
+```
+
+**2. Import Files from GCS**
+
+```bash
+kanoa vertex rag import \
+    --project $PROJECT_ID \
+    --display-name "test-papers-kb" \
+    --gcs-uri "gs://${BUCKET_NAME}/papers/" \
+    --region $LOCATION
+```
+
+**3. Verify Retrieval (Interactive Chat)**
+
+Once the import is complete (it may take a few minutes), you can test retrieval interactively:
+
+```bash
+kanoa vertex rag chat \
+    --project $PROJECT_ID \
+    --display-name "test-papers-kb" \
+    --region $LOCATION
+```
+
+This will open a chat session where you can ask questions about your documents.
+
+---
+
+## Step 7: Clean Up
+
+When you are done, you can delete the corpus to avoid storage charges:
+
+```bash
+kanoa vertex rag delete \
+    --project $PROJECT_ID \
+    --display-name "test-papers-corpus" \
+    --region $LOCATION
+```
+
+<!-- Old Python script removed -->
+<!--
 ```python
 """
 Minimal RAG Engine test script.
@@ -131,7 +180,7 @@ import time
 
 # Configuration
 PROJECT_ID = "kanoa-rag-test-1234567890"  # Replace with your project
-LOCATION = "us-central1"
+LOCATION = "us-east1"
 GCS_URI = "gs://kanoa-rag-test-1234567890-rag-papers/papers/"  # Replace
 
 # Initialize Vertex AI
@@ -153,7 +202,7 @@ corpus = rag.create_corpus(
     ),
 )
 
-print(f"✓ Corpus created: {corpus.name}")
+print(f"OK: Corpus created: {corpus.name}")
 
 # Import files from GCS
 print(f"\nImporting files from {GCS_URI}...")
@@ -169,7 +218,7 @@ rag.import_files(
     max_embedding_requests_per_min=1000,
 )
 
-print("✓ Import started (async operation)")
+print("OK: Import started (async operation)")
 print("  Note: Import runs in background. May take 2-5 minutes for 10 PDFs.")
 
 # Wait for import to complete
@@ -186,7 +235,7 @@ try:
         text="test query",
         rag_retrieval_config=rag.RagRetrievalConfig(top_k=1),
     )
-    print(f"✓ Corpus is operational (retrieved {len(response.contexts.contexts)} chunks)")
+    print(f"OK: Corpus is operational (retrieved {len(response.contexts.contexts)} chunks)")
 except Exception as e:
     print(f"⚠ Could not verify import yet: {e}")
     print("  Try again in 2-3 minutes if import is still processing")
@@ -217,14 +266,14 @@ for i, context in enumerate(response.contexts.contexts, 1):
     print()
 
 print("="*60)
-print("✓ RAG Engine test complete!")
+print("OK: RAG Engine test complete!")
 print("="*60)
 
 # Cleanup instructions
 print(f"\nTo delete this test corpus:")
 print(f"  rag.delete_corpus(name='{corpus.name}')")
 print(f"\nTo delete GCS bucket:")
-print(f"  gsutil rm -r gs://{GCS_URI.split('/')[2]}")
+print(f"  gsutil rm -r gs://{GCS_URI.split['/'](2)}")
 print(f"\nTo delete test project:")
 print(f"  gcloud projects delete {PROJECT_ID}")
 ```
@@ -238,19 +287,19 @@ python test_rag.py
 **Expected Output:**
 
 ```
-Initializing Vertex AI (project: kanoa-rag-test-1234567890, region: us-central1)...
+Initializing Vertex AI (project: kanoa-rag-test-1234567890, region: us-east1)...
 
 Creating RAG corpus...
-✓ Corpus created: projects/123456/locations/us-central1/ragCorpora/789012
+OK: Corpus created: projects/123456/locations/us-east1/ragCorpora/789012
 
 Importing files from gs://kanoa-rag-test-1234567890-rag-papers/papers/...
-✓ Import started (async operation)
+OK: Import started (async operation)
   Note: Import runs in background. May take 2-5 minutes for 10 PDFs.
 
 Waiting 30 seconds for import to process...
 
 Listing imported files...
-✓ Corpus is operational (retrieved 1 chunks)
+OK: Corpus is operational (retrieved 1 chunks)
 
 ============================================================
 Testing semantic retrieval...
@@ -272,7 +321,7 @@ Retrieved 3 chunks:
    Text preview: The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration...
 
 ============================================================
-✓ RAG Engine test complete!
+OK: RAG Engine test complete!
 ============================================================
 ```
 
@@ -290,7 +339,7 @@ import matplotlib.pyplot as plt
 # Create RAG knowledge base
 rag_kb = VertexRAGKnowledgeBase(
     project_id="kanoa-rag-test-1234567890",  # Your test project
-    location="us-central1",
+    location="us-east1",
     corpus_display_name="test-papers-corpus",
 )
 
@@ -341,9 +390,9 @@ import vertexai
 PROJECT_ID = 'kanoa-rag-test-1234567890'
 CORPUS_NAME = 'projects/.../ragCorpora/...'  # From test output
 
-vertexai.init(project=PROJECT_ID, location='us-central1')
+vertexai.init(project=PROJECT_ID, location='us-east1')
 rag.delete_corpus(name=CORPUS_NAME)
-print('✓ Corpus deleted')
+print('OK: Corpus deleted')
 "
 
 # Delete GCS bucket
@@ -352,7 +401,7 @@ gsutil rm -r gs://kanoa-rag-test-1234567890-rag-papers
 # Delete entire test project (removes all resources and billing)
 gcloud projects delete kanoa-rag-test-1234567890
 
-echo "✓ Cleanup complete"
+echo "OK: Cleanup complete"
 ```
 
 ---

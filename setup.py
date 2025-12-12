@@ -15,6 +15,7 @@ GEMINI_DEPS = ["google-genai>=1.0.0"]
 CLAUDE_DEPS = ["anthropic>=0.40.0"]
 OPENAI_DEPS = ["openai>=1.0.0"]
 GCLOUD_DEPS = ["google-cloud-storage>=2.0.0"]
+VERTEXAI_DEPS = ["google-cloud-aiplatform>=1.40.0"]  # For Vertex AI RAG Engine
 
 # Notebook display enhancements (IPython is included via jupyter/ipykernel)
 NOTEBOOK_DEPS = ["ipython>=7.0.0"]
@@ -92,10 +93,16 @@ setup(
         "openai": OPENAI_DEPS,
         "local": OPENAI_DEPS,  # Alias for vLLM/Ollama users
         "gcloud": GCLOUD_DEPS,
+        "vertexai": VERTEXAI_DEPS,
         # Notebook enhancements (rich HTML display)
         "notebook": NOTEBOOK_DEPS,
         # Convenience bundles
-        "all": GEMINI_DEPS + CLAUDE_DEPS + OPENAI_DEPS + NOTEBOOK_DEPS + GCLOUD_DEPS,
+        "all": GEMINI_DEPS
+        + CLAUDE_DEPS
+        + OPENAI_DEPS
+        + NOTEBOOK_DEPS
+        + GCLOUD_DEPS
+        + VERTEXAI_DEPS,
         "backends": GEMINI_DEPS + CLAUDE_DEPS + OPENAI_DEPS,
         # Development
         "dev": DEV_DEPS
@@ -103,7 +110,8 @@ setup(
         + CLAUDE_DEPS
         + OPENAI_DEPS
         + NOTEBOOK_DEPS
-        + GCLOUD_DEPS,
+        + GCLOUD_DEPS
+        + VERTEXAI_DEPS,
         "docs": DOCS_DEPS,
     },
     classifiers=[
