@@ -6,6 +6,7 @@
 [![Docs](https://img.shields.io/badge/docs-kanoa.docs.lhzn.io-blue)](https://kanoa.docs.lhzn.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Companion: kanoa-mlops](https://img.shields.io/badge/companion-kanoa--mlops-purple)](https://github.com/lhzn-io/kanoa-mlops)
 
 `kanoa` brings the power of a dedicated AI research assistant directly into your Python workflows — whether in Jupyter notebooks, Streamlit apps, or automated scripts. It programmatically interprets visualizations, tables, and results using multimodal LLMs (Molmo, Gemini, Claude, OpenAI), grounded in your project's documentation and literature.
 
@@ -13,8 +14,8 @@
 
 | Backend | Best For | Getting Started |
 | :--- | :--- | :--- |
-| `vllm` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3 12B via vLLM | [Guide](./docs/source/user_guide/getting_started_vllm.md) |
-| `gemini` | Free tier, native PDF support, 1M context, caching | [Guide](./docs/source/user_guide/getting_started_gemini.md) |
+| `vllm` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3, Olmo 3 | [Guide](./docs/source/user_guide/getting_started_vllm.md) |
+| `gemini` | Free tier, native PDF support, Vertex AI RAG Engine | [Guide](./docs/source/user_guide/getting_started_gemini.md) |
 | `claude` | Strong reasoning, vision support | [Guide](./docs/source/user_guide/getting_started_claude.md) |
 | `openai` | GPT models, Azure OpenAI | [Guide](./docs/source/user_guide/backends.md#openai) |
 
@@ -23,11 +24,35 @@ For detailed backend comparison, see [Backends Overview](./docs/source/user_guid
 ## Features
 
 - **Multi-Backend Support**: Seamlessly switch between vLLM (local), Gemini, Claude, and OpenAI.
-- **Provider-Native Grounding**: Offloads knowledge retrieval to best-in-breed provider solutions.
+- **Enterprise Grounding**: Native integration with **Vertex AI RAG Engine** for scalable, secure knowledge retrieval from thousands of documents.
 - **Native Vision**: Uses multimodal capabilities to "see" complex plots and diagrams.
 - **Cost Optimized**: Intelligent context caching and token usage tracking.
-- **Knowledge Base**: Support for text (Markdown) and PDF knowledge bases.
+- **Knowledge Base**: Support for text (Markdown), PDF, and managed RAG knowledge bases.
 - **Notebook-Native Logging**: see the [Logging Guide](./docs/source/user_guide/logging.md).
+
+## Local & Edge Deployment
+
+Run state-of-the-art open weights models locally using our companion library, [`kanoa-mlops`](https://github.com/lhzn-io/kanoa-mlops).
+
+- **Privacy First**: Your data never leaves your machine.
+- **Models**: Support for **Gemma 3**, **Molmo**, and **Olmo 3**.
+- **Performance**: Optimized for consumer hardware (RTX 4090/5080) and edge devices (NVIDIA Jetson Thor).
+
+### Benchmarks (NVIDIA RTX 5080)
+
+| Model | Task | Speed |
+| :--- | :--- | :--- |
+| **Molmo-7B** | Complex Plot Interpretation | **92.8 tokens/sec** |
+| **Molmo-7B** | Data Interpretation | **59.5 tokens/sec** |
+
+### Benchmarks (NVIDIA Jetson Thor)
+
+| Model | Task | Speed |
+| :--- | :--- | :--- |
+| **Molmo-7B** | Complex Plot Interpretation | **9.6 tokens/sec** |
+| **Molmo-7B** | Data Interpretation | **9.5 tokens/sec** |
+| **Gemma 3 12B** | Vision (Chart Analysis) | **4.3 tokens/sec** |
+| **Gemma 3 12B** | Code Generation | **4.4 tokens/sec** |
 
 ## Installation
 
