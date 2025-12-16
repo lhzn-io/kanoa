@@ -16,6 +16,7 @@ markers = [
   "openai: marks tests that use the OpenAI backend",
   "molmo: marks tests that use the Molmo backend",
   "vertex: marks tests that use the Vertex AI backend",
+  "streaming: marks tests that test streaming functionality",
 ]
 
 # =============================================================================

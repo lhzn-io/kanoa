@@ -7,6 +7,76 @@ import sys
 from typing import List, Optional
 
 
+def handle_interpret(args: argparse.Namespace) -> None:
+    """Handle the interpret command."""
+    from kanoa.core.interpreter import AnalyticsInterpreter
+
+    # Read input data if provided
+    data = None
+    if args.data:
+        try:
+            with open(args.data, "r") as f:
+                data = f.read()
+        except Exception as e:
+            print(f"Error reading data file: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    # Read KB context if provided
+    kb_context = None
+    if args.kb:
+        try:
+            with open(args.kb, "r") as f:
+                kb_context = f.read()
+        except Exception:
+            # Assume string if file fails? Or explicit flag?
+            # For CLI, explicit files are better.
+            kb_context = args.kb
+
+    # Initialize interpreter
+    interpreter = AnalyticsInterpreter(
+        backend=args.backend,
+        model=args.model,
+        api_key=args.api_key,
+        verbose=args.verbose,
+    )
+
+    print(f"Analyzing with {interpreter.backend.backend_name}...", file=sys.stderr)
+
+    # Invoke interpret (returns iterator)
+    iterator = interpreter.interpret(
+        context=args.context,
+        data=data,
+        focus=args.focus,
+        kb_context=kb_context,
+        # CLI implies display_result is handled here manually
+        display_result=False,
+        stream=True,
+    )
+
+    # Consume stream
+    try:
+        for chunk in iterator:
+            if chunk.type == "text":
+                sys.stdout.write(chunk.content)
+                sys.stdout.flush()
+            elif chunk.type == "status":
+                # Print status to stderr to avoid polluting pipeable stdout
+                print(f"[{chunk.content}]", file=sys.stderr)
+            elif chunk.type == "usage" and chunk.usage:
+                print(
+                    f"\nUsage: {chunk.usage.input_tokens} in / {chunk.usage.output_tokens} out (${chunk.usage.cost:.4f})",
+                    file=sys.stderr,
+                )
+    except KeyboardInterrupt:
+        print("\nInterrupted.", file=sys.stderr)
+        sys.exit(130)
+    except Exception as e:
+        print(f"\nError: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    print("", file=sys.stdout)  # Final newline
+
+
 def main(args: Optional[List[str]] = None) -> None:
     """Main entry point for the kanoa CLI."""
     if args is None:
@@ -16,6 +86,26 @@ def main(args: Optional[List[str]] = None) -> None:
         description="kanoa: AI-powered data science interpretation library."
     )
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
+
+    # --- Interpret Subcommand ---
+    interpret_parser = subparsers.add_parser(
+        "interpret", help="Interpret data or context"
+    )
+    interpret_parser.add_argument(
+        "context", nargs="?", help="Context for interpretation"
+    )
+    interpret_parser.add_argument("--data", help="Path to data file")
+    interpret_parser.add_argument("--kb", help="Path to knowledge base file")
+    interpret_parser.add_argument("--focus", help="Focus for analysis")
+    interpret_parser.add_argument(
+        "--backend", default="gemini", help="Backend to use (gemini, openai, claude)"
+    )
+    interpret_parser.add_argument("--model", help="Model name override")
+    interpret_parser.add_argument("--api-key", help="API key override")
+    interpret_parser.add_argument(
+        "-v", "--verbose", action="count", default=0, help="Verbosity level"
+    )
+    interpret_parser.set_defaults(func=handle_interpret)
 
     # --- Gemini Subcommand (conditional on backend availability) ---
     try:
@@ -44,26 +134,6 @@ def main(args: Optional[List[str]] = None) -> None:
         vertex_available = True
     except ImportError:
         vertex_available = False
-
-    # --- Load Plugins ---
-    if sys.version_info < (3, 10):
-        from importlib_metadata import entry_points
-    else:
-        from importlib.metadata import entry_points
-
-    # Load commands from plugins (e.g., kanoa-mlops)
-    # Plugins should export a function `register(subparsers)`
-    # Group: kanoa.cli.commands
-    eps = entry_points(group="kanoa.cli.commands")
-    for ep in eps:
-        try:
-            register_func = ep.load()
-            register_func(subparsers)
-        except Exception as e:
-            # We don't want to crash the CLI if a plugin fails to load,
-            # but we should probably warn in verbose mode.
-            # For now, just print a suppressed warning to stderr if needed, or ignore.
-            print(f"Warning: Failed to load plugin {ep.name}: {e}", file=sys.stderr)
 
     # --- Load Plugins ---
     if sys.version_info < (3, 10):

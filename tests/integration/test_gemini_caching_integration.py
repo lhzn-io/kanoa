@@ -364,6 +364,7 @@ class TestGeminiCachingIntegration:
 
         try:
             result = interpreter_with_cache.interpret(
+                stream=False,
                 data=data,
                 context=context,
                 focus=focus,
@@ -416,6 +417,7 @@ class TestGeminiCachingIntegration:
 
         try:
             result = interpreter_with_cache.interpret(
+                stream=False,
                 data=data,
                 context=context,
                 focus=focus,
@@ -477,6 +479,7 @@ class TestGeminiCachingIntegration:
         # Next query should work (creates new cache)
         try:
             result = interpreter_with_cache.interpret(
+                stream=False,
                 data=data,
                 context=context,
                 focus=focus,
@@ -547,6 +550,7 @@ class TestGeminiNoCachingBaseline:
 
         try:
             result = interpreter_no_cache.interpret(
+                stream=False,
                 data=data,
                 context=context,
                 focus=focus,

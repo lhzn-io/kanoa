@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Iterator, Optional
 
 import matplotlib.pyplot as plt
 
 from ..converters.dataframe import data_to_text
 from ..converters.figure import fig_to_base64
-from ..core.types import InterpretationResult
+from ..core.types import InterpretationChunk, InterpretationResult
 from ..utils.prompts import PromptTemplates
 
 if TYPE_CHECKING:
@@ -45,12 +45,66 @@ class BaseBackend(ABC):
         kb_context: Optional[str],
         custom_prompt: Optional[str],
         **kwargs: Any,
-    ) -> InterpretationResult:
+    ) -> Iterator["InterpretationChunk"]:
         """
-        Interpret analytical output.
+        Yields chunks of generated text or status updates.
 
         Must be implemented by subclasses.
         """
+
+    def interpret_blocking(
+        self,
+        fig: Optional[plt.Figure],
+        data: Optional[Any],
+        context: Optional[str],
+        focus: Optional[str],
+        kb_context: Optional[str],
+        custom_prompt: Optional[str],
+        **kwargs: Any,
+    ) -> InterpretationResult:
+        """
+        Blocking version of interpret that accumulates chunks into a final result.
+        Preserves backward compatibility.
+        """
+        text_chunks = []
+        usage = None
+        metadata = {}
+
+        try:
+            # Consume the iterator
+            for chunk in self.interpret(
+                fig, data, context, focus, kb_context, custom_prompt, **kwargs
+            ):
+                if chunk.type == "text":
+                    text_chunks.append(chunk.content)
+                elif chunk.type == "usage" and chunk.usage:
+                    usage = chunk.usage
+
+                # Accumulate metadata from any chunk
+                if chunk.metadata:
+                    metadata.update(chunk.metadata)
+
+                # We ignore status chunks in the final blocking result
+
+        except Exception as e:
+            # If an error occurs during streaming (validation, connection, etc.)
+            # we catch it to prevent crashing the blocking call,
+            # and append the error to the text output, similar to legacy behavior.
+            from ..utils.logging import ilog_warning
+
+            ilog_warning(f"Error during interpretation: {e}")
+            # If we haven't yielded an error text chunk yet, append one
+            if not any(str(e) in c for c in text_chunks):
+                text_chunks.append(f"\n❌ Error: {e!s}")
+
+        full_text = "".join(text_chunks)
+
+        return InterpretationResult(
+            text=full_text,
+            backend=self.backend_name,
+            usage=usage,
+            metadata=metadata if metadata else None,
+        )
 
     @abstractmethod
     def _build_prompt(

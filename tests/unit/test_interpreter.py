@@ -45,7 +45,7 @@ class TestAnalyticsInterpreter:
         ):
             interpreter = AnalyticsInterpreter(backend="gemini")
             fig = plt.figure()
-            result = interpreter.interpret(fig=fig)
+            result = interpreter.interpret(fig=fig, stream=False)
 
             assert result.text == "Test interpretation"
             backend_instance.interpret.assert_called_once()
@@ -68,7 +68,7 @@ class TestAnalyticsInterpreter:
         ):
             interpreter = AnalyticsInterpreter(backend="gemini")
             data = {"key": "value"}
-            result = interpreter.interpret(data=data)
+            result = interpreter.interpret(data=data, stream=False)
 
             assert result.text == "Test interpretation"
             backend_instance.interpret.assert_called_once()
@@ -109,8 +109,8 @@ class TestAnalyticsInterpreter:
         ):
             interpreter = AnalyticsInterpreter(backend="gemini", track_costs=True)
             fig = plt.figure()
-            interpreter.interpret(fig=fig)
-            interpreter.interpret(fig=fig)
+            interpreter.interpret(fig=fig, stream=False)
+            interpreter.interpret(fig=fig, stream=False)
 
             assert interpreter.backend.total_cost == 0.02
             assert interpreter.backend.total_tokens["input"] == 20
@@ -170,7 +170,7 @@ class TestAnalyticsInterpreter:
             return_value=MockBackendClass,
         ):
             interpreter = AnalyticsInterpreter(backend="gemini")
-            interpreter.interpret(data="test")
+            interpreter.interpret(data="test", stream=False)
 
             summary = interpreter.get_cost_summary()
             assert summary["backend"] == "gemini"

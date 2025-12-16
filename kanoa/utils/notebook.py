@@ -459,6 +459,77 @@ def format_cost_summary(summary: Dict[str, Any]) -> str:
 | **Avg Cost/Call** | ${summary.get("avg_cost_per_call", 0):.4f} |"""
 
 
+def stream_interpretation(iterator: Any, backend_name: str = "unknown") -> Any:
+    """
+    Stream interpretation chunks to Jupyter output.
+
+    Wraps the iterator to side-effect print chunks as they arrive,
+    while yielding them back to the caller.
+    """
+    if not _check_ipython():
+        # Fallback for terminal: just print text chunks
+        for chunk in iterator:
+            if chunk.type == "text":
+                print(chunk.content, end="", flush=True)
+            elif chunk.type == "status":
+                pass  # Squelch status in terminal to avoid clutter? Or print?
+            yield chunk
+        return
+
+    try:
+        import ipywidgets as widgets
+        from IPython.display import display
+    except ImportError:
+        # Fallback if ipywidgets not installed even if IPython is present
+        for chunk in iterator:
+            if chunk.type == "text":
+                print(chunk.content, end="", flush=True)
+            yield chunk
+        return
+
+    # Create output widget
+    out = widgets.Output()
+    display(out)
+
+    text_buffer = []
+    status_label = widgets.Label(value="Initializing...")
+    display(status_label)
+
+    # We use a simple approach: update the markdown output periodically
+    # or just print to the output widget?
+    # Printing to output widget is safest for streaming text.
+
+    # Actually, let's just use simple print for now within the widget context
+    # or update a handle.
+
+    # Better: Use a single Markdown handle and update it?
+    # That flickers.
+    # Let's just stream text to the widget.
+
+    try:
+        with out:
+            for chunk in iterator:
+                if chunk.type == "text":
+                    print(chunk.content, end="")
+                    text_buffer.append(chunk.content)
+                elif chunk.type == "status":
+                    status_label.value = f"Status: {chunk.content}"
+                elif chunk.type == "usage":
+                    # Display final styled block
+                    pass
+
+                yield chunk
+
+            # Clear status at end
+            status_label.value = "Done"
+            status_label.close()
+
+    except Exception as e:
+        with out:
+            print(f"\nError streaming: {e}")
+        raise e
+
+
 __all__ = [
     # Display functions
     "display_result",

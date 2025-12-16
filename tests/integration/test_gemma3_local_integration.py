@@ -121,7 +121,9 @@ class TestGemma3LocalIntegration:
         print(f"\n[USER] {context} | {focus}")
 
         try:
-            result = interpreter.interpret(fig=plt.gcf(), context=context, focus=focus)
+            result = interpreter.interpret(
+                stream=False, fig=plt.gcf(), context=context, focus=focus
+            )
         except Exception as e:
             pytest.fail(f"Gemma 3 API call failed: {e}")
 
@@ -166,7 +168,9 @@ class TestGemma3LocalIntegration:
         print(f"\n[USER] {context} | {focus}")
 
         try:
-            result = interpreter.interpret(data=data, context=context, focus=focus)
+            result = interpreter.interpret(
+                stream=False, data=data, context=context, focus=focus
+            )
         except Exception as e:
             pytest.fail(f"Gemma 3 API call failed: {e}")
 

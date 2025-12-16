@@ -176,19 +176,21 @@ class TestGeminiContextCaching:
         cast("Any", backend.client.caches.create).return_value = mock_cache
         cast("Any", backend.client.caches.list).return_value = []
 
-        # Mock generate response
-        mock_response = MagicMock()
-        mock_response.text = "Cached interpretation"
-        mock_response.usage_metadata = MagicMock()
-        mock_response.usage_metadata.prompt_token_count = 100
-        mock_response.usage_metadata.candidates_token_count = 50
-        mock_response.usage_metadata.cached_content_token_count = 80
-        cast("Any", backend.client.models.generate_content).return_value = mock_response
+        # Mock generate response stream
+        mock_chunk = MagicMock()
+        mock_chunk.text = "Cached interpretation"
+        mock_chunk.usage_metadata = MagicMock()
+        mock_chunk.usage_metadata.prompt_token_count = 100
+        mock_chunk.usage_metadata.candidates_token_count = 50
+        mock_chunk.usage_metadata.cached_content_token_count = 80
+        cast("Any", backend.client.models.generate_content_stream).return_value = [
+            mock_chunk
+        ]
 
         # Large enough for caching (> 2048 tokens for gemini-3-pro-preview)
         large_kb = "Knowledge base content with enough words. " * 400
 
-        result = backend.interpret(
+        result = backend.interpret_blocking(
             fig=None,
             data="Test data",
             context=None,

@@ -77,15 +77,15 @@ class TestClaudeIntegration:
         print(f"\n[user] {context} | {focus}")
 
         try:
-            result = interpreter.interpret(fig=plt.gcf(), context=context, focus=focus)
+            result = interpreter.interpret(
+                stream=False, fig=plt.gcf(), context=context, focus=focus
+            )
         except Exception as e:
             pytest.fail(f"Claude API call failed: {e}")
 
         # 3. Assertions (Golden Set check)
-        print(
-            f"[model] {result.metadata.get('model', 'AI')}: "
-            f"{result.text[:50].replace(chr(10), ' ')}..."
-        )
+        model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
+        print(f"[model] {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
         assert result.text is not None
         assert len(result.text) > 50
@@ -116,12 +116,12 @@ class TestClaudeIntegration:
 
         print(f"\n[user] {context} | {focus}")
 
-        result = interpreter.interpret(data=data, context=context, focus=focus)
-
-        print(
-            f"[model] {result.metadata.get('model', 'AI')}: "
-            f"{result.text[:50].replace(chr(10), ' ')}..."
+        result = interpreter.interpret(
+            stream=False, data=data, context=context, focus=focus
         )
+
+        model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
+        print(f"[model] {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
         assert "increase" in result.text.lower() or "growth" in result.text.lower()
         assert "Site C" in result.text
@@ -164,6 +164,7 @@ The sine wave represents simulated dive depth over time.
         plt.title("Dive Depth Simulation")
 
         result = kb_interpreter.interpret(
+            stream=False,
             fig=plt.gcf(),
             context="Marine biology dive profile",
             focus="Interpret using domain knowledge",

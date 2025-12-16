@@ -58,3 +58,14 @@ class InterpretationResult:
     usage: Optional[UsageInfo] = None
     metadata: Optional[Dict[str, Any]] = None
     grounding_sources: Optional[List[GroundingSource]] = None
+
+
+@dataclass
+class InterpretationChunk:
+    """A chunk of streaming interpretation data."""
+
+    content: str
+    type: str  # "text", "status", "usage"
+    is_final: bool = False
+    usage: Optional[UsageInfo] = None
+    metadata: Optional[Dict[str, Any]] = None

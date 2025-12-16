@@ -1,9 +1,9 @@
 import os
-from typing import Any, Optional
+from typing import Any, Iterator, Optional, cast
 
 import matplotlib.pyplot as plt
 
-from ..core.types import InterpretationResult, UsageInfo
+from ..core.types import InterpretationChunk, UsageInfo
 from ..pricing import USER_CONFIG_PATH, get_model_pricing
 from ..utils.logging import ilog_debug, ilog_info, ilog_warning
 from .base import BaseBackend
@@ -96,9 +96,9 @@ class OpenAIBackend(BaseBackend):
         kb_context: Optional[str],
         custom_prompt: Optional[str],
         **kwargs: Any,
-    ) -> InterpretationResult:
+    ) -> Iterator[InterpretationChunk]:
         """
-        Interpret using OpenAI-compatible model.
+        Interpret using OpenAI-compatible model (streaming).
 
         Note: Vision support depends on the underlying model.
         """
@@ -106,6 +106,15 @@ class OpenAIBackend(BaseBackend):
 
         if self.verbose >= 1:
             ilog_info(f"Calling {self.model} (call #{self.call_count})", title="OpenAI")
+
+        yield InterpretationChunk(
+            content=f"Connecting to {self.model}...", type="status"
+        )
+
+        # Yield metadata
+        yield InterpretationChunk(
+            content="", type="meta", metadata={"model": self.model}
+        )
 
         # Build prompt
         prompt = self._build_prompt(context, focus, kb_context, custom_prompt)
@@ -145,45 +154,60 @@ class OpenAIBackend(BaseBackend):
                 )
 
         try:
-            response = self.client.chat.completions.create(
+            # Stream response
+            stream = self.client.chat.completions.create(
                 model=self.model,
-                messages=messages,  # type: ignore[arg-type]
+                messages=cast("Any", messages),
                 max_tokens=self.max_tokens,
                 temperature=kwargs.get("temperature", self.temperature),
+                stream=True,
+                stream_options={
+                    "include_usage": True
+                },  # Request usage stats in final chunk
             )
 
-            # Extract response
-            interpretation = response.choices[0].message.content or ""
+            text_aggregated = ""
+            final_usage = None
 
-            # Calculate usage
-            usage = self._calculate_usage(response.usage) if response.usage else None
+            for chunk in stream:
+                # Handle text content
+                if chunk.choices and chunk.choices[0].delta.content:
+                    delta = chunk.choices[0].delta.content
+                    text_aggregated += delta
+                    yield InterpretationChunk(content=delta, type="text")
 
-            if self.verbose >= 1 and usage:
-                ilog_info(
-                    f"Tokens: {usage.input_tokens} in / {usage.output_tokens} out "
-                    f"(${usage.cost:.4f})",
-                    title="OpenAI",
+                # Handle usage (typically in the last chunk with stream_options)
+                if hasattr(chunk, "usage") and chunk.usage:
+                    final_usage = self._calculate_usage(chunk.usage)
+
+            # If usage provided
+            if final_usage:
+                # Update shared stats
+                # Note: _calculate_usage returns UsageInfo but doesn't update self.total_* automatically
+                # We should update it here
+                if hasattr(self, "total_tokens"):
+                    self.total_tokens["input"] += final_usage.input_tokens
+                    self.total_tokens["output"] += final_usage.output_tokens
+                    self.total_cost += final_usage.cost
+
+                if self.verbose >= 1:
+                    ilog_info(
+                        f"Tokens: {final_usage.input_tokens} in / {final_usage.output_tokens} out "
+                        f"(${final_usage.cost:.4f})",
+                        title="OpenAI",
+                    )
+
+                yield InterpretationChunk(
+                    content="", type="usage", is_final=True, usage=final_usage
                 )
-            if self.verbose >= 2:
-                ilog_debug(
-                    f"Response length: {len(interpretation)} chars", title="Response"
-                )
-
-            return InterpretationResult(
-                text=interpretation,
-                backend="openai",
-                usage=usage,
-                metadata={
-                    "model": self.model,
-                    "api_base": self.api_base,
-                },
-            )
+            else:
+                # If no usage returned (e.g. older API versions or some local providers), yield empty final
+                yield InterpretationChunk(content="", type="usage", is_final=True)
 
         except Exception as e:
             ilog_warning(f"API call failed: {e}", title="OpenAI")
-            return InterpretationResult(
-                text=f"❌ **Error**: {e!s}", backend="openai", usage=None
-            )
+            yield InterpretationChunk(content=f"\n❌ Error: {e!s}", type="text")
+            raise e
 
     def _build_prompt(
         self,
