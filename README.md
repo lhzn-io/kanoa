@@ -14,7 +14,7 @@
 
 | Backend | Best For | Getting Started |
 | :--- | :--- | :--- |
-| `vllm` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3, Olmo 3 | [Guide](./docs/source/user_guide/getting_started_vllm.md) |
+| `vllm` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3, Olmo 3 | [Guide](./docs/source/user_guide/getting_started_local.md) |
 | `gemini` | Free tier, native PDF support, Vertex AI RAG Engine | [Guide](./docs/source/user_guide/getting_started_gemini.md) |
 | `claude` | Strong reasoning, vision support | [Guide](./docs/source/user_guide/getting_started_claude.md) |
 | `openai` | GPT models, Azure OpenAI | [Guide](./docs/source/user_guide/backends.md#openai) |
@@ -114,16 +114,21 @@ plt.title("Projectile Trajectory")
 
 # 2. Ask Kanoa to debug
 interpreter = AnalyticsInterpreter(backend="gemini")
-result = interpreter.interpret(
+# Returns a stream by default
+iterator = interpreter.interpret(
     fig=plt.gcf(),
     context="Simulating a projectile launch. Something looks wrong.",
-    focus="Identify the physics error in the trajectory."
+    focus="Identify the physics error in the trajectory.",
 )
-print(result.text)
+
+# Consume the stream
+for chunk in iterator:
+    if chunk.type == "text":
+        print(chunk.content, end="")
 ```
 
 `kanoa`'s response:
-> "The plot shows a linear relationship between height and time, which indicates constant velocity. A projectile under gravity should follow a parabolic path ($y = v_0t - \frac{1}{2}gt^2$). The code is likely missing the $t^2$ term in the gravity component."
+> "The plot shows a linear relationship between height and time..."
 
 ### Using Claude
 
@@ -131,10 +136,12 @@ print(result.text)
 # Ensure ANTHROPIC_API_KEY is set
 interpreter = AnalyticsInterpreter(backend='claude')
 
+# Use stream=False for blocking behavior (returns legacy result object)
 result = interpreter.interpret(
     fig=plt.gcf(),
     context="Analyzing environmental data for climate trends",
-    focus="Explain any regime changes in the data."
+    focus="Explain any regime changes in the data.",
+    stream=False
 )
 print(result.text)
 ```

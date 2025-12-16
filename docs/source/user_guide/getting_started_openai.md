@@ -57,10 +57,12 @@ interpreter = AnalyticsInterpreter(
     model='gpt-4o'  # or 'gpt-4-turbo', 'gpt-3.5-turbo'
 )
 
+# Interpret output (streaming by default, disable for single result)
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Signal processing analysis",
-    focus="Identify the damping characteristics"
+    context="Analyzing environmental data",
+    focus="Identify key trends",
+    stream=False
 )
 
 print(result.text)
@@ -84,7 +86,8 @@ interpreter = AnalyticsInterpreter(
 result = interpreter.interpret(
     fig=plt.gcf(),
     context="Business metrics",
-    focus="Summarize trends"
+    focus="Summarize trends",
+    stream=False
 )
 ```
 

@@ -23,7 +23,7 @@ interpreter = AnalyticsInterpreter(backend='gemini')
 
 # Interpret a plot
 plt.plot(data)
-result = interpreter.interpret(plt.gcf(), context="Your analysis context")
+result = interpreter.interpret(plt.gcf(), context="Your analysis context", stream=False)
 print(result.text)
 ```
 
@@ -222,7 +222,8 @@ interpreter = AnalyticsInterpreter(
 # First call creates the RAG corpus (one-time setup)
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Dive profile analysis"
+    context="Dive profile analysis",
+    stream=False
 )
 ```
 
@@ -332,7 +333,8 @@ interpreter = AnalyticsInterpreter(
 print("Creating RAG corpus... (one-time setup)")
 result = interpreter.interpret(
     fig=my_plot,
-    context="Initial analysis"
+    context="Initial analysis",
+    stream=False
 )
 
 # Corpus ID is cached for future use

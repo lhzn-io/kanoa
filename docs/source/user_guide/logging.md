@@ -21,7 +21,7 @@ lavender "kanoa" container:
 from kanoa import AnalyticsInterpreter
 
 interpreter = AnalyticsInterpreter(backend="gemini", verbose=True)
-result = interpreter.interpret(fig=my_figure, display_result=True)
+result = interpreter.interpret(fig=my_figure, display_result=True, stream=False)
 ```
 
 ## Log Levels

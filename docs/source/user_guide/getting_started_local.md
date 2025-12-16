@@ -69,11 +69,12 @@ interpreter = AnalyticsInterpreter(
     model='google/gemma-3-12b-it'  # Use whatever model you started
 )
 
-# Interpret the plot
+# Analyze
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Physics simulation results",
-    focus="Describe the pattern and suggest what physical process this could represent"
+    context="Analyzing environmental sensor data",
+    focus="Identify any anomalies in the time series",
+    stream=False
 )
 
 print(result.text)

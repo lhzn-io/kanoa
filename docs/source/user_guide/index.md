@@ -7,8 +7,9 @@ This section provides detailed guides for using kanoa in various scenarios.
 
 getting_started_gemini
 getting_started_claude
-getting_started_local
 getting_started_openai
+getting_started_local
+streaming
 backends
 knowledge_bases
 logging

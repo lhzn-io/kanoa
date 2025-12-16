@@ -52,11 +52,12 @@ plt.title("Growth Curve")
 # Initialize interpreter (defaults to Gemini 3 Pro)
 interpreter = AnalyticsInterpreter()
 
-# Interpret
+# Interpret (blocking mode for simple results)
 result = interpreter.interpret(
     image=plt,
     context="Water quality analysis",
-    focus="Identify any concerning trends"
+    focus="Identify any concerning trends",
+    stream=False
 )
 
 print(result.text)
@@ -66,7 +67,7 @@ print(result.text)
 
 ```python
 interpreter = AnalyticsInterpreter(backend='claude')
-result = interpreter.interpret(fig=plt.gcf())
+result = interpreter.interpret(fig=plt.gcf(), stream=False)
 ```
 
 ### With a Knowledge Base
@@ -80,7 +81,8 @@ interpreter = AnalyticsInterpreter(
 
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Compare with Smith et al. 2023"
+    context="Compare with Smith et al. 2023",
+    stream=False
 )
 ```
 
@@ -94,11 +96,31 @@ df = pd.DataFrame({
     'site': ['Site A', 'Site B', 'Site C', 'Site D']
 })
 
-result = interpreter.chat(
+result = interpreter.interpret(
     data=df,
     context="Water quality monitoring report",
-    focus="Summarize the findings"
+    focus="Summarize the findings",
+    stream=False
 )
+
+print(result.text)
+```
+
+### Streaming (Default)
+
+By default, `kanoa` streams responses token-by-token. This is useful for real-time feedback.
+
+```python
+# Returns an iterator of chunks
+iterator = interpreter.interpret(
+    fig=plt.gcf(),
+    context="Detailed analysis"
+)
+
+print("Analysis:", end=" ")
+for chunk in iterator:
+    if chunk.type == "text":
+        print(chunk.content, end="", flush=True)
 ```
 
 ## Cost Tracking
@@ -109,3 +131,9 @@ summary = interpreter.get_cost_summary()
 print(f"Total cost: ${summary['total_cost_usd']:.4f}")
 print(f"Total tokens: {summary['total_tokens']}")
 ```
+
+## Next Steps
+
+- **[Streaming Guide](user_guide/streaming.md)**: Learn more about real-time responses and chunk types.
+- **[Knowledge Bases](user_guide/knowledge_bases.md)**: Ground your analysis in your project's documentation.
+- **[Backends](user_guide/backends.md)**: Switch between Gemini, Claude, OpenAI, and local models.
