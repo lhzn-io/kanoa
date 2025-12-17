@@ -366,11 +366,16 @@ class AnalyticsInterpreter:
         # Handle display if streaming (wraps iterator to print side-effects)
         if stream and display_result:
             try:
-                from ..utils.notebook import stream_interpretation
+                from ..utils.notebook import (
+                    StreamingResultIterator,
+                    stream_interpretation,
+                )
 
                 iterator = stream_interpretation(
                     iterator, backend_name=self.backend_name, display_output=True
                 )
+                # Wrap in auto-executing iterator for nicer notebook UX
+                iterator = StreamingResultIterator(iterator)
             except ImportError:
                 pass  # Warning already logged or not in notebook
 
