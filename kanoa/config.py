@@ -110,7 +110,11 @@ class Options:
 
     def __init__(self) -> None:
         # Verbosity
-        self.verbose: bool | int = False
+        # Default: 1 (info level) - show token usage, cache status, uploads
+        # Rationale: Data science workflows benefit from cost/performance transparency.
+        # Users can opt-out with `kanoa.options.verbose = 0` if needed.
+        # See docs/source/developer_guide/design_philosophy.md for details.
+        self.verbose: bool | int = 1
 
         # Knowledge Base
         self._kb_home: Optional[Path | str] = None

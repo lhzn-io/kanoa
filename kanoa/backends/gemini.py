@@ -23,7 +23,7 @@ from .base import BaseBackend
 class GeminiTokenCounter(BaseTokenCounter):
     """Token counter for Google Gemini models."""
 
-    def __init__(self, client: Any, model: str = "gemini-3-pro-preview"):
+    def __init__(self, client: Any, model: str = "gemini-2.5-flash"):
         """
         Initialize Gemini token counter.
 
@@ -94,7 +94,7 @@ class GeminiBackend(BaseBackend):
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "gemini-3-pro-preview",
+        model: str = "gemini-2.5-flash",
         max_tokens: int = 3000,
         enable_caching: bool = True,
         cache_ttl_seconds: int = 3600,

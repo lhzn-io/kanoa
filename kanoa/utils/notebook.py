@@ -165,13 +165,15 @@ def _get_style_colors(style: str) -> Dict[str, str]:
 
 
 def _check_ipython() -> bool:
-    """Check if IPython display is available."""
+    """Check if we're running in a Jupyter notebook environment."""
     global _ipython_available
     if _ipython_available is None:
         try:
-            from IPython.display import Markdown, display  # noqa: F401
+            from IPython.core.getipython import get_ipython
 
-            _ipython_available = True
+            ipython = get_ipython()
+            # Check if we're in a Jupyter kernel (not just terminal IPython)
+            _ipython_available = ipython is not None and hasattr(ipython, "kernel")
         except ImportError:
             _ipython_available = False
     return _ipython_available
@@ -459,74 +461,120 @@ def format_cost_summary(summary: Dict[str, Any]) -> str:
 | **Avg Cost/Call** | ${summary.get("avg_cost_per_call", 0):.4f} |"""
 
 
-def stream_interpretation(iterator: Any, backend_name: str = "unknown") -> Any:
-    """
-    Stream interpretation chunks to Jupyter output.
+def stream_interpretation(
+    iterator: Any,
+    backend_name: str = "unknown",
+    display_output: bool = True,
+) -> Any:
+    """Stream interpretation chunks with hybrid display approach.
 
-    Wraps the iterator to side-effect print chunks as they arrive,
-    while yielding them back to the caller.
+    Phase 1: Shows raw text chunks as they arrive for immediate feedback
+    Phase 2: After completion, displays styled box with full response and metadata
+
+    Args:
+        iterator: Chunk iterator from backend
+        backend_name: Name of the backend (e.g., "gemini", "claude")
+        display_output: Whether to show display outputs (streaming + final styled box)
+
+    Yields:
+        InterpretationChunk objects from the iterator
     """
     if not _check_ipython():
         # Fallback for terminal: just print text chunks
+        text_buffer = []
+        final_usage = None
+        final_metadata = None
+
         for chunk in iterator:
             if chunk.type == "text":
                 print(chunk.content, end="", flush=True)
-            elif chunk.type == "status":
-                pass  # Squelch status in terminal to avoid clutter? Or print?
+                text_buffer.append(chunk.content)
+            elif chunk.type == "usage" and chunk.usage:
+                final_usage = chunk.usage
+            if chunk.metadata:
+                final_metadata = chunk.metadata
             yield chunk
+
+        # Print footer in terminal
+        if final_usage:
+            model = (
+                final_metadata.get("model", backend_name)
+                if final_metadata
+                else backend_name
+            )
+            tokens = f"{final_usage.input_tokens}→{final_usage.output_tokens}"
+            print(f"\n\n[{model}] {tokens} tokens · ${final_usage.cost:.4f}")
         return
 
+    # Jupyter notebook environment
     try:
         import ipywidgets as widgets
-        from IPython.display import display
+        from IPython.display import display as ipydisplay
     except ImportError:
-        # Fallback if ipywidgets not installed even if IPython is present
+        # Fallback: stream without widgets
+        text_buffer = []
         for chunk in iterator:
             if chunk.type == "text":
                 print(chunk.content, end="", flush=True)
+                text_buffer.append(chunk.content)
             yield chunk
         return
 
-    # Create output widget
-    out = widgets.Output()
-    display(out)
-
+    # Streaming with styled final display
     text_buffer = []
-    status_label = widgets.Label(value="Initializing...")
-    display(status_label)
+    final_usage = None
+    final_metadata = None
+    cached = False
+    cache_created = False
 
-    # We use a simple approach: update the markdown output periodically
-    # or just print to the output widget?
-    # Printing to output widget is safest for streaming text.
-
-    # Actually, let's just use simple print for now within the widget context
-    # or update a handle.
-
-    # Better: Use a single Markdown handle and update it?
-    # That flickers.
-    # Let's just stream text to the widget.
+    # Create output widget for streaming text
+    if display_output:
+        out = widgets.Output()
+        ipydisplay(out)
 
     try:
-        with out:
-            for chunk in iterator:
-                if chunk.type == "text":
-                    print(chunk.content, end="")
-                    text_buffer.append(chunk.content)
-                elif chunk.type == "status":
-                    status_label.value = f"Status: {chunk.content}"
-                elif chunk.type == "usage":
-                    # Display final styled block
-                    pass
+        # Stream chunks
+        for chunk in iterator:
+            if chunk.type == "text":
+                if display_output:
+                    with out:
+                        print(chunk.content, end="", flush=True)
+                text_buffer.append(chunk.content)
+            elif chunk.type == "usage" and chunk.usage:
+                final_usage = chunk.usage
+                # Check for caching info
+                if hasattr(chunk.usage, "cache_created"):
+                    cache_created = chunk.usage.cache_created
+                if hasattr(chunk.usage, "cached_tokens") and chunk.usage.cached_tokens:
+                    cached = True
 
-                yield chunk
+            if chunk.metadata:
+                final_metadata = chunk.metadata
 
-            # Clear status at end
-            status_label.value = "Done"
-            status_label.close()
+            yield chunk
+
+        # Display final styled box
+        if display_output and text_buffer:
+            full_text = "".join(text_buffer)
+            model = final_metadata.get("model") if final_metadata else None
+
+            display_interpretation(
+                text=full_text,
+                backend=backend_name,
+                model=model,
+                usage=final_usage,
+                cached=cached,
+                cache_created=cache_created,
+            )
+
+        # Clean up streaming widget
+        if display_output:
+            out.close()
 
     except Exception as e:
-        with out:
-            print(f"\nError streaming: {e}")
+        if display_output:
+            with out:
+                print(f"\nError streaming: {e}")
         raise e
 
 

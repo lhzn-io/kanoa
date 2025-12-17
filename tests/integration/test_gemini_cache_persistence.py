@@ -80,7 +80,7 @@ class TestGeminiCachePersistence:
         print("\n[Instance 1] Initializing...")
         try:
             backend1 = GeminiBackend(
-                model="gemini-3-pro-preview",
+                model="gemini-3-pro-preview",  # Use Gemini 3 for caching tests
                 verbose=1,
                 enable_caching=True,
                 cache_ttl_seconds=600,  # 10 mins
@@ -107,7 +107,7 @@ class TestGeminiCachePersistence:
         print("\n[Instance 2] Initializing (Simulating Restart)...")
         try:
             backend2 = GeminiBackend(
-                model="gemini-3-pro-preview",
+                model="gemini-3-pro-preview",  # Use Gemini 3 for caching tests
                 verbose=1,
                 enable_caching=True,
                 cache_ttl_seconds=600,

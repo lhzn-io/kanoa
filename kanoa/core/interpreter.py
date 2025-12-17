@@ -363,13 +363,13 @@ class AnalyticsInterpreter:
             **kwargs,
         )
 
-        # Handle display if active (wraps iterator to print side-effects)
-        if display_result:
+        # Handle display if streaming (wraps iterator to print side-effects)
+        if stream and display_result:
             try:
                 from ..utils.notebook import stream_interpretation
 
                 iterator = stream_interpretation(
-                    iterator, backend_name=self.backend_name
+                    iterator, backend_name=self.backend_name, display_output=True
                 )
             except ImportError:
                 pass  # Warning already logged or not in notebook
@@ -380,24 +380,69 @@ class AnalyticsInterpreter:
         # Blocking mode: consume iterator and enable structured return
         text_chunks = []
         usage = None
+        metadata_dict = {}
 
-        # Reuse helper from backend if needed, or reimplement here safely.
-        # We consume the potentially display-wrapped iterator.
+        # Consume the iterator silently (no display wrapping)
         for chunk in iterator:
             if chunk.type == "text":
                 text_chunks.append(chunk.content)
             elif chunk.type == "usage":
                 usage = chunk.usage
+                # Capture metadata from usage chunk if available
+                if chunk.metadata:
+                    metadata_dict.update(chunk.metadata)
+            elif chunk.type == "status" and chunk.metadata:
+                # Capture metadata from status chunks if available
+                metadata_dict.update(chunk.metadata)
 
         full_text = "".join(text_chunks)
 
+        # Get actual model name from backend if not in metadata
+        if "model" not in metadata_dict:
+            metadata_dict["model"] = getattr(self.backend, "model", self.backend_name)
+
         result = InterpretationResult(
-            text=full_text, backend=self.backend_name, usage=usage
+            text=full_text,
+            backend=self.backend_name,
+            usage=usage,
+            metadata=metadata_dict,
         )
 
         # Attach any captured grounding sources (if we had them)
         if grounding_sources:
             result.grounding_sources = grounding_sources
+
+        # Auto-display in blocking mode (restore original behavior)
+        if display_result:
+            try:
+                from ..utils.notebook import display_interpretation
+
+                # Extract cache and model info from metadata (if any)
+                cached = False
+                cache_created = False
+                model_name = self.backend_name
+
+                if result.metadata:
+                    cached = result.metadata.get("cache_used", False)
+                    cache_created = result.metadata.get("cache_created", False)
+                    model_name = result.metadata.get("model", self.backend_name)
+
+                display_interpretation(
+                    text=result.text,
+                    backend=self.backend_name,
+                    model=model_name,
+                    usage=result.usage,
+                    cached=cached,
+                    cache_created=cache_created,
+                )
+            except ImportError:
+                # Fallback to plain markdown display
+                try:
+                    from IPython.display import Markdown, display
+
+                    display(Markdown(result.text))
+                except ImportError:
+                    pass  # Not in Jupyter
 
         return result
 

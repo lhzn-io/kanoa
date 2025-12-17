@@ -51,7 +51,13 @@ class UsageInfo:
 
 @dataclass
 class InterpretationResult:
-    """Result from interpretation."""
+    """Result from interpretation.
+
+    Note: This class does NOT implement _repr_markdown_() by design.
+    Display is handled explicitly via display_interpretation() when appropriate.
+    This prevents double-display in streaming mode and makes display side-effects explicit.
+    See docs/source/developer_guide/design_philosophy.md for rationale.
+    """
 
     text: str
     backend: str

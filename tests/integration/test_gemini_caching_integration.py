@@ -317,6 +317,7 @@ class TestGeminiCachingIntegration:
         try:
             interp = AnalyticsInterpreter(
                 backend="gemini",
+                model="gemini-3-pro-preview",  # Use Gemini 3 for caching tests
                 kb_path=str(kb_dir),
                 cache_ttl=300,  # 5 minute cache for tests
             )
@@ -517,6 +518,7 @@ class TestGeminiNoCachingBaseline:
         try:
             interp = AnalyticsInterpreter(
                 backend="gemini",
+                model="gemini-3-pro-preview",  # Use Gemini 3 for consistency
                 cache_ttl=None,  # Explicitly disable caching
             )
             auth_state.mark_auth_ok("gemini")

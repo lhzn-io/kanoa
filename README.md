@@ -24,67 +24,12 @@ For detailed backend comparison, see [Backends Overview](./docs/source/user_guid
 ## Features
 
 - **Multi-Backend Support**: Seamlessly switch between vLLM (local), Gemini, Claude, and OpenAI.
+- **Real-time Streaming**: Get immediate feedback with streaming responses.
 - **Enterprise Grounding**: Native integration with **Vertex AI RAG Engine** for scalable, secure knowledge retrieval from thousands of documents.
 - **Native Vision**: Uses multimodal capabilities to "see" complex plots and diagrams.
 - **Cost Optimized**: Intelligent context caching and token usage tracking.
 - **Knowledge Base**: Support for text (Markdown), PDF, and managed RAG knowledge bases.
 - **Notebook-Native Logging**: see the [Logging Guide](./docs/source/user_guide/logging.md).
-
-## Local & Edge Deployment
-
-Run state-of-the-art open weights models locally using our companion library, [`kanoa-mlops`](https://github.com/lhzn-io/kanoa-mlops).
-
-- **Privacy First**: Your data never leaves your machine.
-- **Models**: Support for **Gemma 3**, **Molmo**, and **Olmo 3**.
-- **Performance**: Optimized for consumer hardware (RTX 4090/5080) and edge devices (NVIDIA Jetson Thor).
-
-### Benchmarks (NVIDIA RTX 5080)
-
-| Model | Task | Speed |
-| :--- | :--- | :--- |
-| **Molmo-7B** | Complex Plot Interpretation | **92.8 tokens/sec** |
-| **Molmo-7B** | Data Interpretation | **59.5 tokens/sec** |
-
-### Benchmarks (NVIDIA Jetson Thor)
-
-| Model | Task | Speed |
-| :--- | :--- | :--- |
-| **Molmo-7B** | Complex Plot Interpretation | **9.6 tokens/sec** |
-| **Molmo-7B** | Data Interpretation | **9.5 tokens/sec** |
-| **Gemma 3 12B** | Vision (Chart Analysis) | **4.3 tokens/sec** |
-| **Gemma 3 12B** | Code Generation | **4.4 tokens/sec** |
-
-## Installation
-
-`kanoa` is modular — install only the backends you need:
-
-```bash
-# Local inference (vLLM — Molmo, Gemma 3)
-pip install kanoa[local]
-
-# Google Gemini (free tier available)
-pip install kanoa[gemini]
-
-# Anthropic Claude
-pip install kanoa[claude]
-
-# OpenAI API (GPT models, Azure OpenAI)
-pip install kanoa[openai]
-
-# Everything
-pip install kanoa[all]
-```
-
-<details>
-<summary>Development installation</summary>
-
-```bash
-git clone https://github.com/lhzn-io/kanoa.git
-cd kanoa
-pip install -e ".[dev]"
-```
-
-</details>
 
 ## Quick Start
 
@@ -192,6 +137,62 @@ result = interpreter.interpret(
     focus="Identify drivers of dissolved oxygen levels"
 )
 ```
+
+## Local & Edge Deployment
+
+Run state-of-the-art open weights models locally using our companion library, [`kanoa-mlops`](https://github.com/lhzn-io/kanoa-mlops).
+
+- **Privacy First**: Your data never leaves your machine.
+- **Models**: Support for **Gemma 3**, **Molmo**, and **Olmo 3**.
+- **Performance**: Optimized for consumer hardware (RTX 4090/5080) and edge devices (NVIDIA Jetson Thor).
+
+### Benchmarks (NVIDIA RTX 5080)
+
+| Model | Task | Speed |
+| :--- | :--- | :--- |
+| **Molmo-7B** | Complex Plot Interpretation | **92.8 tokens/sec** |
+| **Molmo-7B** | Data Interpretation | **59.5 tokens/sec** |
+
+### Benchmarks (NVIDIA Jetson Thor)
+
+| Model | Task | Speed |
+| :--- | :--- | :--- |
+| **Molmo-7B** | Complex Plot Interpretation | **9.6 tokens/sec** |
+| **Molmo-7B** | Data Interpretation | **9.5 tokens/sec** |
+| **Gemma 3 12B** | Vision (Chart Analysis) | **4.3 tokens/sec** |
+| **Gemma 3 12B** | Code Generation | **4.4 tokens/sec** |
+
+## Installation
+
+`kanoa` is modular — install only the backends you need:
+
+```bash
+# Local inference (vLLM — Molmo, Gemma 3)
+pip install kanoa[local]
+
+# Google Gemini (free tier available)
+pip install kanoa[gemini]
+
+# Anthropic Claude
+pip install kanoa[claude]
+
+# OpenAI API (GPT models, Azure OpenAI)
+pip install kanoa[openai]
+
+# Everything
+pip install kanoa[all]
+```
+
+<details>
+<summary>Development installation</summary>
+
+```bash
+git clone https://github.com/lhzn-io/kanoa.git
+cd kanoa
+pip install -e ".[dev]"
+```
+
+</details>
 
 ## Pricing Configuration
 
