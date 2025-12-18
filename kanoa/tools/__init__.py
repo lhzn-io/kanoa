@@ -1,3 +1,3 @@
 """
-Kanoa CLI Tools.
+kanoa CLI tools.
 """

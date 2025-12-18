@@ -57,7 +57,7 @@ plt.figure(figsize=(10, 6))
 plt.plot(t, y)
 plt.title("Projectile Trajectory")
 
-# 2. Ask Kanoa to debug
+# 2. Ask kanoa to debug
 interpreter = AnalyticsInterpreter(backend="gemini")
 # Returns a stream by default
 iterator = interpreter.interpret(

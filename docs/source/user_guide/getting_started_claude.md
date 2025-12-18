@@ -53,7 +53,7 @@ plt.ylabel("DO (mg/L)")
 # Initialize the interpreter with Claude
 interpreter = AnalyticsInterpreter(backend='claude')
 
-# Use Kanoa to interpret output (using stream=False for single result)
+# Use kanoa to interpret output (using stream=False for single result)
 result = interpreter.interpret(
     fig=plt.gcf(),
     context="Analyzing environmental sensor data",
