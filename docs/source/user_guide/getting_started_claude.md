@@ -53,11 +53,12 @@ plt.ylabel("DO (mg/L)")
 # Initialize the interpreter with Claude
 interpreter = AnalyticsInterpreter(backend='claude')
 
-# Use Kanoa to interpret the plot
+# Use kanoa to interpret output (using stream=False for single result)
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Water quality analysis for monitoring sites",
-    focus="Identify sites with optimal oxygen levels"
+    context="Analyzing environmental sensor data",
+    focus="Identify any anomalies",
+    stream=False
 )
 
 print(result.text)

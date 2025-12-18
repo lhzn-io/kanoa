@@ -1,22 +1,33 @@
 """Tests for OpenAI backend."""
 
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 
 def _create_mock_response(
     content: str = "Analysis result", has_usage: bool = True
-) -> MagicMock:
-    """Create a mock OpenAI response."""
-    mock_response = MagicMock()
-    mock_response.choices = [MagicMock()]
-    mock_response.choices[0].message.content = content
+) -> Any:
+    """Create a mock OpenAI streaming response."""
+    # Create chunks for streaming
+    chunks = []
+
+    # 1. Text chunk
+    chunk1 = MagicMock()
+    chunk1.choices = [MagicMock()]
+    chunk1.choices[0].delta.content = content
+    chunk1.usage = None
+    chunks.append(chunk1)
+
+    # 2. Final chunk with usage (if requested)
     if has_usage:
-        mock_response.usage = MagicMock()
-        mock_response.usage.prompt_tokens = 100
-        mock_response.usage.completion_tokens = 50
-    else:
-        mock_response.usage = None
-    return mock_response
+        chunk2 = MagicMock()
+        chunk2.choices = []
+        chunk2.usage = MagicMock()
+        chunk2.usage.prompt_tokens = 100
+        chunk2.usage.completion_tokens = 50
+        chunks.append(chunk2)
+
+    return iter(chunks)
 
 
 class TestOpenAIBackend:
@@ -61,7 +72,7 @@ class TestOpenAIBackend:
         from kanoa.backends.openai import OpenAIBackend
 
         backend = OpenAIBackend()
-        result = backend.interpret(
+        result = backend.interpret_blocking(
             fig=None,
             data={"key": "value"},
             context="test context",
@@ -101,7 +112,7 @@ class TestOpenAIBackend:
         fig = plt.figure()
 
         backend = OpenAIBackend()
-        _ = backend.interpret(
+        _ = backend.interpret_blocking(
             fig=fig,
             data=None,
             context=None,
@@ -133,7 +144,7 @@ class TestOpenAIBackend:
         from kanoa.backends.openai import OpenAIBackend
 
         backend = OpenAIBackend()
-        _ = backend.interpret(
+        _ = backend.interpret_blocking(
             fig=None,
             data=None,
             context=None,
@@ -161,7 +172,7 @@ class TestOpenAIBackend:
         from kanoa.backends.openai import OpenAIBackend
 
         backend = OpenAIBackend()
-        _ = backend.interpret(
+        _ = backend.interpret_blocking(
             fig=None,
             data=None,
             context=None,
@@ -188,7 +199,7 @@ class TestOpenAIBackend:
         from kanoa.backends.openai import OpenAIBackend
 
         backend = OpenAIBackend()
-        result = backend.interpret(
+        result = backend.interpret_blocking(
             fig=None,
             data=None,
             context=None,
@@ -215,7 +226,7 @@ class TestOpenAIBackend:
         from kanoa.backends.openai import OpenAIBackend
 
         backend = OpenAIBackend(temperature=0.5)
-        _ = backend.interpret(
+        _ = backend.interpret_blocking(
             fig=None,
             data=None,
             context=None,

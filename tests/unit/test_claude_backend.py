@@ -21,15 +21,25 @@ class TestClaudeBackend:
     def test_interpret_text_only(self, mock_anthropic: Any) -> None:
         backend = ClaudeBackend(api_key="test_key")
 
-        # Mock response
-        mock_response = MagicMock()
-        mock_response.content = [MagicMock(text="Claude interpretation")]
-        mock_response.usage.input_tokens = 100
-        mock_response.usage.output_tokens = 50
+        # Mock stream context manager
+        mock_stream = MagicMock()
+        mock_stream.text_stream = ["Claude", " interpretation"]
 
-        cast("Any", backend.client.messages.create).return_value = mock_response
+        mock_usage = MagicMock()
+        mock_usage.input_tokens = 100
+        mock_usage.output_tokens = 50
 
-        result = backend.interpret(
+        mock_final_msg = MagicMock()
+        mock_final_msg.usage = mock_usage
+        mock_stream.get_final_message.return_value = mock_final_msg
+
+        # Configure client.messages.stream to return context manager yielding mock_stream
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__.return_value = mock_stream
+        mock_ctx.__exit__.return_value = None
+        cast("Any", backend.client.messages.stream).return_value = mock_ctx
+
+        result = backend.interpret_blocking(
             fig=None,
             data="Some data",
             context="Context",
@@ -48,15 +58,24 @@ class TestClaudeBackend:
     def test_interpret_with_figure(self, mock_anthropic: Any) -> None:
         backend = ClaudeBackend(api_key="test_key")
 
-        mock_response = MagicMock()
-        mock_response.content = [MagicMock(text="Figure interpretation")]
-        mock_response.usage.input_tokens = 200
-        mock_response.usage.output_tokens = 50
+        mock_stream = MagicMock()
+        mock_stream.text_stream = ["Figure", " interpretation"]
 
-        cast("Any", backend.client.messages.create).return_value = mock_response
+        mock_usage = MagicMock()
+        mock_usage.input_tokens = 200
+        mock_usage.output_tokens = 50
+
+        mock_final_msg = MagicMock()
+        mock_final_msg.usage = mock_usage
+        mock_stream.get_final_message.return_value = mock_final_msg
+
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__.return_value = mock_stream
+        mock_ctx.__exit__.return_value = None
+        cast("Any", backend.client.messages.stream).return_value = mock_ctx
 
         fig = plt.figure()
-        result = backend.interpret(
+        result = backend.interpret_blocking(
             fig=fig,
             data=None,
             context=None,
@@ -67,8 +86,8 @@ class TestClaudeBackend:
 
         assert "Figure interpretation" in result.text
 
-        # Verify image was sent
-        call_args = cast("Any", backend.client.messages.create).call_args
+        # Verify image was sent (stream call args)
+        call_args = cast("Any", backend.client.messages.stream).call_args
         assert call_args is not None
         messages = call_args.kwargs["messages"]
         content = messages[0]["content"]
@@ -76,9 +95,9 @@ class TestClaudeBackend:
 
     def test_error_handling(self, mock_anthropic: Any) -> None:
         backend = ClaudeBackend(api_key="test_key")
-        cast("Any", backend.client.messages.create).side_effect = Exception("API Error")
+        cast("Any", backend.client.messages.stream).side_effect = Exception("API Error")
 
-        result = backend.interpret(
+        result = backend.interpret_blocking(
             fig=None,
             data="test",
             context=None,

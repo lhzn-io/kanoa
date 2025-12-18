@@ -2,6 +2,10 @@
 
 Documentation for contributors and maintainers.
 
+## Design Philosophy
+
+- [Design Philosophy](design_philosophy.md) — Architectural decisions and rationale
+
 ## Testing
 
 - [Testing Guide](testing_philosophy.md) — Principles, cost-awareness, and practical guide

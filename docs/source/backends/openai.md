@@ -85,7 +85,11 @@ interpreter = interpreter.with_kb(kb_path="data/docs")  # Auto-detects file type
 kanoa automatically tracks token usage and costs for OpenAI models:
 
 ```python
-result = interpreter.interpret(fig=plt.gcf(), context="Analysis")
+result = interpreter.interpret(
+    fig=plt.gcf(),
+    context="Analysis",
+    stream=False
+)
 print(f"Cost: ${result.usage.total_cost:.4f}")
 print(f"Input tokens: {result.usage.prompt_tokens}")
 print(f"Output tokens: {result.usage.completion_tokens}")

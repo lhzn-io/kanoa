@@ -22,6 +22,7 @@ result = interpreter.interpret(
     fig=plt.gcf(),
     context="Simulating a projectile launch. Something looks wrong.",
     focus="Identify the physics error in the trajectory.",
+    stream=False,
 )
 print("kanoa's analysis:")
 print(result.text)

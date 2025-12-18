@@ -1,11 +1,11 @@
 import os
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, Iterator, List, Optional, cast
 
 import matplotlib.pyplot as plt
 from anthropic import Anthropic
 
 from ..core.token_guard import BaseTokenCounter
-from ..core.types import InterpretationResult, UsageInfo
+from ..core.types import InterpretationChunk, UsageInfo
 from ..pricing import get_model_pricing
 from ..utils.logging import ilog_debug, ilog_info, ilog_warning
 from .base import BaseBackend
@@ -129,12 +129,21 @@ class ClaudeBackend(BaseBackend):
         kb_context: Optional[str],
         custom_prompt: Optional[str],
         **kwargs: Any,
-    ) -> InterpretationResult:
-        """Interpret using Claude."""
+    ) -> Iterator[InterpretationChunk]:
+        """Interpret using Claude (streaming)."""
         self.call_count += 1
 
         if self.verbose >= 1:
             ilog_info(f"Calling {self.model} (call #{self.call_count})", title="Claude")
+
+        yield InterpretationChunk(
+            content=f"Connecting to {self.model}...", type="status"
+        )
+
+        # Yield metadata
+        yield InterpretationChunk(
+            content="", type="meta", metadata={"model": self.model}
+        )
 
         messages: List[Dict[str, Any]] = []
         content_blocks: List[Dict[str, Any]] = []
@@ -178,40 +187,42 @@ class ClaudeBackend(BaseBackend):
         messages.append({"role": "user", "content": content_blocks})
 
         try:
-            response = cast("Any", self.client.messages.create)(
-                model=self.model, max_tokens=self.max_tokens, messages=messages
-            )
+            # Use stream() context manager
+            with self.client.messages.stream(
+                model=self.model,
+                max_tokens=self.max_tokens,
+                messages=cast("Any", messages),
+            ) as stream:
+                for text in stream.text_stream:
+                    yield InterpretationChunk(content=text, type="text")
 
-            # Extract text from first content block (handle union type)
-            first_block = response.content[0]
-            interpretation = (
-                first_block.text if hasattr(first_block, "text") else str(first_block)
-            )
-            usage = self._calculate_usage(response.usage)
+                # Get final message for usage
+                final_message = stream.get_final_message()
+                usage = self._calculate_usage(final_message.usage)
 
-            if self.verbose >= 1:
-                ilog_info(
-                    f"Tokens: {usage.input_tokens} in / {usage.output_tokens} out "
-                    f"(${usage.cost:.4f})",
-                    title="Claude",
+                if self.verbose >= 1:
+                    ilog_info(
+                        f"Tokens: {usage.input_tokens} in / {usage.output_tokens} out "
+                        f"(${usage.cost:.4f})",
+                        title="Claude",
+                    )
+
+                # Update shared stats
+                # Note: parent interpret code does this in `finally`, but since we changed signature
+                # we must do it here or via interpret_blocking logic.
+                # Since interpret_blocking calls this, let's update shared state here for correctness.
+                self.total_tokens["input"] += usage.input_tokens
+                self.total_tokens["output"] += usage.output_tokens
+                self.total_cost += usage.cost
+
+                yield InterpretationChunk(
+                    content="", type="usage", is_final=True, usage=usage
                 )
-            if self.verbose >= 2:
-                ilog_debug(
-                    f"Response length: {len(interpretation)} chars", title="Response"
-                )
-
-            return InterpretationResult(
-                text=interpretation,
-                backend="claude",
-                usage=usage,
-                metadata={"model": self.model},
-            )
 
         except Exception as e:
             ilog_warning(f"API call failed: {e}", title="Claude")
-            return InterpretationResult(
-                text=f"❌ **Error**: {e!s}", backend="claude", usage=None
-            )
+            yield InterpretationChunk(content=f"\n❌ Error: {e!s}", type="text")
+            raise e
         finally:
             # Update shared cost tracking
             if "usage" in locals() and usage:

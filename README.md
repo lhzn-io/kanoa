@@ -14,7 +14,7 @@
 
 | Backend | Best For | Getting Started |
 | :--- | :--- | :--- |
-| `vllm` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3, Olmo 3 | [Guide](./docs/source/user_guide/getting_started_vllm.md) |
+| `vllm` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3, Olmo 3 | [Guide](./docs/source/user_guide/getting_started_local.md) |
 | `gemini` | Free tier, native PDF support, Vertex AI RAG Engine | [Guide](./docs/source/user_guide/getting_started_gemini.md) |
 | `claude` | Strong reasoning, vision support | [Guide](./docs/source/user_guide/getting_started_claude.md) |
 | `openai` | GPT models, Azure OpenAI | [Guide](./docs/source/user_guide/backends.md#openai) |
@@ -24,11 +24,119 @@ For detailed backend comparison, see [Backends Overview](./docs/source/user_guid
 ## Features
 
 - **Multi-Backend Support**: Seamlessly switch between vLLM (local), Gemini, Claude, and OpenAI.
+- **Real-time Streaming**: Get immediate feedback with streaming responses.
 - **Enterprise Grounding**: Native integration with **Vertex AI RAG Engine** for scalable, secure knowledge retrieval from thousands of documents.
 - **Native Vision**: Uses multimodal capabilities to "see" complex plots and diagrams.
 - **Cost Optimized**: Intelligent context caching and token usage tracking.
 - **Knowledge Base**: Support for text (Markdown), PDF, and managed RAG knowledge bases.
 - **Notebook-Native Logging**: see the [Logging Guide](./docs/source/user_guide/logging.md).
+
+## Quick Start
+
+Check out [2 Minutes to kanoa](./examples/2_minutes_to_kanoa.ipynb) for a hands-on introduction.
+
+For a comprehensive feature overview, see the [detailed quickstart](./examples/quickstart_10min.ipynb).
+
+### Basic Usage: AI-assisted Debugging with Visual Interpretation
+
+In this example, we use `kanoa` to identify a bug in a physics simulation.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from kanoa import AnalyticsInterpreter
+
+# 1. Simulate a projectile (with a bug!)
+t = np.linspace(0, 10, 100)
+v0 = 50
+g = 9.8
+# BUG: Missing t**2 in the gravity term (should be 0.5 * g * t**2)
+y = v0 * t - 0.5 * g * t
+
+plt.figure(figsize=(10, 6))
+plt.plot(t, y)
+plt.title("Projectile Trajectory")
+
+# 2. Ask kanoa to debug
+interpreter = AnalyticsInterpreter(backend="gemini")
+# Returns a stream by default
+iterator = interpreter.interpret(
+    fig=plt.gcf(),
+    context="Simulating a projectile launch. Something looks wrong.",
+    focus="Identify the physics error in the trajectory.",
+)
+
+# Consume the stream
+for chunk in iterator:
+    if chunk.type == "text":
+        print(chunk.content, end="")
+```
+
+`kanoa`'s response:
+> "The plot shows a linear relationship between height and time..."
+
+### Using Claude
+
+```python
+# Ensure ANTHROPIC_API_KEY is set
+interpreter = AnalyticsInterpreter(backend='claude')
+
+# Use stream=False for blocking behavior (returns legacy result object)
+result = interpreter.interpret(
+    fig=plt.gcf(),
+    context="Analyzing environmental data for climate trends",
+    focus="Explain any regime changes in the data.",
+    stream=False
+)
+print(result.text)
+```
+
+### Using a Knowledge Base
+
+```python
+# Point to a directory of Markdown or PDF files
+interpreter = AnalyticsInterpreter(
+    backend='gemini',
+    kb_path='./docs/literature',
+    kb_type='auto'  # Detects if PDFs are present
+)
+
+# The interpreter will now use the knowledge base to ground its analysis
+result = interpreter.interpret(
+    fig=plt.gcf(),
+    context="Analyzing marine biologger data from a whale shark deployment",
+    focus="Compare diving behavior with Braun et al. 2025 findings."
+)
+print(result.text)
+```
+
+### Local Inference with vLLM
+
+Connect to any model hosted via vLLM's OpenAI-compatible API. We've tested with
+[Molmo](https://molmo.allenai.org/) from AI2 and Google's Gemma 3 12B — fully-open multimodal models.
+See `kanoa-mlops` for our local hosting setup.
+
+```python
+# Molmo 7B (recommended for vision - 31 tok/s avg, 3x faster than Gemma)
+interpreter = AnalyticsInterpreter(
+    backend='openai',
+    api_base='http://localhost:8000/v1',
+    model='allenai/Molmo-7B-D-0924'
+)
+
+# Gemma 3 12B (recommended for text reasoning - 10.3 tok/s avg)
+interpreter = AnalyticsInterpreter(
+    backend='openai',
+    api_base='http://localhost:8000/v1',
+    model='google/gemma-3-12b-it'
+)
+
+result = interpreter.interpret(
+    fig=plt.gcf(),
+    context="Analyzing aquaculture sensor data",
+    focus="Identify drivers of dissolved oxygen levels"
+)
+```
 
 ## Local & Edge Deployment
 
@@ -85,106 +193,6 @@ pip install -e ".[dev]"
 ```
 
 </details>
-
-## Quick Start
-
-Check out [2 Minutes to kanoa](./examples/2_minutes_to_kanoa.ipynb) for a hands-on introduction.
-
-For a comprehensive feature overview, see the [detailed quickstart](./examples/quickstart_10min.ipynb).
-
-### Basic Usage: AI-assisted Debugging with Visual Interpretation
-
-In this example, we use `kanoa` to identify a bug in a physics simulation.
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-from kanoa import AnalyticsInterpreter
-
-# 1. Simulate a projectile (with a bug!)
-t = np.linspace(0, 10, 100)
-v0 = 50
-g = 9.8
-# BUG: Missing t**2 in the gravity term (should be 0.5 * g * t**2)
-y = v0 * t - 0.5 * g * t
-
-plt.figure(figsize=(10, 6))
-plt.plot(t, y)
-plt.title("Projectile Trajectory")
-
-# 2. Ask Kanoa to debug
-interpreter = AnalyticsInterpreter(backend="gemini")
-result = interpreter.interpret(
-    fig=plt.gcf(),
-    context="Simulating a projectile launch. Something looks wrong.",
-    focus="Identify the physics error in the trajectory."
-)
-print(result.text)
-```
-
-`kanoa`'s response:
-> "The plot shows a linear relationship between height and time, which indicates constant velocity. A projectile under gravity should follow a parabolic path ($y = v_0t - \frac{1}{2}gt^2$). The code is likely missing the $t^2$ term in the gravity component."
-
-### Using Claude
-
-```python
-# Ensure ANTHROPIC_API_KEY is set
-interpreter = AnalyticsInterpreter(backend='claude')
-
-result = interpreter.interpret(
-    fig=plt.gcf(),
-    context="Analyzing environmental data for climate trends",
-    focus="Explain any regime changes in the data."
-)
-print(result.text)
-```
-
-### Using a Knowledge Base
-
-```python
-# Point to a directory of Markdown or PDF files
-interpreter = AnalyticsInterpreter(
-    backend='gemini',
-    kb_path='./docs/literature',
-    kb_type='auto'  # Detects if PDFs are present
-)
-
-# The interpreter will now use the knowledge base to ground its analysis
-result = interpreter.interpret(
-    fig=plt.gcf(),
-    context="Analyzing marine biologger data from a whale shark deployment",
-    focus="Compare diving behavior with Braun et al. 2025 findings."
-)
-print(result.text)
-```
-
-### Local Inference with vLLM
-
-Connect to any model hosted via vLLM's OpenAI-compatible API. We've tested with
-[Molmo](https://molmo.allenai.org/) from AI2 and Google's Gemma 3 12B — fully-open multimodal models.
-See `kanoa-mlops` for our local hosting setup.
-
-```python
-# Molmo 7B (recommended for vision - 31 tok/s avg, 3x faster than Gemma)
-interpreter = AnalyticsInterpreter(
-    backend='openai',
-    api_base='http://localhost:8000/v1',
-    model='allenai/Molmo-7B-D-0924'
-)
-
-# Gemma 3 12B (recommended for text reasoning - 10.3 tok/s avg)
-interpreter = AnalyticsInterpreter(
-    backend='openai',
-    api_base='http://localhost:8000/v1',
-    model='google/gemma-3-12b-it'
-)
-
-result = interpreter.interpret(
-    fig=plt.gcf(),
-    context="Analyzing aquaculture sensor data",
-    focus="Identify drivers of dissolved oxygen levels"
-)
-```
 
 ## Pricing Configuration
 

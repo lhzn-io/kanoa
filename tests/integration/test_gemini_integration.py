@@ -123,7 +123,9 @@ class TestGeminiIntegration:
         print(f"\n[user] {context} | {focus}")
 
         try:
-            result = interpreter.interpret(fig=plt.gcf(), context=context, focus=focus)
+            result = interpreter.interpret(
+                stream=False, fig=plt.gcf(), context=context, focus=focus
+            )
         except Exception as e:
             error_msg = str(e)
             # Check if this is an auth error (could happen on first actual API call)
@@ -175,7 +177,9 @@ class TestGeminiIntegration:
         print(f"\n[user] {context} | {focus}")
 
         try:
-            result = interpreter.interpret(data=data, context=context, focus=focus)
+            result = interpreter.interpret(
+                stream=False, data=data, context=context, focus=focus
+            )
         except Exception as e:
             error_msg = str(e)
             if _is_auth_error(error_msg):

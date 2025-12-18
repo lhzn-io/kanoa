@@ -47,7 +47,7 @@ import matplotlib.pyplot as plt
 plt.plot([1, 2, 3], [1, 4, 9])
 
 # Interpret the figure
-result = interpreter.interpret(fig=plt.gcf())
+result = interpreter.interpret(fig=plt.gcf(), stream=False)
 ```
 
 ### Knowledge Base

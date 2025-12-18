@@ -130,6 +130,7 @@ def run_analytics_interpreter_integration(rag_kb):
     print("   (This will call Gemini API and cost ~$0.01)")
 
     result = interpreter.interpret(
+        stream=False,
         fig=fig,
         context="Machine learning model improvement experiment",
         focus="Explain the accuracy improvement curve using concepts from research literature",

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pytest
 
 from kanoa.core.interpreter import AnalyticsInterpreter
-from kanoa.core.types import InterpretationResult, UsageInfo
+from kanoa.core.types import InterpretationChunk, UsageInfo
 
 
 class TestAnalyticsInterpreter:
@@ -28,9 +28,10 @@ class TestAnalyticsInterpreter:
             backend_instance.total_cost += 0.01
             backend_instance.total_tokens["input"] += 10
             backend_instance.total_tokens["output"] += 20
-            return InterpretationResult(
-                text="Test interpretation",
-                backend="gemini",
+            yield InterpretationChunk(type="text", content="Test interpretation")
+            yield InterpretationChunk(
+                type="usage",
+                content="",
                 usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
             )
 
@@ -45,7 +46,7 @@ class TestAnalyticsInterpreter:
         ):
             interpreter = AnalyticsInterpreter(backend="gemini")
             fig = plt.figure()
-            result = interpreter.interpret(fig=fig)
+            result = interpreter.interpret(fig=fig, stream=False)
 
             assert result.text == "Test interpretation"
             backend_instance.interpret.assert_called_once()
@@ -56,11 +57,16 @@ class TestAnalyticsInterpreter:
     def test_interpret_data(self) -> None:
         MockBackendClass = MagicMock()
         backend_instance = MockBackendClass.return_value
-        backend_instance.interpret.return_value = InterpretationResult(
-            text="Test interpretation",
-            backend="gemini",
-            usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
-        )
+
+        def interpret_return_value(*args, **kwargs):
+            yield InterpretationChunk(type="text", content="Test interpretation")
+            yield InterpretationChunk(
+                type="usage",
+                content="",
+                usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
+            )
+
+        backend_instance.interpret.side_effect = interpret_return_value
 
         with patch(
             "kanoa.core.interpreter._get_backend_class",
@@ -68,7 +74,7 @@ class TestAnalyticsInterpreter:
         ):
             interpreter = AnalyticsInterpreter(backend="gemini")
             data = {"key": "value"}
-            result = interpreter.interpret(data=data)
+            result = interpreter.interpret(data=data, stream=False)
 
             assert result.text == "Test interpretation"
             backend_instance.interpret.assert_called_once()
@@ -92,9 +98,10 @@ class TestAnalyticsInterpreter:
             backend_instance.total_cost += 0.01
             backend_instance.total_tokens["input"] += 10
             backend_instance.total_tokens["output"] += 20
-            return InterpretationResult(
-                text="Test interpretation",
-                backend="gemini",
+            yield InterpretationChunk(type="text", content="Test interpretation")
+            yield InterpretationChunk(
+                type="usage",
+                content="",
                 usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
             )
 
@@ -109,8 +116,8 @@ class TestAnalyticsInterpreter:
         ):
             interpreter = AnalyticsInterpreter(backend="gemini", track_costs=True)
             fig = plt.figure()
-            interpreter.interpret(fig=fig)
-            interpreter.interpret(fig=fig)
+            interpreter.interpret(fig=fig, stream=False)
+            interpreter.interpret(fig=fig, stream=False)
 
             assert interpreter.backend.total_cost == 0.02
             assert interpreter.backend.total_tokens["input"] == 20
@@ -119,11 +126,16 @@ class TestAnalyticsInterpreter:
     def test_interpret_figure_convenience(self) -> None:
         MockBackendClass = MagicMock()
         backend_instance = MockBackendClass.return_value
-        backend_instance.interpret.return_value = InterpretationResult(
-            text="Test interpretation",
-            backend="gemini",
-            usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
-        )
+
+        def interpret_return_value(*args, **kwargs):
+            yield InterpretationChunk(type="text", content="Test interpretation")
+            yield InterpretationChunk(
+                type="usage",
+                content="",
+                usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
+            )
+
+        backend_instance.interpret.side_effect = interpret_return_value
 
         with patch(
             "kanoa.core.interpreter._get_backend_class",
@@ -137,11 +149,16 @@ class TestAnalyticsInterpreter:
     def test_interpret_dataframe_convenience(self) -> None:
         MockBackendClass = MagicMock()
         backend_instance = MockBackendClass.return_value
-        backend_instance.interpret.return_value = InterpretationResult(
-            text="Test interpretation",
-            backend="gemini",
-            usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
-        )
+
+        def interpret_return_value(*args, **kwargs):
+            yield InterpretationChunk(type="text", content="Test interpretation")
+            yield InterpretationChunk(
+                type="usage",
+                content="",
+                usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
+            )
+
+        backend_instance.interpret.side_effect = interpret_return_value
 
         with patch(
             "kanoa.core.interpreter._get_backend_class",
@@ -154,11 +171,17 @@ class TestAnalyticsInterpreter:
     def test_get_cost_summary(self) -> None:
         MockBackendClass = MagicMock()
         backend_instance = MockBackendClass.return_value
-        backend_instance.interpret.return_value = InterpretationResult(
-            text="Test interpretation",
-            backend="gemini",
-            usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
-        )
+
+        def interpret_return_value(*args, **kwargs):
+            yield InterpretationChunk(type="text", content="Test interpretation")
+            yield InterpretationChunk(
+                type="usage",
+                content="",
+                usage=UsageInfo(input_tokens=10, output_tokens=20, cost=0.01),
+            )
+
+        backend_instance.interpret.side_effect = interpret_return_value
+
         backend_instance.get_cost_summary.return_value = {
             "backend": "gemini",
             "total_cost_usd": 0.01,
@@ -170,7 +193,7 @@ class TestAnalyticsInterpreter:
             return_value=MockBackendClass,
         ):
             interpreter = AnalyticsInterpreter(backend="gemini")
-            interpreter.interpret(data="test")
+            interpreter.interpret(data="test", stream=False)
 
             summary = interpreter.get_cost_summary()
             assert summary["backend"] == "gemini"

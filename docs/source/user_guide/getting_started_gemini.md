@@ -94,11 +94,12 @@ plt.ylabel("Amplitude")
 # Initialize the interpreter
 interpreter = AnalyticsInterpreter(backend='gemini')
 
-# Interpret the plot
+# Interpret (blocking mode for simple results)
 result = interpreter.interpret(
     fig=plt.gcf(),
-    context="Analyzing a time series signal",
-    focus="What pattern does this data show?"
+    context="Analyzing weather data from sensor array",
+    focus="Identify any temperature anomalies",
+    stream=False
 )
 
 print(result.text)

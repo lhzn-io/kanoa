@@ -27,6 +27,12 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
 
 - **Setup**: Activate the development environment with `conda activate kanoa-dev` before running any commands.
 
+## Cost Management
+
+- **Testing & Development**: Use `gemini-2.5-flash` for testing and development workflows (free tier, no quota)
+- **Production Backends**: Use `gemini-3.0-pro-preview` or `claude-4.5-sonnet` only when explicitly needed
+- **Rationale**: Every API call costs money. Prefer free models for development to avoid unnecessary charges
+
 ## Release Process
 
 ⚠️ **CRITICAL**: When preparing a release, you MUST:

@@ -1,12 +1,23 @@
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional, Tuple, Type, Union
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    cast,
+    overload,
+)
 
 import matplotlib.pyplot as plt
 
 from ..backends.base import BaseBackend
 from ..knowledge_base.base import BaseKnowledgeBase
 from ..knowledge_base.manager import KnowledgeBaseManager
-from .types import InterpretationResult
+from .types import InterpretationChunk, InterpretationResult
 
 # Canonical list of supported backends (in recommended order: open-source first)
 supported_backends: Tuple[str, ...] = ("vllm", "gemini", "claude", "openai")
@@ -124,13 +135,17 @@ class AnalyticsInterpreter:
         prompt_templates = None
 
         # Priority: explicit params > global config > defaults
-        if system_prompt or user_prompt:
+        if system_prompt is not None or user_prompt is not None:
             # Explicit parameters provided
             from ..utils.prompts import DEFAULT_PROMPTS
 
             prompt_templates = PromptTemplates(
-                system_prompt=system_prompt or DEFAULT_PROMPTS.system_prompt,
-                user_prompt=user_prompt or DEFAULT_PROMPTS.user_prompt,
+                system_prompt=system_prompt
+                if system_prompt is not None
+                else DEFAULT_PROMPTS.system_prompt,
+                user_prompt=user_prompt
+                if user_prompt is not None
+                else DEFAULT_PROMPTS.user_prompt,
             )
         else:
             # Check for global configuration
@@ -219,6 +234,7 @@ class AnalyticsInterpreter:
 
         return new_interpreter
 
+    @overload
     def interpret(
         self,
         fig: Optional[plt.Figure] = None,
@@ -228,8 +244,36 @@ class AnalyticsInterpreter:
         include_kb: bool = True,
         display_result: Optional[bool] = None,
         custom_prompt: Optional[str] = None,
+        stream: Literal[True] = True,
         **kwargs: Any,
-    ) -> InterpretationResult:
+    ) -> Iterator[InterpretationChunk]: ...
+
+    @overload
+    def interpret(
+        self,
+        fig: Optional[plt.Figure] = None,
+        data: Optional[Any] = None,
+        context: Optional[str] = None,
+        focus: Optional[str] = None,
+        include_kb: bool = True,
+        display_result: Optional[bool] = None,
+        custom_prompt: Optional[str] = None,
+        stream: Literal[False] = False,
+        **kwargs: Any,
+    ) -> InterpretationResult: ...
+
+    def interpret(
+        self,
+        fig: Optional[plt.Figure] = None,
+        data: Optional[Any] = None,
+        context: Optional[str] = None,
+        focus: Optional[str] = None,
+        include_kb: bool = True,
+        display_result: Optional[bool] = None,
+        custom_prompt: Optional[str] = None,
+        stream: bool = True,
+        **kwargs: Any,
+    ) -> Union[Iterator[InterpretationChunk], InterpretationResult]:
         """
         Interpret analytical output using configured backend.
 
@@ -242,18 +286,26 @@ class AnalyticsInterpreter:
             display_result: Auto-display as Markdown in Jupyter.
                 If None, uses kanoa.options.display_result (default: True)
             custom_prompt: Override default prompt template
+            stream: Whether to stream results (default: True)
             **kwargs: Additional backend-specific arguments
 
         Returns:
-            InterpretationResult with text, metadata, and cost info
+            Iterator[InterpretationChunk] if stream=True (default)
+            InterpretationResult if stream=False
 
         Raises:
-            ValueError: If neither fig nor data provided
+            ValueError: If no input (fig, data, context, focus, or custom_prompt) is provided
         """
         # Validate input
-        if fig is None and data is None and custom_prompt is None:
+        if (
+            fig is None
+            and data is None
+            and custom_prompt is None
+            and context is None
+            and focus is None
+        ):
             raise ValueError(
-                "Must provide either 'fig', 'data', or 'custom_prompt' to interpret"
+                "Must provide either 'fig', 'data', 'context', 'focus', or 'custom_prompt' to interpret"
             )
 
         # Use global option if display_result not explicitly set
@@ -263,10 +315,11 @@ class AnalyticsInterpreter:
             display_result = options.display_result
 
         # Get knowledge base context
-        kb_context = None
+        # Allow manual override via kwargs (e.g. from CLI) to avoid double-passing
+        kb_context = kwargs.pop("kb_context", None)
         grounding_sources = None
 
-        if include_kb:
+        if kb_context is None and include_kb:
             if self.grounding_mode == "local" and self.kb:
                 # Traditional: Load full KB into context
                 kb_context = self.backend.encode_kb(self.kb)
@@ -310,8 +363,8 @@ class AnalyticsInterpreter:
                         source="kanoa.core.interpreter",
                     )
 
-        # Call backend (logs will go to active stream or handlers)
-        result = self.backend.interpret(
+        # Call backend (streaming)
+        iterator = self.backend.interpret(
             fig=fig,
             data=data,
             context=context,
@@ -321,31 +374,75 @@ class AnalyticsInterpreter:
             **kwargs,
         )
 
-        # Attach grounding sources to result
+        # Handle display if streaming (wraps iterator to print side-effects)
+        if stream and display_result:
+            try:
+                from ..utils.notebook import (
+                    StreamingResultIterator,
+                    stream_interpretation,
+                )
+
+                iterator = stream_interpretation(
+                    iterator, backend_name=self.backend_name, display_output=True
+                )
+                # Wrap in auto-executing iterator for nicer notebook UX
+                iterator = StreamingResultIterator(iterator)
+            except ImportError:
+                pass  # Warning already logged or not in notebook
+
+        if stream:
+            return iterator
+
+        # Blocking mode: consume iterator and enable structured return
+        text_chunks = []
+        usage = None
+        metadata_dict = {}
+
+        # Consume the iterator silently (no display wrapping)
+        for chunk in iterator:
+            if chunk.type == "text":
+                text_chunks.append(chunk.content)
+            elif chunk.type == "usage":
+                usage = chunk.usage
+                # Capture metadata from usage chunk if available
+                if chunk.metadata:
+                    metadata_dict.update(chunk.metadata)
+            elif chunk.type == "status" and chunk.metadata:
+                # Capture metadata from status chunks if available
+                metadata_dict.update(chunk.metadata)
+
+        full_text = "".join(text_chunks)
+
+        # Get actual model name from backend if not in metadata
+        if "model" not in metadata_dict:
+            metadata_dict["model"] = getattr(self.backend, "model", self.backend_name)
+
+        result = InterpretationResult(
+            text=full_text,
+            backend=self.backend_name,
+            usage=usage,
+            metadata=metadata_dict,
+        )
+
+        # Attach any captured grounding sources (if we had them)
         if grounding_sources:
             result.grounding_sources = grounding_sources
 
-        # Auto-display
+        # Auto-display in blocking mode (restore original behavior)
         if display_result:
             try:
                 from ..utils.notebook import display_interpretation
 
-                # Extract cache and model info from metadata
-                cached = (
-                    result.metadata.get("cache_used", False)
-                    if result.metadata
-                    else False
-                )
-                cache_created = (
-                    result.metadata.get("cache_created", False)
-                    if result.metadata
-                    else False
-                )
-                model_name = (
-                    result.metadata.get("model", self.backend_name)
-                    if result.metadata
-                    else self.backend_name
-                )
+                # Extract cache and model info from metadata (if any)
+                cached = False
+                cache_created = False
+                model_name = self.backend_name
+
+                if result.metadata:
+                    cached = result.metadata.get("cache_used", False)
+                    cache_created = result.metadata.get("cache_created", False)
+                    model_name = result.metadata.get("model", self.backend_name)
+
                 display_interpretation(
                     text=result.text,
                     backend=self.backend_name,
@@ -371,11 +468,15 @@ class AnalyticsInterpreter:
         """Convenience method for matplotlib figures."""
         if fig is None:
             fig = plt.gcf()
-        return self.interpret(fig=fig, **kwargs)
+        # Enforce blocking mode for convenience methods
+        kwargs["stream"] = False
+        return cast("InterpretationResult", self.interpret(fig=fig, **kwargs))
 
     def interpret_dataframe(self, df: Any, **kwargs: Any) -> InterpretationResult:
         """Convenience method for DataFrames."""
-        return self.interpret(data=df, **kwargs)
+        # Enforce blocking mode for convenience methods
+        kwargs["stream"] = False
+        return cast("InterpretationResult", self.interpret(data=df, **kwargs))
 
     def get_cost_summary(self) -> Dict[str, Any]:
         """Get summary of token usage and costs."""
@@ -436,8 +537,6 @@ class AnalyticsInterpreter:
 
         if not kb_context:
             return {"exists": False, "reason": "No knowledge base loaded"}
-
-        from typing import cast
 
         return cast(
             "Dict[str, Any]", cast("Any", self.backend).get_cache_status(kb_context)

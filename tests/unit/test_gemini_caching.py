@@ -26,7 +26,11 @@ class TestGeminiContextCaching:
 
     def test_cache_created_for_large_kb(self, mock_genai: Any) -> None:
         """Test that cache is created when KB content is large enough."""
-        backend = GeminiBackend(api_key="test_key", enable_caching=True)
+        backend = GeminiBackend(
+            api_key="test_key",  # pragma: allowlist secret
+            model="gemini-3-pro-preview",
+            enable_caching=True,
+        )
 
         # Mock cache creation with usage_metadata
         mock_cache = MagicMock()
@@ -50,7 +54,11 @@ class TestGeminiContextCaching:
 
     def test_cache_not_created_for_small_kb(self, mock_genai: Any) -> None:
         """Test that cache is not created when KB content is too small."""
-        backend = GeminiBackend(api_key="test_key", enable_caching=True)
+        backend = GeminiBackend(
+            api_key="test_key",  # pragma: allowlist secret
+            model="gemini-3-pro-preview",
+            enable_caching=True,
+        )
 
         # Small KB content (< 1024 tokens)
         small_kb = "Short content."
@@ -63,7 +71,11 @@ class TestGeminiContextCaching:
 
     def test_cache_disabled(self, mock_genai: Any) -> None:
         """Test that caching is skipped when disabled."""
-        backend = GeminiBackend(api_key="test_key", enable_caching=False)
+        backend = GeminiBackend(
+            api_key="test_key",  # pragma: allowlist secret
+            model="gemini-3-pro-preview",
+            enable_caching=False,
+        )
 
         large_kb = "Test content. " * 500
 
@@ -75,7 +87,11 @@ class TestGeminiContextCaching:
 
     def test_cache_reused_for_same_content(self, mock_genai: Any) -> None:
         """Test that cache is reused when content hash matches."""
-        backend = GeminiBackend(api_key="test_key", enable_caching=True)
+        backend = GeminiBackend(
+            api_key="test_key",  # pragma: allowlist secret
+            model="gemini-3-pro-preview",
+            enable_caching=True,
+        )
 
         # Mock cache creation with usage_metadata
         mock_cache = MagicMock()
@@ -105,7 +121,11 @@ class TestGeminiContextCaching:
 
     def test_cache_recreated_for_different_content(self, mock_genai: Any) -> None:
         """Test that cache is recreated when content changes."""
-        backend = GeminiBackend(api_key="test_key", enable_caching=True)
+        backend = GeminiBackend(
+            api_key="test_key",  # pragma: allowlist secret
+            model="gemini-3-pro-preview",
+            enable_caching=True,
+        )
 
         # Mock cache creation with usage_metadata
         mock_cache1 = MagicMock()
@@ -148,7 +168,11 @@ class TestGeminiContextCaching:
 
     def test_clear_cache(self, mock_genai: Any) -> None:
         """Test cache deletion clears internal state."""
-        backend = GeminiBackend(api_key="test_key", enable_caching=True)
+        backend = GeminiBackend(
+            api_key="test_key",  # pragma: allowlist secret
+            model="gemini-3-pro-preview",
+            enable_caching=True,
+        )
         backend._cached_content_name = "caches/test-cache"
         backend._cached_content_hash = "abc123"
         backend._cache_token_count = 1000
@@ -165,7 +189,11 @@ class TestGeminiContextCaching:
 
     def test_interpret_uses_cache(self, mock_genai: Any) -> None:
         """Test that interpret() uses cached content when available."""
-        backend = GeminiBackend(api_key="test_key", enable_caching=True)
+        backend = GeminiBackend(
+            api_key="test_key",  # pragma: allowlist secret
+            model="gemini-3-pro-preview",
+            enable_caching=True,
+        )
 
         # Mock cache creation with usage_metadata
         mock_cache = MagicMock()
@@ -176,19 +204,21 @@ class TestGeminiContextCaching:
         cast("Any", backend.client.caches.create).return_value = mock_cache
         cast("Any", backend.client.caches.list).return_value = []
 
-        # Mock generate response
-        mock_response = MagicMock()
-        mock_response.text = "Cached interpretation"
-        mock_response.usage_metadata = MagicMock()
-        mock_response.usage_metadata.prompt_token_count = 100
-        mock_response.usage_metadata.candidates_token_count = 50
-        mock_response.usage_metadata.cached_content_token_count = 80
-        cast("Any", backend.client.models.generate_content).return_value = mock_response
+        # Mock generate response stream
+        mock_chunk = MagicMock()
+        mock_chunk.text = "Cached interpretation"
+        mock_chunk.usage_metadata = MagicMock()
+        mock_chunk.usage_metadata.prompt_token_count = 100
+        mock_chunk.usage_metadata.candidates_token_count = 50
+        mock_chunk.usage_metadata.cached_content_token_count = 80
+        cast("Any", backend.client.models.generate_content_stream).return_value = [
+            mock_chunk
+        ]
 
         # Large enough for caching (> 2048 tokens for gemini-3-pro-preview)
         large_kb = "Knowledge base content with enough words. " * 400
 
-        result = backend.interpret(
+        result = backend.interpret_blocking(
             fig=None,
             data="Test data",
             context=None,
@@ -206,7 +236,10 @@ class TestGeminiContextCaching:
 
     def test_usage_with_cached_tokens(self, mock_genai: Any) -> None:
         """Test usage calculation includes cached token savings."""
-        backend = GeminiBackend(api_key="test_key")
+        backend = GeminiBackend(
+            api_key="test_key",  # pragma: allowlist secret
+            model="gemini-3-pro-preview",
+        )
 
         mock_response = MagicMock()
         mock_response.usage_metadata = MagicMock()

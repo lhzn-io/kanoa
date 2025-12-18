@@ -96,7 +96,10 @@ interpreter = AnalyticsInterpreter(
 The `UsageInfo` object includes caching metrics:
 
 ```python
-result = interpreter.interpret(prompt="Analyze this data")
+result = interpreter.interpret(
+    prompt="Analyze this data",
+    stream=False
+)
 
 print(f"Cached tokens: {result.usage.cached_tokens}")
 print(f"Cache savings: ${result.usage.cache_savings:.4f}")
@@ -202,7 +205,7 @@ interpreter = AnalyticsInterpreter(
 )
 ```
 
-See the [vLLM Getting Started Guide](getting_started_vllm.md) for setup instructions.
+See the [Local Inference Guide](getting_started_local.md) for setup instructions.
 
 ## OpenAI (`openai`)
 
