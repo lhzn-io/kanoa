@@ -4,9 +4,10 @@ from kanoa.utils.notebook import StreamingResultIterator
 
 
 def test_streaming_result_iterator_auto_executes() -> None:
-    # Create a mock generator
+    # Create a mock generator that behaves like an iterator
     mock_gen = MagicMock()
-    mock_gen.__iter__.return_value = iter([1, 2, 3])
+    mock_gen.__iter__.return_value = mock_gen
+    mock_gen.__next__.side_effect = [1, 2, 3, StopIteration]
 
     # Wrap it
     wrapper = StreamingResultIterator(mock_gen)
@@ -14,12 +15,14 @@ def test_streaming_result_iterator_auto_executes() -> None:
     # Simulate IPython display
     wrapper._ipython_display_()
 
-    # Verify it was consumed (we can't easily check consumption of a real generator
-    # without side effects, but we can check if it ran without error)
-    # In a real scenario, the side effects (display updates) would happen here.
+    # Verify it was consumed
+    # The loop in _ipython_display_ should have exhausted the iterator
+    assert mock_gen.__next__.call_count == 4  # 3 items + StopIteration
 
     # Verify we can't consume it again via display
     wrapper._ipython_display_()
+    # Should not call next again because _started is True
+    assert mock_gen.__next__.call_count == 4
 
 
 def test_streaming_result_iterator_manual_iteration() -> None:
