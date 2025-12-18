@@ -68,3 +68,4 @@ docs/build/
 
 # Jupyter Notebooks
 **/.ipynb_checkpoints
+.mypy_cache/
