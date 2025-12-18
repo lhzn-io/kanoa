@@ -54,6 +54,13 @@ class PromptConfig:
         self._templates = None
 
 
+class GeminiConfig:
+    """Gemini-specific configuration."""
+
+    def __init__(self) -> None:
+        self.free_tier: bool = False
+
+
 class Options:
     """
     Global options for kanoa.
@@ -118,6 +125,9 @@ class Options:
 
         # Knowledge Base
         self._kb_home: Optional[Path | str] = None
+
+        # Gemini Configuration
+        self.gemini = GeminiConfig()
 
         # Display Options
         self.display_result: bool = True

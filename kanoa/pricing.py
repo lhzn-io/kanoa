@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 # Default pricing file path relative to this module
 DEFAULT_PRICING_PATH = Path(__file__).parent / "pricing.json"
@@ -48,13 +48,16 @@ def _deep_update(base_dict: Dict[str, Any], update_dict: Dict[str, Any]) -> None
             base_dict[key] = value
 
 
-def get_model_pricing(backend: str, model: str) -> Dict[str, float]:
+def get_model_pricing(
+    backend: str, model: str, tier: str = "default"
+) -> Dict[str, float]:
     """
-    Get pricing for a specific model.
+    Get pricing for a specific model and tier.
 
     Args:
         backend: Backend name (vllm, gemini, claude, openai)
         model: Model identifier
+        tier: Pricing tier (e.g., 'default', 'vertex', 'free')
 
     Returns:
         Dictionary with pricing details or empty dict if not found.
@@ -71,8 +74,21 @@ def get_model_pricing(backend: str, model: str) -> Dict[str, float]:
 
     # Direct match
     if model in backend_pricing:
-        model_pricing: Dict[str, float] = backend_pricing[model]
-        return model_pricing
+        model_data = backend_pricing[model]
+
+        # Check if model has tiers
+        if "tiers" in model_data:
+            # Look for requested tier, fallback to default
+            if tier in model_data["tiers"]:
+                return cast("Dict[str, float]", model_data["tiers"][tier])
+            elif "default" in model_data["tiers"]:
+                return cast("Dict[str, float]", model_data["tiers"]["default"])
+
+        # Backward compatibility: return flat structure if no tiers found
+        # But filter out "tiers" key if it exists (shouldn't happen if logic above is correct)
+        return cast(
+            "Dict[str, float]", {k: v for k, v in model_data.items() if k != "tiers"}
+        )
 
     # Fallback or partial match could be implemented here if needed
     # For now, return empty dict to signal no pricing data

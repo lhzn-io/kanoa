@@ -5,23 +5,80 @@
       "claude": "https://www.anthropic.com/pricing",
       "openai": "https://openai.com/api/pricing"
     },
-    "last_updated": "2025-12-03"
+    "last_updated": "2025-12-17"
   },
   "gemini": {
+    "gemini-3-flash-preview": {
+      "tiers": {
+        "default": {
+          "input_price": 0.50,
+          "output_price": 3.00,
+          "cached_input_price": 0.05,
+          "cached_storage_price": 1.00
+        },
+        "vertex": {
+          "input_price": 0.50,
+          "output_price": 3.00,
+          "cached_input_price": 0.05,
+          "cached_storage_price": 1.00
+        },
+        "free": {
+          "input_price": 0.0,
+          "output_price": 0.0,
+          "cached_input_price": 0.0,
+          "cached_storage_price": 0.0
+        }
+      }
+    },
     "gemini-3-pro-preview": {
-      "input_price": 2.00,
-      "output_price": 12.00,
-      "input_price_128k": 4.00,
-      "output_price_128k": 18.00,
-      "cached_input_price": 0.50,
-      "cached_storage_price": 1.00
+      "tiers": {
+        "default": {
+          "input_price": 2.00,
+          "output_price": 12.00,
+          "input_price_128k": 4.00,
+          "output_price_128k": 18.00,
+          "cached_input_price": 0.50,
+          "cached_storage_price": 1.00
+        },
+        "vertex": {
+          "input_price": 2.00,
+          "output_price": 12.00,
+          "input_price_128k": 4.00,
+          "output_price_128k": 18.00,
+          "cached_input_price": 0.50,
+          "cached_storage_price": 1.00
+        },
+        "free": {
+          "input_price": 0.0,
+          "output_price": 0.0,
+          "input_price_128k": 0.0,
+          "output_price_128k": 0.0,
+          "cached_input_price": 0.0,
+          "cached_storage_price": 0.0
+        }
+      }
     },
     "gemini-2.5-flash": {
-      "_comment": "Free tier: 0.0 pricing, NO context caching available",
-      "input_price": 0.0,
-      "output_price": 0.0,
-      "input_price_128k": 0.0,
-      "output_price_128k": 0.0
+      "tiers": {
+        "default": {
+          "input_price": 0.10,
+          "output_price": 0.40,
+          "cached_input_price": 0.025,
+          "cached_storage_price": 1.00
+        },
+        "vertex": {
+          "input_price": 0.10,
+          "output_price": 0.40,
+          "cached_input_price": 0.025,
+          "cached_storage_price": 1.00
+        },
+        "free": {
+          "input_price": 0.0,
+          "output_price": 0.0,
+          "input_price_128k": 0.0,
+          "output_price_128k": 0.0
+        }
+      }
     }
   },
   "claude": {

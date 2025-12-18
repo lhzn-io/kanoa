@@ -151,7 +151,7 @@ class GeminiBackend(BaseBackend):
                 client_kwargs["location"] = kwargs["location"]
 
         self.client = genai.Client(**client_kwargs)
-        self.model = model
+        self.model = model or "gemini-2.5-flash"
         self.cache_ttl_seconds = cache_ttl_seconds
         self.thinking_level = thinking_level
         self.media_resolution = media_resolution
@@ -843,37 +843,32 @@ class GeminiBackend(BaseBackend):
             usage = None
             if usage_metadata:
                 # Gemini usage metadata structure
-                input_tokens = getattr(usage_metadata, "prompt_token_count", 0)
-                output_tokens = getattr(usage_metadata, "candidates_token_count", 0)
-
                 # Cost calculation logic duplicated/moved from _calculate_usage equivalent?
                 # GeminiBackend didn't have _calculate_usage visible in view_file,
-                # but it used get_model_pricing in check_kb_cost.
-                # We need to calculate cost here for the usage chunk.
+                # but we can construct a dummy response object to reuse _calculate_usage
+                # or just call it if we refactor.
+                # For now, let's just manually construct UsageInfo since we are in the stream loop
+                # and _calculate_usage expects a response object.
 
-                pricing = get_model_pricing("gemini", self.model)
-                if pricing:
-                    input_price = pricing.get("input_price", 0.0)
-                    output_price = pricing.get("output_price", 0.0)
-                    # Cache hits often have different pricing, but let's stick to base logic for now
-                    # or better, implement a private _calculate_cost helper if not present
-                    cost = (input_tokens / 1_000_000 * input_price) + (
-                        output_tokens / 1_000_000 * output_price
-                    )
-                else:
-                    cost = 0.0
+                # Actually, let's try to use _calculate_usage by mocking a response object
+                class MockResponse:
+                    def __init__(self, usage_metadata: Any) -> None:
+                        self.usage_metadata = usage_metadata
 
-                usage = UsageInfo(
-                    input_tokens=input_tokens, output_tokens=output_tokens, cost=cost
+                usage = self._calculate_usage(
+                    MockResponse(usage_metadata),
+                    cache_used=bool(cache_name),
+                    cache_created=cache_result.created if cache_name else False,
                 )
 
-                # Update shared state
-                self.total_tokens["input"] += input_tokens
-                self.total_tokens["output"] += output_tokens
-                self.total_cost += cost
+                # Add model version if available from the last chunk
+                if usage and hasattr(chunk, "model_version"):
+                    usage.model = chunk.model_version
 
             yield InterpretationChunk(
-                content="", type="usage", is_final=True, usage=usage
+                content="",
+                type="usage",
+                usage=usage,
             )
 
         except Exception as e:
@@ -922,8 +917,15 @@ class GeminiBackend(BaseBackend):
         # Calculate non-cached input tokens
         non_cached_input = input_tokens - cached_tokens
 
+        # Determine pricing tier
+        tier = "default"
+        if self.is_vertex:
+            tier = "vertex"
+        elif options.gemini.free_tier:  # Check global config for free tier preference
+            tier = "free"
+
         # Get pricing for this model
-        pricing = get_model_pricing("gemini", self.model)
+        pricing = get_model_pricing("gemini", self.model, tier=tier)
         if not pricing:
             # Fallback if no pricing found (e.g. unknown model)
             return UsageInfo(
@@ -933,6 +935,7 @@ class GeminiBackend(BaseBackend):
                 cached_tokens=cached_tokens if cached_tokens > 0 else None,
                 cache_created=cache_created,
                 savings=None,
+                model=self.model,
             )
 
         # Determine pricing tier based on context length
@@ -976,4 +979,6 @@ class GeminiBackend(BaseBackend):
             cached_tokens=cached_tokens if cached_tokens > 0 else None,
             cache_created=cache_created,
             savings=savings,
+            model=self.model,
+            tier=tier,
         )

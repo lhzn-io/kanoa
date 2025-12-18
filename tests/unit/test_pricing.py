@@ -16,12 +16,22 @@ class TestPricing(unittest.TestCase):
 
         # Check specific model
         assert "gemini-3-pro-preview" in pricing["gemini"]
-        assert pricing["gemini"]["gemini-3-pro-preview"]["input_price"] == 2.00
+        # Updated to reflect tier structure
+        assert (
+            pricing["gemini"]["gemini-3-pro-preview"]["tiers"]["default"]["input_price"]
+            == 2.00
+        )
 
     def test_get_model_pricing(self):
-        # Test exact match
+        # Test exact match (default tier)
         pricing = get_model_pricing("gemini", "gemini-3-pro-preview")
         assert pricing["input_price"] == 2.00
+
+        # Test explicit tier
+        pricing_free = get_model_pricing(
+            "gemini", "gemini-3-flash-preview", tier="free"
+        )
+        assert pricing_free["input_price"] == 0.0
 
         # Test case insensitivity for backend
         pricing = get_model_pricing("GEMINI", "gemini-3-pro-preview")
@@ -40,7 +50,11 @@ class TestPricing(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             user_config_path = Path(tmpdir) / "pricing.json"
             user_config = {
-                "gemini": {"gemini-3-pro-preview": {"input_price": 99.99}},
+                "gemini": {
+                    "gemini-3-pro-preview": {
+                        "tiers": {"default": {"input_price": 99.99}}
+                    }
+                },
                 "new_backend": {"model-x": {"input_price": 1.00}},
             }
 
@@ -52,10 +66,18 @@ class TestPricing(unittest.TestCase):
                 pricing = load_pricing()
 
                 # Check override
-                assert pricing["gemini"]["gemini-3-pro-preview"]["input_price"] == 99.99
+                assert (
+                    pricing["gemini"]["gemini-3-pro-preview"]["tiers"]["default"][
+                        "input_price"
+                    ]
+                    == 99.99
+                )
                 # Check merge (other fields should remain)
                 assert (
-                    pricing["gemini"]["gemini-3-pro-preview"]["output_price"] == 12.00
+                    pricing["gemini"]["gemini-3-pro-preview"]["tiers"]["default"][
+                        "output_price"
+                    ]
+                    == 12.00
                 )
                 # Check new backend addition
                 assert "new_backend" in pricing

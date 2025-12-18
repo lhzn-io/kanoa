@@ -143,10 +143,15 @@ class BaseBackend(ABC):
 
         parts = []
 
-        # Build system instruction with KB context
-        if kb_context:
-            system_template = self.prompt_templates.get_system_prompt(self.backend_name)
-            parts.append(system_template.format(kb_context=kb_context))
+        # Build system instruction
+        system_template = self.prompt_templates.get_system_prompt(self.backend_name)
+        if "{kb_context}" in system_template:
+            if kb_context:
+                parts.append(system_template.format(kb_context=kb_context))
+        else:
+            # No placeholder, so it's likely a custom prompt (e.g. "You are a pirate")
+            # Always include it
+            parts.append(system_template)
 
         # Build user prompt with context and focus
         user_template = self.prompt_templates.get_user_prompt(self.backend_name)

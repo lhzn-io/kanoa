@@ -33,12 +33,16 @@ def handle_interpret(args: argparse.Namespace) -> None:
             kb_context = args.kb
 
     # Initialize interpreter
-    interpreter = AnalyticsInterpreter(
-        backend=args.backend,
-        model=args.model,
-        api_key=args.api_key,
-        verbose=args.verbose,
-    )
+    kwargs = {
+        "backend": args.backend,
+        "api_key": args.api_key,
+        "verbose": args.verbose,
+        "system_prompt": args.system_prompt,
+    }
+    if args.model:
+        kwargs["model"] = args.model
+
+    interpreter = AnalyticsInterpreter(**kwargs)
 
     print(f"Analyzing with {interpreter.backend.backend_name}...", file=sys.stderr)
 
@@ -63,8 +67,16 @@ def handle_interpret(args: argparse.Namespace) -> None:
                 # Print status to stderr to avoid polluting pipeable stdout
                 print(f"[{chunk.content}]", file=sys.stderr)
             elif chunk.type == "usage" and chunk.usage:
+                model_info = f" [{chunk.usage.model}]" if chunk.usage.model else ""
+                tier_info = f" ({chunk.usage.tier})" if chunk.usage.tier else ""
+
+                # Use higher precision for very small non-zero costs
+                cost_str = f"${chunk.usage.cost:.4f}"
+                if 0 < chunk.usage.cost < 0.0001:
+                    cost_str = f"${chunk.usage.cost:.6f}"
+
                 print(
-                    f"\nUsage: {chunk.usage.input_tokens} in / {chunk.usage.output_tokens} out (${chunk.usage.cost:.4f})",
+                    f"\nUsage{model_info}{tier_info}: {chunk.usage.input_tokens} in / {chunk.usage.output_tokens} out ({cost_str})",
                     file=sys.stderr,
                 )
     except KeyboardInterrupt:
@@ -97,6 +109,9 @@ def main(args: Optional[List[str]] = None) -> None:
     interpret_parser.add_argument("--data", help="Path to data file")
     interpret_parser.add_argument("--kb", help="Path to knowledge base file")
     interpret_parser.add_argument("--focus", help="Focus for analysis")
+    interpret_parser.add_argument(
+        "--system-prompt", help="Override system prompt (use empty string to disable)"
+    )
     interpret_parser.add_argument(
         "--backend", default="gemini", help="Backend to use (gemini, openai, claude)"
     )
