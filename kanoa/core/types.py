@@ -38,6 +38,8 @@ class UsageInfo:
     cached_tokens: Optional[int] = field(default=None)
     cache_created: bool = field(default=False)
     savings: Optional[float] = field(default=None)
+    model: Optional[str] = field(default=None)
+    tier: Optional[str] = field(default=None)
 
     @property
     def cache_savings(self) -> Optional[float]:
@@ -71,7 +73,7 @@ class InterpretationChunk:
     """A chunk of streaming interpretation data."""
 
     content: str
-    type: str  # "text", "status", "usage"
+    type: str  # "text", "status", "usage", "meta"
     is_final: bool = False
     usage: Optional[UsageInfo] = None
     metadata: Optional[Dict[str, Any]] = None

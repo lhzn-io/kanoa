@@ -135,13 +135,17 @@ class AnalyticsInterpreter:
         prompt_templates = None
 
         # Priority: explicit params > global config > defaults
-        if system_prompt or user_prompt:
+        if system_prompt is not None or user_prompt is not None:
             # Explicit parameters provided
             from ..utils.prompts import DEFAULT_PROMPTS
 
             prompt_templates = PromptTemplates(
-                system_prompt=system_prompt or DEFAULT_PROMPTS.system_prompt,
-                user_prompt=user_prompt or DEFAULT_PROMPTS.user_prompt,
+                system_prompt=system_prompt
+                if system_prompt is not None
+                else DEFAULT_PROMPTS.system_prompt,
+                user_prompt=user_prompt
+                if user_prompt is not None
+                else DEFAULT_PROMPTS.user_prompt,
             )
         else:
             # Check for global configuration
@@ -290,12 +294,18 @@ class AnalyticsInterpreter:
             InterpretationResult if stream=False
 
         Raises:
-            ValueError: If neither fig nor data provided
+            ValueError: If no input (fig, data, context, focus, or custom_prompt) is provided
         """
         # Validate input
-        if fig is None and data is None and custom_prompt is None:
+        if (
+            fig is None
+            and data is None
+            and custom_prompt is None
+            and context is None
+            and focus is None
+        ):
             raise ValueError(
-                "Must provide either 'fig', 'data', or 'custom_prompt' to interpret"
+                "Must provide either 'fig', 'data', 'context', 'focus', or 'custom_prompt' to interpret"
             )
 
         # Use global option if display_result not explicitly set
@@ -305,10 +315,11 @@ class AnalyticsInterpreter:
             display_result = options.display_result
 
         # Get knowledge base context
-        kb_context = None
+        # Allow manual override via kwargs (e.g. from CLI) to avoid double-passing
+        kb_context = kwargs.pop("kb_context", None)
         grounding_sources = None
 
-        if include_kb:
+        if kb_context is None and include_kb:
             if self.grounding_mode == "local" and self.kb:
                 # Traditional: Load full KB into context
                 kb_context = self.backend.encode_kb(self.kb)
@@ -457,10 +468,14 @@ class AnalyticsInterpreter:
         """Convenience method for matplotlib figures."""
         if fig is None:
             fig = plt.gcf()
+        # Enforce blocking mode for convenience methods
+        kwargs["stream"] = False
         return cast("InterpretationResult", self.interpret(fig=fig, **kwargs))
 
     def interpret_dataframe(self, df: Any, **kwargs: Any) -> InterpretationResult:
         """Convenience method for DataFrames."""
+        # Enforce blocking mode for convenience methods
+        kwargs["stream"] = False
         return cast("InterpretationResult", self.interpret(data=df, **kwargs))
 
     def get_cost_summary(self) -> Dict[str, Any]:
