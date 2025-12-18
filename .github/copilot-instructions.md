@@ -3,6 +3,15 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
 
 # Core Directives
 
+0.  **Conda Environment**:
+    *   **ALWAYS** use the correct conda environment for the repository you are working in.
+    *   For `kanoa`: Use `conda run -n kanoa-dev` for all Python commands, or activate with `conda activate kanoa-dev` first.
+    *   **NEVER** run Python/pip/pytest commands in the base environment or without the correct environment.
+    *   Examples:
+        *   `conda run -n kanoa-dev python script.py`
+        *   `conda run -n kanoa-dev pytest tests/`
+        *   `conda run -n kanoa-dev pip install package`
+
 1.  **Style Adherence**: You MUST follow all guidelines in [CONTRIBUTING.md](../CONTRIBUTING.md).
     *   All naming conventions, emoji policy, markdown standards, and code quality rules are documented there.
     *   **Quick Reference**:
@@ -22,10 +31,9 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
     *   Be concise.
     *   When generating code, provide the full file content if it's a new file, or clear `diff` blocks if editing.
     *   Do not be chatty.
+    *   **Remember**: All Python execution requires the conda environment (see directive 0).
 
 # Project Specifics
-
-- **Setup**: Activate the development environment with `conda activate kanoa-dev` before running any commands.
 
 ## Cost Management
 
