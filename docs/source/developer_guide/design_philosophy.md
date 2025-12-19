@@ -26,8 +26,7 @@ result = InterpretationResult(...)
 if display_result:
     display_interpretation(result)
 return result
-```
-
+```text
 **Alternative Considered**: Implementing `_repr_markdown_()` and conditionally suppressing display. Rejected as too implicit and harder to reason about.
 
 ## Logging Defaults
@@ -53,7 +52,7 @@ return result
 
 **Example Output**:
 
-```
+```text
 ┌─ kanoa ──────────────────────────────────────┐
 │ ℹ️ Uploading figure: 1.2 MB                  │
 │ ✓ Cache hit: gemini-2.0-flash-exp           │
@@ -63,8 +62,7 @@ return result
 ┌─ gemini-2.0-flash-exp ───────────────────────┐
 │ The plot shows a parabolic trajectory...     │
 └──────────────────────────────────────────────┘
-```
-
+```text
 **Alternative Considered**: Default to `verbose=0` for cleaner output. Rejected as reducing transparency makes the library feel like a "black box" and hides cost implications.
 
 ## Configuration Philosophy
@@ -96,8 +94,7 @@ kanoa.pricing.set("gemini-2.0-flash-exp", input=0.35)
 
 # 4. Constructor override
 interpreter = AnalyticsInterpreter(pricing_override={...})
-```
-
+```text
 **Rationale**: Gives users control at every layer while maintaining sensible defaults for beginners.
 
 ## Streaming Architecture
@@ -126,8 +123,7 @@ for chunk in interpreter.interpret(data):
 # Blocking (opt-in)
 result = interpreter.interpret(data, stream=False)
 print(result.interpretation)  # Wait for full response
-```
-
+```text
 ## Error Handling Philosophy
 
 ### Fail Fast, Surface Costs Early
@@ -147,8 +143,7 @@ kanoa uses **pre-flight checks** to prevent expensive mistakes:
 guard = TokenGuard(counter, warn_threshold=5000)
 result = guard.check(large_dataset)
 # → "⚠️ This will use ~47,000 tokens (~$0.09). Continue? (y/n)"
-```
-
+```text
 ## API Design Principles
 
 ### Progressive Disclosure
