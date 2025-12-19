@@ -11,7 +11,7 @@
 
 This document provides a detailed implementation plan for integrating Google Vertex AI RAG Engine with Cloud Storage (GCS) and Google Drive data sources into kanoa. This addresses Phase 1.1 of the roadmap and enables production-grade grounding for large knowledge bases.
 
-**Key Benefits:**
+#### Key Benefits:
 
 - 60-80% cost reduction vs context stuffing for large KBs
 - Infinite scalability (not limited by context window)
@@ -61,7 +61,7 @@ kanoa currently implements **context stuffing** as the default knowledge base st
 
 **Location:** `kanoa/knowledge_base/vertex_rag.py`
 
-**Responsibilities:**
+#### Responsibilities:
 
 - Create and manage RAG corpora via Vertex AI SDK
 - Support GCS buckets, Google Drive folders, and local files
@@ -70,7 +70,7 @@ kanoa currently implements **context stuffing** as the default knowledge base st
 - Provide grounding context for Gemini backend
 - Enable logical KB separation via `corpus_display_name` for multi-initiative workflows
 
-**Design Principles:**
+#### Design Principles:
 
 1. **Explicit Project Specification**: No default `project_id` - users must explicitly specify
    for billing transparency and multi-project workflows
@@ -79,7 +79,7 @@ kanoa currently implements **context stuffing** as the default knowledge base st
 3. **Automatic Corpus Reuse**: `create_corpus()` checks for existing corpus by display name,
    enabling seamless reconnection across sessions without recreation costs
 
-**API Sketch:**
+#### API Sketch:
 
 ```python
 from pathlib import Path
@@ -195,7 +195,7 @@ class VertexRAGKnowledgeBase:
 
 **Location:** `kanoa/backends/gemini.py`
 
-**Changes:**
+#### Changes:
 
 - Add `grounding_mode` parameter: `'context_stuffing'` (default), `'rag_engine'`, `'google_search'`, `'hybrid'`
 - Add `rag_corpus` parameter to accept `VertexRAGKnowledgeBase` instance
@@ -203,7 +203,7 @@ class VertexRAGKnowledgeBase:
 - Inject retrieved chunks into prompt with source attribution
 - Add grounding metadata to `InterpretationResult`
 
-**API Example:**
+#### API Example:
 
 ```python
 from kanoa import AnalyticsInterpreter
@@ -247,7 +247,7 @@ print(result.metadata['grounding_sources'])
 
 **Location:** `kanoa/core/types.py`
 
-**Changes:**
+#### Changes:
 
 ```python
 @dataclass
@@ -273,20 +273,20 @@ class InterpretationResult:
 
 **Format:** `gs://bucket-name/path/to/files`
 
-**Authentication:**
+#### Authentication:
 
 - Application Default Credentials (ADC)
 - Service account key file
 - Workload Identity (for GKE)
 
-**Supported Operations:**
+#### Supported Operations:
 
 - Import entire bucket: `gs://my-bucket/`
 - Import specific folder: `gs://my-bucket/docs/research/`
 - Import specific file: `gs://my-bucket/report.pdf`
 - Wildcard patterns: `gs://my-bucket/docs/*.pdf`
 
-**Implementation Notes:**
+#### Implementation Notes:
 
 - Vertex AI RAG Engine handles GCS natively
 - No need to download files locally
@@ -296,18 +296,18 @@ class InterpretationResult:
 
 **Format:** `https://drive.google.com/drive/folders/{FOLDER_ID}`
 
-**Authentication:**
+#### Authentication:
 
 - Must share Drive folder with RAG Engine service account
 - Service account format: `service-{PROJECT_NUMBER}@gcp-sa-vertex-rag.iam.gserviceaccount.com`
 - Requires "Viewer" or "Editor" role
 
-**Supported Operations:**
+#### Supported Operations:
 
 - Import entire folder (recursive)
 - Import specific file by URL
 
-**Implementation Notes:**
+#### Implementation Notes:
 
 - Use Google Drive API to validate folder access before import
 - Provide clear error messages if permissions missing
@@ -315,7 +315,7 @@ class InterpretationResult:
 
 #### 2.3 Local Files (Auto-Upload)
 
-**Approach:**
+#### Approach:
 
 1. Detect local paths in `sources` parameter
 2. Create temporary GCS bucket (or use user-provided staging bucket)
@@ -323,7 +323,7 @@ class InterpretationResult:
 4. Import from staging bucket URI
 5. Optionally clean up staging files after import
 
-**Configuration:**
+#### Configuration:
 
 ```python
 rag_kb = VertexRAGKnowledgeBase(
@@ -340,12 +340,12 @@ rag_kb.import_files([
 
 ### 3. Chunking Strategy
 
-**Default Configuration:**
+#### Default Configuration:
 
 - `chunk_size`: 512 tokens
 - `chunk_overlap`: 100 tokens
 
-**Configurable Parameters:**
+#### Configurable Parameters:
 
 ```python
 transformation_config = rag.TransformationConfig(
@@ -356,7 +356,7 @@ transformation_config = rag.TransformationConfig(
 )
 ```
 
-**Advanced Options (Future):**
+#### Advanced Options (Future):
 
 - Document AI Layout Parser for complex PDFs
 - Custom chunking functions
@@ -364,12 +364,12 @@ transformation_config = rag.TransformationConfig(
 
 ### 4. Retrieval Configuration
 
-**Parameters:**
+#### Parameters:
 
 - `top_k`: Number of chunks to retrieve (default: 5)
 - `similarity_threshold`: Minimum similarity score 0-1 (default: 0.7)
 
-**Example:**
+#### Example:
 
 ```python
 rag_retrieval_config = rag.RagRetrievalConfig(
@@ -386,14 +386,14 @@ response = rag.retrieval_query(
 
 ### 5. Prompt Integration
 
-**Strategy:**
+#### Strategy:
 
 1. User provides query via `context` and `focus` parameters
 2. Retrieve relevant chunks using semantic search
 3. Inject retrieved chunks into prompt with source attribution
 4. Send to Gemini with grounding context
 
-**Prompt Template:**
+#### Prompt Template:
 
 ```python
 # Retrieved context
@@ -420,7 +420,7 @@ Based on the following reference material:
 
 ### Week 1: Foundation
 
-**Tasks:**
+#### Tasks:
 
 - [ ] Add `google-cloud-aiplatform` dependency to `pyproject.toml`
 - [ ] Create `kanoa/knowledge_base/vertex_rag.py`
@@ -428,14 +428,14 @@ Based on the following reference material:
 - [ ] Implement `create_corpus()` with basic config
 - [ ] Add unit tests with mocked Vertex AI SDK
 
-**Deliverables:**
+#### Deliverables:
 
 - Basic RAG KB class with corpus creation
 - Test coverage for initialization
 
 ### Week 2: Data Source Integration
 
-**Tasks:**
+#### Tasks:
 
 - [ ] Implement `import_files()` for GCS URIs
 - [ ] Implement `import_files()` for Google Drive URLs
@@ -443,7 +443,7 @@ Based on the following reference material:
 - [ ] Add validation for source URIs
 - [ ] Add error handling for permission issues
 
-**Deliverables:**
+#### Deliverables:
 
 - Support for GCS, Drive, and local files
 - Clear error messages for auth issues
@@ -451,7 +451,7 @@ Based on the following reference material:
 
 ### Week 3: Retrieval & Prompt Integration
 
-**Tasks:**
+#### Tasks:
 
 - [ ] Implement `retrieve()` method
 - [ ] Add `grounding_mode` parameter to `GeminiBackend`
@@ -459,14 +459,14 @@ Based on the following reference material:
 - [ ] Implement chunk formatting for prompts
 - [ ] Add source attribution to results
 
-**Deliverables:**
+#### Deliverables:
 
 - Working end-to-end RAG pipeline
 - Grounding sources in `InterpretationResult`
 
 ### Week 4: Advanced Features
 
-**Tasks:**
+#### Tasks:
 
 - [ ] Add `GroundingSource` dataclass to `types.py`
 - [ ] Implement corpus management (list, update, delete)
@@ -474,14 +474,14 @@ Based on the following reference material:
 - [ ] Add configurable retrieval parameters
 - [ ] Implement corpus reuse (check existing by display name)
 
-**Deliverables:**
+#### Deliverables:
 
 - Full corpus lifecycle management
 - Configurable chunking and retrieval
 
 ### Week 5: Documentation & Examples
 
-**Tasks:**
+#### Tasks:
 
 - [ ] Write user guide for RAG Engine integration
 - [ ] Create example notebook: GCS knowledge base
@@ -489,7 +489,7 @@ Based on the following reference material:
 - [ ] Document migration from context stuffing
 - [ ] Document Google Drive permissions setup
 
-**Deliverables:**
+#### Deliverables:
 
 - Complete documentation
 - Working examples
@@ -497,7 +497,7 @@ Based on the following reference material:
 
 ### Week 6: Testing & Benchmarking
 
-**Tasks:**
+#### Tasks:
 
 - [ ] Integration tests with real GCS bucket
 - [ ] Integration tests with real Drive folder
@@ -505,7 +505,7 @@ Based on the following reference material:
 - [ ] Retrieval precision benchmarking
 - [ ] Performance testing (large KBs)
 
-**Deliverables:**
+#### Deliverables:
 
 - Comprehensive test suite
 - Cost/performance benchmarks
@@ -551,7 +551,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
 
 ### From Context Stuffing to RAG Engine
 
-**Before (Context Stuffing):**
+#### Before (Context Stuffing):
 
 ```python
 interpreter = AnalyticsInterpreter(
@@ -560,7 +560,7 @@ interpreter = AnalyticsInterpreter(
 )
 ```
 
-**After (RAG Engine):**
+#### After (RAG Engine):
 
 ```python
 from kanoa.knowledge_base.vertex_rag import VertexRAGKnowledgeBase
@@ -581,7 +581,7 @@ interpreter = AnalyticsInterpreter(
 )
 ```
 
-**Benefits:**
+#### Benefits:
 
 - 60-80% cost reduction for large KBs
 - Scalable to GBs of documents
@@ -648,7 +648,7 @@ interpreter = AnalyticsInterpreter(
 
 **Impact:** Users need GCP project for RAG Engine (not required for AI Studio)
 
-**Mitigation:**
+#### Mitigation:
 
 - Maintain context stuffing as default
 - Document GCP setup clearly
@@ -658,7 +658,7 @@ interpreter = AnalyticsInterpreter(
 
 **Impact:** Users may struggle with service account sharing
 
-**Mitigation:**
+#### Mitigation:
 
 - Provide step-by-step Drive permissions guide
 - Implement permission validator with actionable errors
@@ -668,7 +668,7 @@ interpreter = AnalyticsInterpreter(
 
 **Impact:** Users need to manage corpus lifecycle
 
-**Mitigation:**
+#### Mitigation:
 
 - Implement automatic corpus reuse by display name
 - Add corpus expiration/cleanup utilities
@@ -678,7 +678,7 @@ interpreter = AnalyticsInterpreter(
 
 **Impact:** RAG may retrieve irrelevant chunks for some queries
 
-**Mitigation:**
+#### Mitigation:
 
 - Provide tunable similarity thresholds
 - Support hybrid mode (RAG + context stuffing)
@@ -771,12 +771,13 @@ interpreter = AnalyticsInterpreter(
 
 ### Corpus Lifecycle Management
 
-**Persistent Corpora:**
+#### Persistent Corpora:
+
 - Corpora persist in Vertex AI until explicitly deleted
 - Reconnect to existing corpus by specifying same `project_id` + `corpus_display_name`
 - No need to recreate or re-import files
 
-**Example: Reconnect Across Sessions**
+#### Example: Reconnect Across Sessions
 
 ```python
 # Session 1: Create and populate corpus
@@ -803,7 +804,7 @@ interpreter = AnalyticsInterpreter(
 )
 ```
 
-**Cleanup:**
+#### Cleanup:
 
 ```python
 # Delete specific corpus when no longer needed
@@ -821,17 +822,19 @@ for corpus in all_corpora:
 
 ### Billing Transparency
 
-**Single Project, Multiple KBs:**
+#### Single Project, Multiple KBs:
+
 - All corpora in same GCP project share billing account
 - Costs roll up to single invoice
 - Use `corpus_display_name` to track which KB generated costs (via Vertex AI logs)
 
-**Multiple Projects:**
+#### Multiple Projects:
+
 - Each GCP project has separate billing account
 - Use different `project_id` for client/team isolation
 - Example: Personal research (`my-project`) vs client work (`client-xyz-project`)
 
-**Cost Tracking:**
+#### Cost Tracking:
 
 ```python
 # Check per-corpus costs via Vertex AI API (future enhancement)

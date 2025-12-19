@@ -11,7 +11,7 @@
 
 This guide walks through using kanoa's Vertex AI RAG Engine integration to analyze data visualizations with grounding in academic literature. Instead of loading entire PDFs into the context window (expensive and limited), RAG Engine indexes your papers once and retrieves only relevant sections for each query.
 
-**What You'll Learn:**
+#### What You'll Learn:
 
 - Setting up a RAG corpus with 50 academic papers
 - Storing papers in Google Cloud Storage (GCS)
@@ -26,7 +26,7 @@ This guide walks through using kanoa's Vertex AI RAG Engine integration to analy
 
 You'll need a GCP project with billing enabled. RAG Engine is a Vertex AI feature (not available in AI Studio).
 
-**Setup:**
+#### Setup:
 
 ```bash
 # Install gcloud CLI if needed
@@ -44,7 +44,7 @@ gcloud services enable storage.googleapis.com
 gcloud auth application-default login
 ```
 
-**Cost Estimate:**
+#### Cost Estimate:
 
 - RAG corpus storage: ~$0.40/month for 50 papers (~200MB)
 - Embedding generation (one-time): ~$0.50
@@ -64,7 +64,7 @@ This installs:
 
 ### 3. Organize Your Papers
 
-**Option A: Upload to Google Cloud Storage (Recommended)**
+#### Option A: Upload to Google Cloud Storage (Recommended)
 
 ```bash
 # Create a GCS bucket
@@ -77,7 +77,7 @@ gsutil -m cp papers/*.pdf gs://my-research-papers/ml-interpretability/
 gsutil ls gs://my-research-papers/ml-interpretability/
 ```
 
-**Option B: Use Google Drive**
+#### Option B: Use Google Drive
 
 Upload papers to a Google Drive folder and note the folder URL:
 
@@ -87,7 +87,7 @@ https://drive.google.com/drive/folders/1aBcD3FgH...
 
 You'll need to share this folder with the RAG Engine service account (shown later).
 
-**Option C: Local Files (Auto-uploaded)**
+#### Option C: Local Files (Auto-uploaded)
 
 kanoa can automatically upload local files to a staging bucket:
 
@@ -101,11 +101,11 @@ rag_kb.import_files(Path("/local/research/papers"))
 
 ### Multimodal Content (Charts, Tables, Diagrams)
 
-**PDF Processing (as of December 2025):**
+#### PDF Processing (as of December 2025):
 
 Vertex AI RAG Engine uses an integrated **layout parser** (Document AI technology) that intelligently processes academic PDFs:
 
-**What works well for academic papers:**
+#### What works well for academic papers:
 
 - Text extraction preserving document structure (abstracts, sections, references)
 - **Table detection and extraction** (experimental results tables are indexed)
@@ -113,7 +113,7 @@ Vertex AI RAG Engine uses an integrated **layout parser** (Document AI technolog
 - Mathematical notation and equations (as text)
 - OCR for scanned papers
 
-**Current limitations:**
+#### Current limitations:
 
 - **Visual semantics** of charts/plots (trend analysis, pattern recognition)
 - **Image understanding** of diagrams (architectural figures, flow charts)
@@ -121,7 +121,7 @@ Vertex AI RAG Engine uses an integrated **layout parser** (Document AI technolog
 
 **Recommendation:** Best for papers where key results are in tables or text descriptions. For visual analysis of plots/diagrams, use local KB mode with Gemini File API vision.
 
-**Impact on Academic Papers:**
+#### Impact on Academic Papers:
 
 For papers with heavy visual content (experimental results, architectural diagrams), consider:
 
@@ -157,7 +157,7 @@ For papers with heavy visual content (experimental results, architectural diagra
    )
    ```
 
-**Cost trade-off:**
+#### Cost trade-off:
 
 - RAG Engine (text-only): $0.38/month for 50 papers
 - Local KB (full vision): $21.80/month for 50 papers (frequent queries)
@@ -220,13 +220,13 @@ corpus_name = rag_kb.create_corpus()
 print(f"Created corpus: {corpus_name}")
 ```
 
-**Output:**
+#### Output:
 
 ```
 Created corpus: projects/my-research-project/locations/us-east1/ragCorpora/1234567890
 ```
 
-**Why These Parameters Are Required:**
+#### Why These Parameters Are Required:
 
 - **`project_id`**: Ensures explicit billing transparency. RAG Engine costs are tied to specific GCP projects. No defaults - you choose where charges go.
 - **`corpus_display_name`**: Acts as a logical identifier for your knowledge base. Use descriptive names like "ml-interpretability-papers", "causal-inference-kb", "healthcare-ai-research".
@@ -237,7 +237,7 @@ Import papers from GCS, Google Drive, or local files:
 
 #### Option A: From Google Cloud Storage (CLI Recommended)
 
-**Using CLI:**
+#### Using CLI:
 
 ```bash
 kanoa vertex rag import \
@@ -247,7 +247,7 @@ kanoa vertex rag import \
     --region "us-east1"
 ```
 
-**Using Python:**
+#### Using Python:
 
 ```python
 # Import entire folder
@@ -303,7 +303,7 @@ rag_kb.import_files([
 ])
 ```
 
-**Progress Tracking:**
+#### Progress Tracking:
 
 The import process runs asynchronously. For 50 papers (~200MB), expect 5-10 minutes:
 
@@ -390,7 +390,7 @@ result = interpreter.interpret(
 print(result.text)
 ```
 
-**Example Output:**
+#### Example Output:
 
 ```
 The visualization reveals a classic accuracy-interpretability trade-off in machine
@@ -441,7 +441,7 @@ if result.grounding_sources:
             print(f"   Preview: {preview}...")
 ```
 
-**Example Output:**
+#### Example Output:
 
 ```
 ============================================================
@@ -496,7 +496,7 @@ if result.usage:
 print(f"\nTotal interpreter cost: ${interpreter.total_cost:.4f}")
 ```
 
-**Example Output:**
+#### Example Output:
 
 ```
 ============================================================
@@ -509,7 +509,7 @@ Cost:          $0.0089
 Total interpreter cost: $0.0089
 ```
 
-**Cost Breakdown:**
+#### Cost Breakdown:
 
 - **Retrieval**: Retrieved 5 chunks (~500 tokens each) = 2,500 tokens
 - **Prompt**: Context + focus + figure description = ~300 tokens
@@ -647,7 +647,7 @@ for corpus in all_corpora:
     print(f"  - {corpus.display_name}: {corpus.name}")
 ```
 
-**Output:**
+#### Output:
 
 ```
 Existing corpora:
@@ -738,29 +738,29 @@ rag_kb = VertexRAGKnowledgeBase(
 )
 ```
 
-**Why these defaults?**
+#### Why these defaults?
 
 - **512 tokens** fits most complete thoughts in academic writing (1-2 paragraphs = single concept)
 - **100 token overlap** ensures key sentences appear in multiple chunks, preventing boundary splits
 
 #### When to Adjust Chunking
 
-**Symptom: Methodology questions return incomplete explanations**
+#### Symptom: Methodology questions return incomplete explanations
 
 Your queries ask for full methods ("Explain the complete SHAP algorithm") but retrieved chunks cut off mid-explanation.
 
-**Solution: Increase chunk size**
+#### Solution: Increase chunk size
 
 ```python
 chunk_size=640-768,      # Larger chunks capture full method sections
 chunk_overlap=128-150,   # Maintain 20% overlap ratio
 ```
 
-**Symptom: Simple definition queries return too much irrelevant context**
+#### Symptom: Simple definition queries return too much irrelevant context
 
 Your queries are focused ("What is SHAP?") but retrieved chunks include 3-4 unrelated topics, diluting relevance.
 
-**Solution: Decrease chunk size**
+#### Solution: Decrease chunk size
 
 ```python
 chunk_size=384-448,      # Smaller, more focused chunks
@@ -822,7 +822,7 @@ For 50 academic papers on ML interpretability, **512/100 is optimal** if your qu
 
 #### Advanced: Domain-Specific Chunking
 
-**Papers with complex figures/tables:**
+#### Papers with complex figures/tables:
 
 ```python
 # Use Document AI Layout Parser (future feature)
@@ -831,7 +831,7 @@ chunk_size=512,
 use_layout_parser=True,
 ```
 
-**Multi-language corpora:**
+#### Multi-language corpora:
 
 ```python
 # Adjust for language (Chinese ~2 chars/token vs English ~4)
@@ -1010,7 +1010,7 @@ if result.usage:
 
 **Cause:** Drive folder not shared with RAG Engine service account.
 
-**Solution:**
+#### Solution:
 
 1. Get your project number:
 
@@ -1034,7 +1034,7 @@ if result.usage:
 
 **Cause:** Corpus was deleted or display name doesn't match.
 
-**Solution:**
+#### Solution:
 
 List all corpora in your project:
 
@@ -1058,7 +1058,7 @@ Use exact `display_name` when reconnecting.
 
 **Cause:** Large PDFs or network latency.
 
-**Solution:**
+#### Solution:
 
 - Use GCS in same region as Vertex AI (e.g., both in `us-east1`)
 - Import in batches of 10-20 papers
@@ -1068,7 +1068,7 @@ Use exact `display_name` when reconnecting.
 
 **Symptom:** Grounding sources have low scores (<0.5) or seem off-topic.
 
-**Solutions:**
+#### Solutions:
 
 1. **Lower similarity threshold:**
 
@@ -1095,7 +1095,7 @@ Use exact `display_name` when reconnecting.
 
 ### Unexpected Costs
 
-**Check usage metadata:**
+#### Check usage metadata:
 
 ```python
 # Enable detailed cost tracking
@@ -1113,7 +1113,7 @@ print(f"Input tokens: {result.usage.input_tokens:,}")
 print(f"Output tokens: {result.usage.output_tokens:,}")
 ```
 
-**Cost reduction tips:**
+#### Cost reduction tips:
 
 - Use `gemini-2.0-flash-exp` instead of `gemini-2.0-pro`
 - Reduce `top_k` to retrieve fewer chunks
@@ -1126,7 +1126,7 @@ print(f"Output tokens: {result.usage.output_tokens:,}")
 
 ### 1. Corpus Organization
 
-**Do:**
+#### Do:
 
 - One corpus per research domain (e.g., "ml-interpretability", "healthcare-ai")
 - 20-100 papers per corpus (sweet spot for performance)
@@ -1137,14 +1137,14 @@ print(f"Output tokens: {result.usage.output_tokens:,}")
   - `"ml-survey-2024"` vs `"ml-survey-2025"`
   - Allows comparing interpretations against different literature snapshots
 
-**Don't:**
+#### Don't:
 
 - Mix unrelated research areas in one corpus (degrades retrieval precision)
 - Create separate corpora for slight variations (wasteful - just add files incrementally)
 - Use special characters or spaces in corpus names (stick to alphanumeric + hyphens)
 - Reuse corpus names across different projects (causes confusion when reconnecting)
 
-**Multi-Project/Multi-Initiative Naming Convention:**
+#### Multi-Project/Multi-Initiative Naming Convention:
 
 ```python
 # Pattern: {project|client}-{domain}-{optional-version}
@@ -1170,13 +1170,13 @@ corpus_display_name="ml-platform-docs"
 
 ### 2. Paper Preparation
 
-**Do:**
+#### Do:
 
 - Use clean, text-searchable PDFs (not scanned images)
 - Include full papers with references
 - Organize in GCS folders by topic
 
-**Don't:**
+#### Don't:
 
 - Include presentation slides (low information density)
 - Use PDFs with DRM restrictions
@@ -1184,13 +1184,13 @@ corpus_display_name="ml-platform-docs"
 
 ### 3. Query Design
 
-**Do:**
+#### Do:
 
 - Reference specific concepts you expect in papers
 - Use domain terminology (e.g., "SHAP values", "attention mechanisms")
 - Ask for citations explicitly in `focus` parameter
 
-**Don't:**
+#### Don't:
 
 - Ask generic questions unrelated to corpus content
 - Assume model knows your papers without retrieval
@@ -1198,13 +1198,13 @@ corpus_display_name="ml-platform-docs"
 
 ### 4. Cost Management
 
-**Do:**
+#### Do:
 
 - Reuse corpora across sessions (one-time import cost)
 - Start with `gemini-2.0-flash-exp` (10x cheaper than Pro)
 - Monitor `total_cost` attribute on interpreter
 
-**Don't:**
+#### Don't:
 
 - Recreate corpus for every experiment
 - Use `top_k=20` unless necessary
@@ -1224,7 +1224,7 @@ corpus_display_name="ml-platform-docs"
 | Cache reads (99 queries) | $19.80 |
 | **Monthly total** | **$21.80** |
 
-**Limitations:**
+#### Limitations:
 
 - Limited to ~200K tokens (40 papers max with Gemini 2M context)
 - Loads entire corpus even if only 1-2 papers relevant
@@ -1242,7 +1242,7 @@ corpus_display_name="ml-platform-docs"
 | **First month total** | **$2.90** |
 | **Subsequent months** | **$1.90** |
 
-**Benefits:**
+#### Benefits:
 
 - Scales to 1000s of papers (no context limit)
 - Retrieves only relevant sections (efficient)
@@ -1261,7 +1261,7 @@ corpus_display_name="ml-platform-docs"
 4. **Import papers** following Step 2
 5. **Run your first grounded interpretation** following Step 3
 
-**Need Help?**
+#### Need Help?
 
 - Documentation: [docs.lhzn.io/kanoa](https://kanoa.docs.lhzn.io)
 - Issues: [github.com/lhzn-io/kanoa/issues](https://github.com/lhzn-io/kanoa/issues)
