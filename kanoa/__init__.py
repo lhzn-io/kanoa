@@ -2,7 +2,7 @@
 kanoa: AI-powered interpretation of data science outputs.
 """
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 from .config import options
 from .core.interpreter import AnalyticsInterpreter, supported_backends
