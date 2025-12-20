@@ -298,6 +298,12 @@ class AnalyticsInterpreter:
         Raises:
             ValueError: If no input (fig, data, context, focus, or custom_prompt) is provided
         """
+        # Clear the internal log stream to prevent message accumulation
+        # across multiple interpret() calls in the same cell
+        from ..utils.logging import clear_internal_stream
+
+        clear_internal_stream()
+
         # Validate input
         if (
             fig is None

@@ -2,6 +2,7 @@
 
 from .logging import (
     LogStream,
+    clear_internal_stream,
     ilog_debug,
     ilog_error,
     ilog_info,
@@ -54,4 +55,5 @@ __all__ = [
     # Streaming context
     "LogStream",
     "log_stream",
+    "clear_internal_stream",
 ]

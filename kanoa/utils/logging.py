@@ -62,10 +62,13 @@ def _on_cell_complete() -> None:
     This is called after each cell completes execution, allowing us to
     distinguish "rendered in this cell" from "rendered in a previous cell".
     """
-    global _default_stream  # noqa: PLW0602
+    global _default_stream, _internal_stream  # noqa: PLW0602
 
     if _default_stream is not None:
         _default_stream._cell_finalized = True  # type: ignore[attr-defined]
+
+    if _internal_stream is not None:
+        _internal_stream._cell_finalized = True  # type: ignore[attr-defined]
 
 
 def _register_post_exec_hook() -> None:
@@ -657,6 +660,11 @@ class LogStream:
         """Start the log stream (push to stack)."""
         _push_stream(self)
 
+    def clear(self) -> None:
+        """Clear all accumulated messages from the stream."""
+        self.messages = []
+        self._last_message_count = 0
+
     def stop(self) -> None:
         """Stop the log stream (pop from stack)."""
         _pop_stream()
@@ -1098,6 +1106,17 @@ def _get_or_create_internal_stream() -> Optional["LogStream"]:
     return _internal_stream
 
 
+def clear_internal_stream() -> None:
+    """
+    Clear messages from the internal log stream without destroying it.
+
+    This is useful when making multiple API calls within the same cell
+    to prevent message accumulation.
+    """
+    if _internal_stream is not None:
+        _internal_stream.clear()
+
+
 def _emit_internal_log(
     level: str,
     message: str,
@@ -1242,6 +1261,7 @@ __all__ = [
     # Streaming context
     "LogStream",
     "log_stream",
+    "clear_internal_stream",
     # Logging functions (user-facing, clear background)
     "log_debug",
     "log_info",
