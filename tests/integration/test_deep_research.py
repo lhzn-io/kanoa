@@ -11,7 +11,7 @@ import os
 import pytest
 
 from kanoa.backends.deep_research import GeminiDeepResearchBackend
-from kanoa.backends.deep_research_proto import GeminiDeepResearchProtoBackend
+from kanoa.backends.gemini_research import GeminiResearchReferenceBackend
 
 
 @pytest.fixture
@@ -47,8 +47,8 @@ def text_kb(tmp_path):
 
 
 @pytest.mark.integration
-class TestGeminiDeepResearchProtoBackend:
-    """Tests for the custom Deep Research Proto backend."""
+class TestGeminiResearchReferenceBackend:
+    """Tests for the custom Research backend."""
 
     def test_basic_research_with_rag(self, sample_context, sample_focus, text_kb):
         """Test basic research flow with RAG context."""
@@ -56,7 +56,7 @@ class TestGeminiDeepResearchProtoBackend:
         if not api_key:
             pytest.skip("GOOGLE_API_KEY not set")
 
-        backend = GeminiDeepResearchProtoBackend(
+        backend = GeminiResearchReferenceBackend(
             api_key=api_key,
             model="gemini-3-flash-preview",  # Use flash for testing
         )
@@ -97,7 +97,7 @@ class TestGeminiDeepResearchProtoBackend:
         if not api_key:
             pytest.skip("GOOGLE_API_KEY not set")
 
-        backend = GeminiDeepResearchProtoBackend(
+        backend = GeminiResearchReferenceBackend(
             api_key=api_key,
             model="gemini-3-flash-preview",
         )
@@ -123,7 +123,7 @@ class TestGeminiDeepResearchProtoBackend:
         if not api_key:
             pytest.skip("GOOGLE_API_KEY not set")
 
-        backend = GeminiDeepResearchProtoBackend(
+        backend = GeminiResearchReferenceBackend(
             api_key=api_key,
             model="gemini-3-flash-preview",
         )
@@ -256,7 +256,7 @@ def test_backend_comparison(sample_focus):
         pytest.skip("GOOGLE_API_KEY not set")
 
     # Test Proxy backend
-    proxy_backend = GeminiDeepResearchProtoBackend(
+    proxy_backend = GeminiResearchReferenceBackend(
         api_key=api_key,
         model="gemini-3-flash-preview",
     )

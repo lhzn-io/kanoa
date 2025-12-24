@@ -58,7 +58,7 @@
         }
       }
     },
-    "gemini-deep-research-proto": {
+    "gemini-research-reference": {
       "tiers": {
         "default": {
           "input_price": 2.00,

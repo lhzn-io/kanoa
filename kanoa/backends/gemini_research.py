@@ -11,18 +11,29 @@ from ..utils.logging import ilog_debug, ilog_info
 from .base import BaseBackend
 
 
-class GeminiDeepResearchProtoBackend(BaseBackend):
+class GeminiResearchReferenceBackend(BaseBackend):
     """
-    Gemini Deep Research Proto backend with RAG and Google Search Grounding.
+    Gemini Research Reference Backend (Grounded Generation).
 
-    Combines internal knowledge (RAG) with external verification (Google Search)
-    to provide grounded, comprehensive answers. This is a prototype implementation
-    of the Deep Research workflow.
+    A reference implementation of a research agent that combines:
+    1. Internal Knowledge Base Retrieval (RAG)
+    2. Google Search Grounding
+    3. Synthesis
+
+    This backend serves as an architectural reference for building custom,
+    grounded agent workflows using the standard Gemini API. It is NOT the
+    official Google Deep Research agent, but rather a demonstration of how
+    to build similar capabilities using kanoa's components.
+
+    Future Enhancements:
+    - Iterative refinement loop (e.g., "critique and refine" cycle)
+    - Budget-aware execution (stop when cost threshold reached)
+    - Vetted source constraints (restrict search to specific domains)
     """
 
     @property
     def backend_name(self) -> str:
-        return "gemini-deep-research-proto"
+        return "gemini-research-reference"
 
     def __init__(
         self,
@@ -33,7 +44,7 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
         **kwargs: Any,
     ):
         """
-        Initialize Gemini Deep Research Proxy backend.
+        Initialize Gemini Research backend.
 
         Args:
             api_key: Google AI API key.
@@ -70,14 +81,15 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
         **kwargs: Any,
     ) -> Iterator["InterpretationChunk"]:
         """
-        Execute Deep Research flow: RAG -> Prompt -> Search -> Generate.
+        Execute Research flow: RAG -> Prompt -> Search -> Generate.
         """
         # 1. Status: Initializing
         ilog_debug(
-            "Starting Deep Research Proto interpretation", source="deep-research-proto"
+            "Starting Gemini Research Reference interpretation",
+            source="gemini-research-ref",
         )
         yield InterpretationChunk(
-            type="status", content="🔍 Initializing Deep Research..."
+            type="status", content="🔍 Initializing Research Reference Backend..."
         )
 
         # 2. RAG Retrieval
@@ -88,7 +100,7 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
             query = focus or context or "Analyze the data"
             ilog_debug(
                 f"Querying Knowledge Base: {query[:100]}",
-                source="deep-research-proto",
+                source="gemini-research-ref",
             )
             yield InterpretationChunk(
                 type="status", content=f"📚 Querying Knowledge Base for: '{query}'..."
@@ -105,7 +117,7 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
                     )
                     ilog_info(
                         f"Retrieved {len(results)} chunks from KB",
-                        source="deep-research-proto",
+                        source="gemini-research-ref",
                     )
                     yield InterpretationChunk(
                         type="status",
@@ -113,13 +125,13 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
                     )
                 else:
                     ilog_debug(
-                        "No relevant info found in KB", source="deep-research-proto"
+                        "No relevant info found in KB", source="gemini-research-ref"
                     )
                     yield InterpretationChunk(
                         type="status", content="⚠️ No relevant info found in KB."
                     )
             except Exception as e:
-                ilog_debug(f"RAG Error: {e}", source="deep-research-proto")
+                ilog_debug(f"RAG Error: {e}", source="gemini-research-ref")
                 yield InterpretationChunk(type="status", content=f"❌ RAG Error: {e}")
 
         # Use provided kb_context if RAG didn't yield anything or wasn't used
@@ -128,11 +140,11 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
         # 3. Prompt Construction
         prompt = self._build_prompt(context, focus, final_kb_context, custom_prompt)
         ilog_debug(
-            f"Prompt constructed: {len(prompt)} chars", source="deep-research-proto"
+            f"Prompt constructed: {len(prompt)} chars", source="gemini-research-ref"
         )
 
         # 4. Execution with Google Search
-        ilog_info("Starting Google Search & Synthesis", source="deep-research-proto")
+        ilog_info("Starting Google Search & Synthesis", source="gemini-research-ref")
         yield InterpretationChunk(
             type="status", content="🌐 Performing Google Search & Synthesis..."
         )
@@ -169,7 +181,7 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
                     text_buffer += chunk.text
                     ilog_debug(
                         f"Received text chunk: {len(chunk.text)} chars",
-                        source="deep-research-proto",
+                        source="gemini-research-ref",
                     )
                     yield InterpretationChunk(type="text", content=chunk.text)
 
@@ -186,7 +198,7 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
                         ):
                             ilog_debug(
                                 "Received grounding metadata",
-                                source="deep-research-proto",
+                                source="gemini-research-ref",
                             )
                             # We might want to yield this as a special chunk or append to text
                             # For now, let's just log it or yield as meta
@@ -203,7 +215,7 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
 
             ilog_info(
                 f"Generation complete: {len(text_buffer)} chars",
-                source="deep-research-proto",
+                source="gemini-research-ref",
             )
 
             # Calculate and yield usage
@@ -237,7 +249,7 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
 
                 ilog_info(
                     f"Usage: {input_tokens:,} in + {output_tokens:,} out = ${total_cost:.4f}",
-                    source="deep-research-proto",
+                    source="gemini-research-ref",
                 )
 
             yield InterpretationChunk(
@@ -247,7 +259,7 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
             )
 
         except Exception as e:
-            ilog_debug(f"Generation error: {e}", source="deep-research-proto")
+            ilog_debug(f"Generation error: {e}", source="gemini-research-ref")
             yield InterpretationChunk(
                 type="text", content=f"\n❌ Error during generation: {e}"
             )
@@ -259,11 +271,11 @@ class GeminiDeepResearchProtoBackend(BaseBackend):
         kb_context: Optional[str],
         custom_prompt: Optional[str],
     ) -> str:
-        """Build the prompt for Deep Research."""
+        """Build the prompt for Research."""
         parts = []
 
         parts.append(
-            "You are a Deep Research Assistant. Your goal is to provide a comprehensive, fact-checked answer."
+            "You are a Research Assistant. Your goal is to provide a comprehensive, fact-checked answer."
         )
         parts.append(
             "You have access to Google Search to verify information and find the latest data."
