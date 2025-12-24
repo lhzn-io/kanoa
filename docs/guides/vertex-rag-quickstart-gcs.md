@@ -83,7 +83,7 @@ gsutil ls gs://$BUCKET_NAME/papers/
 echo "OK: Uploaded PDFs to gs://$BUCKET_NAME/papers/"
 ```
 
-#### Recommended Test Papers:
+#### Recommended Test Papers
 
 - 5-10 PDFs, each 1-5 MB
 - Text-searchable (not scanned images)
@@ -108,10 +108,10 @@ gcloud auth application-default print-access-token > /dev/null && echo "OK: ADC 
 ## Step 5: Install kanoa with Vertex AI Support (1 min)
 
 ```bash
-# Once implemented, this will be:
+# Once implemented, this will be
 pip install kanoa[vertexai]
 
-# For now (pre-implementation), install dependencies manually:
+# For now (pre-implementation), install dependencies manually
 pip install google-cloud-aiplatform
 ```
 
@@ -284,7 +284,7 @@ Run the test:
 python test_rag.py
 ```
 
-#### Expected Output:
+#### Expected Output
 
 ```
 Initializing Vertex AI (project: kanoa-rag-test-1234567890, region: us-east1)...
@@ -478,7 +478,7 @@ Once this basic test works:
 5. **Test Drive integration** if you need Drive support
 6. **Move to production project** once validated
 
-#### Recommended Reading:
+#### Recommended Reading
 
 - **[Using Vertex AI RAG Engine with Academic Papers](vertex-rag-academic-papers.md)** - Complete user guide with 50-paper workflow, multi-KB management, and best practices
 - **[Chunking Strategy Section](vertex-rag-academic-papers.md#optimizing-chunking-strategy)** - Learn when and how to tune chunk size/overlap for your domain

@@ -34,21 +34,23 @@ def _get_backend_class(name: str) -> Type[BaseBackend]:
         ImportError: If backend dependencies are not installed
         ValueError: If backend name is unknown
     """
-    # Import from package __init__ which handles lazy loading
-    from ..backends import ClaudeBackend, GeminiBackend, OpenAIBackend
+    # Lazily import only the requested backend to avoid unnecessary deps
+    if name in ("claude", "claude-sonnet-4.5"):
+        from ..backends import ClaudeBackend
 
-    backends: Dict[str, Type[BaseBackend]] = {
-        "claude": ClaudeBackend,
-        "claude-sonnet-4.5": ClaudeBackend,
-        "gemini": GeminiBackend,
-        "openai": OpenAIBackend,
-        "vllm": OpenAIBackend,
-    }
+        return ClaudeBackend
+    elif name == "gemini":
+        from ..backends import GeminiBackend
 
-    if name not in backends:
-        raise ValueError(f"Unknown backend: {name}. Available: {list(backends.keys())}")
+        return GeminiBackend
+    elif name in ("openai", "vllm"):
+        from ..backends import OpenAIBackend
 
-    return backends[name]
+        return OpenAIBackend
+    else:
+        raise ValueError(
+            f"Unknown backend: {name}. Available: vllm, gemini, claude, openai"
+        )
 
 
 class AnalyticsInterpreter:
@@ -296,6 +298,12 @@ class AnalyticsInterpreter:
         Raises:
             ValueError: If no input (fig, data, context, focus, or custom_prompt) is provided
         """
+        # Clear the internal log stream to prevent message accumulation
+        # across multiple interpret() calls in the same cell
+        from ..utils.logging import clear_internal_stream
+
+        clear_internal_stream()
+
         # Validate input
         if (
             fig is None
