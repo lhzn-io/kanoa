@@ -169,7 +169,7 @@ class GeminiDeepResearchBackend(BaseBackend):
         yield InterpretationChunk(type="status", content="🚀 Starting research...")
 
         try:
-            stream = self.client.interactions.create(  # type: ignore[attr-defined]
+            stream = self.client.interactions.create(  # type: ignore[call-overload]
                 input=research_query,
                 agent=self.agent,
                 background=True,

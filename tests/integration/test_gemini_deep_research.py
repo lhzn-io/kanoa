@@ -10,8 +10,8 @@ import os
 
 import pytest
 
-from kanoa.backends.deep_research import GeminiDeepResearchBackend
-from kanoa.backends.gemini_research import GeminiResearchReferenceBackend
+from kanoa.backends.gemini_deep_research import GeminiDeepResearchBackend
+from kanoa.backends.research_reference import GeminiResearchReferenceBackend
 
 
 @pytest.fixture

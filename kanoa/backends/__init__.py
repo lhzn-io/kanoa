@@ -15,10 +15,10 @@ from .base import BaseBackend
 # Lazy imports for optional dependencies
 if TYPE_CHECKING:
     from .claude import ClaudeBackend, ClaudeTokenCounter
-    from .deep_research import GeminiDeepResearchBackend
     from .gemini import GeminiBackend, GeminiTokenCounter
-    from .gemini_research import GeminiResearchReferenceBackend
+    from .gemini_deep_research import GeminiDeepResearchBackend
     from .openai import OpenAIBackend
+    from .research_reference import GeminiResearchReferenceBackend
 
 
 def __getattr__(name: str) -> type:
@@ -49,7 +49,7 @@ def __getattr__(name: str) -> type:
 
     if name == "GeminiDeepResearchBackend":
         try:
-            from .deep_research import GeminiDeepResearchBackend
+            from .gemini_deep_research import GeminiDeepResearchBackend
 
             return GeminiDeepResearchBackend
         except ImportError as e:
@@ -61,7 +61,7 @@ def __getattr__(name: str) -> type:
 
     if name == "GeminiResearchReferenceBackend":
         try:
-            from .gemini_research import GeminiResearchReferenceBackend
+            from .research_reference import GeminiResearchReferenceBackend
 
             return GeminiResearchReferenceBackend
         except ImportError as e:
