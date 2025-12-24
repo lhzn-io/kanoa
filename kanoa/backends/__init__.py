@@ -16,7 +16,9 @@ from .base import BaseBackend
 if TYPE_CHECKING:
     from .claude import ClaudeBackend, ClaudeTokenCounter
     from .gemini import GeminiBackend, GeminiTokenCounter
+    from .gemini_deep_research import GeminiDeepResearchBackend
     from .openai import OpenAIBackend
+    from .research_reference import GeminiResearchReferenceBackend
 
 
 def __getattr__(name: str) -> type:
@@ -41,6 +43,30 @@ def __getattr__(name: str) -> type:
         except ImportError as e:
             raise ImportError(
                 f"GeminiTokenCounter requires google-genai. "
+                f"Install with: pip install kanoa[gemini]\n"
+                f"Original error: {e}"
+            ) from e
+
+    if name == "GeminiDeepResearchBackend":
+        try:
+            from .gemini_deep_research import GeminiDeepResearchBackend
+
+            return GeminiDeepResearchBackend
+        except ImportError as e:
+            raise ImportError(
+                f"GeminiDeepResearchBackend requires google-genai >= 2.0. "
+                f"Install with: pip install --upgrade google-genai\n"
+                f"Original error: {e}"
+            ) from e
+
+    if name == "GeminiResearchReferenceBackend":
+        try:
+            from .research_reference import GeminiResearchReferenceBackend
+
+            return GeminiResearchReferenceBackend
+        except ImportError as e:
+            raise ImportError(
+                f"GeminiResearchReferenceBackend requires google-genai. "
                 f"Install with: pip install kanoa[gemini]\n"
                 f"Original error: {e}"
             ) from e
@@ -89,6 +115,8 @@ __all__ = [
     "ClaudeBackend",
     "ClaudeTokenCounter",
     "GeminiBackend",
+    "GeminiDeepResearchBackend",
+    "GeminiResearchReferenceBackend",
     "GeminiTokenCounter",
     "OpenAIBackend",
 ]

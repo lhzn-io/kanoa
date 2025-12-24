@@ -534,11 +534,12 @@ def stream_interpretation(
 
         # Print footer in terminal
         if final_usage:
-            model = (
-                final_metadata.get("model", backend_name)
-                if final_metadata
-                else backend_name
-            )
+            model = backend_name
+            if final_metadata and final_metadata.get("model"):
+                model = final_metadata.get("model")
+            elif hasattr(final_usage, "model") and final_usage.model:
+                model = str(final_usage.model)
+
             tokens = f"{final_usage.input_tokens}→{final_usage.output_tokens}"
             print(f"\n\n[{model}] {tokens} tokens · ${final_usage.cost:.4f}")
         return
@@ -593,12 +594,26 @@ def stream_interpretation(
         # Display final styled box (replaces streaming box)
         if display_output and text_buffer:
             full_text = "".join(text_buffer)
-            model = final_metadata.get("model") if final_metadata else None
+
+            display_model: Optional[str] = None
+            if final_metadata:
+                _m = final_metadata.get("model")
+                if _m:
+                    display_model = str(_m)
+
+            # Fallback to model from usage info if not in metadata
+            if (
+                not display_model
+                and final_usage
+                and hasattr(final_usage, "model")
+                and final_usage.model
+            ):
+                display_model = str(final_usage.model)
 
             final_markdown = _prepare_interpretation_markdown(
                 text=full_text,
                 backend=backend_name,
-                model=model,
+                model=display_model,
                 usage=final_usage,
                 cached=cached,
                 cache_created=cache_created,
