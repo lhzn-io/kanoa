@@ -58,34 +58,6 @@
         }
       }
     },
-    "gemini-research-reference": {
-      "tiers": {
-        "default": {
-          "input_price": 2.00,
-          "output_price": 12.00,
-          "input_price_128k": 4.00,
-          "output_price_128k": 18.00,
-          "cached_input_price": 0.50,
-          "cached_storage_price": 1.00
-        },
-        "vertex": {
-          "input_price": 2.00,
-          "output_price": 12.00,
-          "input_price_128k": 4.00,
-          "output_price_128k": 18.00,
-          "cached_input_price": 0.50,
-          "cached_storage_price": 1.00
-        },
-        "free": {
-          "input_price": 0.0,
-          "output_price": 0.0,
-          "input_price_128k": 0.0,
-          "output_price_128k": 0.0,
-          "cached_input_price": 0.0,
-          "cached_storage_price": 0.0
-        }
-      }
-    },
     "deep-research-pro-preview-12-2025": {
       "tiers": {
         "default": {

@@ -136,6 +136,31 @@ def main(args: Optional[List[str]] = None) -> None:
             "cache", help="Manage context caches"
         )
         gemini_cache.register_subcommand(cache_parser)
+
+        # Gemini Status Tool
+        status_parser = gemini_subparsers.add_parser(
+            "status", help="Check authentication status"
+        )
+        status_parser.set_defaults(subcommand="status")
+
+        # Gemini Mode Tool
+        mode_parser = gemini_subparsers.add_parser(
+            "mode", help="Set authentication mode preference (also sets up env)"
+        )
+        mode_parser.add_argument(
+            "preferred_mode",
+            nargs="?",
+            choices=["vertex", "studio"],
+            help="Preferred mode: vertex or studio",
+        )
+        mode_parser.set_defaults(subcommand="mode")
+
+        # Gemini Env Tool
+        env_parser = gemini_subparsers.add_parser(
+            "env", help="Print shell environment exports"
+        )
+        env_parser.set_defaults(subcommand="env")
+
         gemini_available = True
     except ImportError:
         gemini_available = False
@@ -184,9 +209,63 @@ def main(args: Optional[List[str]] = None) -> None:
             sys.exit(1)
 
         from kanoa.tools import gemini_cache
+        from kanoa.utils.auth import (
+            print_auth_status,
+            setup_vertex_env,
+        )
 
         if parsed_args.subcommand == "cache":
             gemini_cache.handle_command(parsed_args)
+        elif parsed_args.subcommand == "status":
+            print_auth_status()
+        elif parsed_args.subcommand == "mode":
+            from kanoa.utils.auth import get_mode_preference, set_mode_preference
+
+            if not parsed_args.preferred_mode:
+                # Show current mode
+                current = get_mode_preference()
+                if current:
+                    print(f"Current mode preference: {current}")
+                else:
+                    print("No mode preference set (auto-detecting)")
+                print("\nUsage: kanoa gemini mode [vertex|studio]")
+            else:
+                # Set mode and do setup
+                mode = parsed_args.preferred_mode
+                set_mode_preference(mode)
+                print(f"✅ Mode preference set to: {mode}")
+                print("   Saved to: ~/.kanoa/config")
+
+                if mode == "vertex":
+                    # Auto-setup Vertex AI env vars
+                    print("\n🔧 Setting up Vertex AI environment...")
+                    env_vars = setup_vertex_env()
+                    if env_vars:
+                        print("\nEnvironment variables set:")
+                        for key, value in env_vars.items():
+                            print(f"  export {key}={value}")
+                        print("\n💡 To set these for your current shell, run:")
+                        print("   eval $(kanoa gemini env)")
+                    else:
+                        print("\n⚠️  Could not auto-detect gcloud config.")
+                        print("   Run: gcloud config set project <your-project>")
+                elif mode == "studio":
+                    print("\n📝 Make sure your API key is in ~/.gemini/api-key-studio")
+                    print("   or set GOOGLE_API_KEY environment variable")
+        elif parsed_args.subcommand == "env":
+            from kanoa.utils.auth import KANOA_ENV_FILE
+
+            if KANOA_ENV_FILE.exists():
+                print(KANOA_ENV_FILE.read_text().strip())
+            else:
+                # Try to generate it if mode is vertex
+                from kanoa.utils.auth import get_auth_status, setup_vertex_env
+
+                status = get_auth_status()
+                if status["mode"] == "vertex":
+                    setup_vertex_env()
+                    if KANOA_ENV_FILE.exists():
+                        print(KANOA_ENV_FILE.read_text().strip())
         else:
             gemini_parser.print_help()
     elif parsed_args.command == "vertex":

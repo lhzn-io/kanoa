@@ -4,71 +4,72 @@ import matplotlib.pyplot as plt
 from google import genai
 from google.genai import types
 
+from ..backends.base import BaseBackend
 from ..core.types import InterpretationChunk, UsageInfo
 from ..knowledge_base.base import BaseKnowledgeBase
 from ..pricing import get_model_pricing
 from ..utils.logging import ilog_debug, ilog_info
-from .base import BaseBackend
 
 
-class GeminiResearchReferenceBackend(BaseBackend):
+class GeminiExampleCustomResearchBackend(BaseBackend):
     """
-    Gemini Research Reference Backend (Grounded Generation).
+    Example Custom Research Backend (Vertex AI Only).
 
-    A reference implementation of a research agent that combines:
+    A "white-box" reference implementation designed to demonstrate grounded research
+    using Vertex AI's API. Unlike the official Gemini Deep Research agent (which is
+    a black box), this backend explicitly orchestrates:
     1. Internal Knowledge Base Retrieval (RAG)
-    2. Google Search Grounding
-    3. Synthesis
+    2. Google Search Grounding (Vertex AI google_search API)
+    3. Transparent Prompt Construction & Synthesis
 
-    This backend serves as an architectural reference for building custom,
-    grounded agent workflows using the standard Gemini API. It is NOT the
-    official Google Deep Research agent, but rather a demonstration of how
-    to build similar capabilities using kanoa's components.
+    **Important**: This backend requires Vertex AI authentication (ADC) and uses
+    the Vertex AI-specific `google_search` tool (not AI Studio's `google_search_retrieval`).
 
-    Future Enhancements:
-    - Iterative refinement loop (e.g., "critique and refine" cycle)
-    - Budget-aware execution (stop when cost threshold reached)
-    - Vetted source constraints (restrict search to specific domains)
+    Use this when you need full control over the research loop or
+    strict adherence to internal knowledge before seeking external info.
     """
 
     @property
     def backend_name(self) -> str:
-        return "gemini-research-reference"
+        return "gemini-example-custom-research"
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
+        project: str,
+        location: str = "us-central1",
         model: str = "gemini-3-pro-preview",
         max_tokens: int = 3000,
         dynamic_threshold: float = 0.7,
         **kwargs: Any,
     ):
         """
-        Initialize Gemini Research backend.
+        Initialize Gemini Example Custom Research backend (Vertex AI only).
+
+        **Authentication**: This backend requires Google Cloud Application Default
+        Credentials (ADC). Run `gcloud auth application-default login` first.
 
         Args:
-            api_key: Google AI API key.
+            project: GCP Project ID (required).
+            location: GCP location (default: us-central1).
             model: Gemini model to use (default: gemini-3-pro-preview).
             max_tokens: Maximum tokens for response.
             dynamic_threshold: Threshold for triggering Google Search (0.0-1.0).
-            **kwargs: Additional args passed to BaseBackend/Client.
+            **kwargs: Additional args passed to BaseBackend.
         """
-        super().__init__(api_key, max_tokens, enable_caching=False, **kwargs)
+        super().__init__(
+            api_key=None, max_tokens=max_tokens, enable_caching=False, **kwargs
+        )
         self.model = model
         self.dynamic_threshold = dynamic_threshold
+        self.project = project
+        self.location = location
 
-        # Initialize client
-        client_kwargs: dict[str, Any] = {}
-        if api_key:
-            client_kwargs["api_key"] = api_key
-        else:
-            client_kwargs["vertexai"] = True
-            if "project" in kwargs:
-                client_kwargs["project"] = kwargs["project"]
-            if "location" in kwargs:
-                client_kwargs["location"] = kwargs["location"]
-
-        self.client = genai.Client(**client_kwargs)
+        # Initialize Vertex AI client (ADC required)
+        self.client = genai.Client(
+            vertexai=True,
+            project=project,
+            location=location,
+        )
 
     def interpret(
         self,
@@ -85,11 +86,11 @@ class GeminiResearchReferenceBackend(BaseBackend):
         """
         # 1. Status: Initializing
         ilog_debug(
-            "Starting Gemini Research Reference interpretation",
-            source="gemini-research-ref",
+            "Starting Gemini Example Custom Research interpretation",
+            source="gemini-example-custom-research",
         )
         yield InterpretationChunk(
-            type="status", content="🔍 Initializing Research Reference Backend..."
+            type="status", content="🔍 Initializing Example Custom Research Backend..."
         )
 
         # 2. RAG Retrieval
@@ -100,7 +101,7 @@ class GeminiResearchReferenceBackend(BaseBackend):
             query = focus or context or "Analyze the data"
             ilog_debug(
                 f"Querying Knowledge Base: {query[:100]}",
-                source="gemini-research-ref",
+                source="gemini-example-custom-research",
             )
             yield InterpretationChunk(
                 type="status", content=f"📚 Querying Knowledge Base for: '{query}'..."
@@ -117,7 +118,7 @@ class GeminiResearchReferenceBackend(BaseBackend):
                     )
                     ilog_info(
                         f"Retrieved {len(results)} chunks from KB",
-                        source="gemini-research-ref",
+                        source="gemini-example-custom-research",
                     )
                     yield InterpretationChunk(
                         type="status",
@@ -125,13 +126,14 @@ class GeminiResearchReferenceBackend(BaseBackend):
                     )
                 else:
                     ilog_debug(
-                        "No relevant info found in KB", source="gemini-research-ref"
+                        "No relevant info found in KB",
+                        source="gemini-example-custom-research",
                     )
                     yield InterpretationChunk(
                         type="status", content="⚠️ No relevant info found in KB."
                     )
             except Exception as e:
-                ilog_debug(f"RAG Error: {e}", source="gemini-research-ref")
+                ilog_debug(f"RAG Error: {e}", source="gemini-example-custom-research")
                 yield InterpretationChunk(type="status", content=f"❌ RAG Error: {e}")
 
         # Use provided kb_context if RAG didn't yield anything or wasn't used
@@ -140,26 +142,22 @@ class GeminiResearchReferenceBackend(BaseBackend):
         # 3. Prompt Construction
         prompt = self._build_prompt(context, focus, final_kb_context, custom_prompt)
         ilog_debug(
-            f"Prompt constructed: {len(prompt)} chars", source="gemini-research-ref"
+            f"Prompt constructed: {len(prompt)} chars",
+            source="gemini-example-custom-research",
         )
 
         # 4. Execution with Google Search
-        ilog_info("Starting Google Search & Synthesis", source="gemini-research-ref")
+        ilog_info(
+            "Starting Google Search & Synthesis",
+            source="gemini-example-custom-research",
+        )
         yield InterpretationChunk(
             type="status", content="🌐 Performing Google Search & Synthesis..."
         )
 
-        # Configure Search Tool
-        tools = [
-            types.Tool(
-                google_search_retrieval=types.GoogleSearchRetrieval(
-                    dynamic_retrieval_config=types.DynamicRetrievalConfig(
-                        mode="dynamic",  # type: ignore[arg-type]
-                        dynamic_threshold=self.dynamic_threshold,
-                    )
-                )
-            )
-        ]
+        # Configure Google Search Tool (Vertex AI API)
+        # Note: Vertex AI uses `google_search`, not `google_search_retrieval`
+        tools = [types.Tool(google_search=types.GoogleSearch())]
 
         generate_config = types.GenerateContentConfig(
             max_output_tokens=self.max_tokens,
@@ -181,7 +179,7 @@ class GeminiResearchReferenceBackend(BaseBackend):
                     text_buffer += chunk.text
                     ilog_debug(
                         f"Received text chunk: {len(chunk.text)} chars",
-                        source="gemini-research-ref",
+                        source="gemini-example-custom-research",
                     )
                     yield InterpretationChunk(type="text", content=chunk.text)
 
@@ -198,7 +196,7 @@ class GeminiResearchReferenceBackend(BaseBackend):
                         ):
                             ilog_debug(
                                 "Received grounding metadata",
-                                source="gemini-research-ref",
+                                source="gemini-example-custom-research",
                             )
                             # We might want to yield this as a special chunk or append to text
                             # For now, let's just log it or yield as meta
@@ -215,7 +213,7 @@ class GeminiResearchReferenceBackend(BaseBackend):
 
             ilog_info(
                 f"Generation complete: {len(text_buffer)} chars",
-                source="gemini-research-ref",
+                source="gemini-example-custom-research",
             )
 
             # Calculate and yield usage
@@ -249,7 +247,7 @@ class GeminiResearchReferenceBackend(BaseBackend):
 
                 ilog_info(
                     f"Usage: {input_tokens:,} in + {output_tokens:,} out = ${total_cost:.4f}",
-                    source="gemini-research-ref",
+                    source="gemini-example-research",
                 )
 
             yield InterpretationChunk(
@@ -259,7 +257,7 @@ class GeminiResearchReferenceBackend(BaseBackend):
             )
 
         except Exception as e:
-            ilog_debug(f"Generation error: {e}", source="gemini-research-ref")
+            ilog_debug(f"Generation error: {e}", source="gemini-example-research")
             yield InterpretationChunk(
                 type="text", content=f"\n❌ Error during generation: {e}"
             )

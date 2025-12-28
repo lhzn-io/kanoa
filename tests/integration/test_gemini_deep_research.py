@@ -3,7 +3,7 @@ Integration tests for Gemini Deep Research backends.
 
 Tests both:
 - GeminiDeepResearchBackend (official Interactions API)
-- GeminiDeepResearchProtoBackend (prototype RAG + Google Search)
+- GeminiResearchReferenceBackend (prototype RAG + Google Search)
 """
 
 import os
@@ -11,7 +11,6 @@ import os
 import pytest
 
 from kanoa.backends.gemini_deep_research import GeminiDeepResearchBackend
-from kanoa.backends.research_reference import GeminiResearchReferenceBackend
 
 
 @pytest.fixture
@@ -44,108 +43,6 @@ def text_kb(tmp_path):
         "Wind energy capacity increased 25% annually from 2019-2024. "
         "Offshore wind farms are the fastest growing segment."
     )
-
-
-@pytest.mark.integration
-class TestGeminiResearchReferenceBackend:
-    """Tests for the custom Research backend."""
-
-    def test_basic_research_with_rag(self, sample_context, sample_focus, text_kb):
-        """Test basic research flow with RAG context."""
-        api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            pytest.skip("GOOGLE_API_KEY not set")
-
-        backend = GeminiResearchReferenceBackend(
-            api_key=api_key,
-            model="gemini-3-flash-preview",  # Use flash for testing
-        )
-
-        chunks = list(
-            backend.interpret(
-                fig=None,
-                data=None,
-                context=sample_context,
-                focus=sample_focus,
-                kb_context=None,
-                custom_prompt=None,
-                knowledge_base=text_kb,
-            )
-        )
-
-        # Verify we got chunks
-        assert len(chunks) > 0
-
-        # Check for expected chunk types
-        status_chunks = [c for c in chunks if c.type == "status"]
-        content_chunks = [c for c in chunks if c.type == "content"]
-
-        assert len(status_chunks) > 0, "Should have status updates"
-        assert len(content_chunks) > 0, "Should have content"
-
-        # Verify KB was used
-        kb_status = [c for c in status_chunks if "Knowledge Base" in c.content]
-        assert len(kb_status) > 0, "Should indicate KB usage"
-
-        # Verify final content mentions key terms
-        full_content = "".join([c.content for c in content_chunks])
-        assert len(full_content) > 100, "Should generate substantial content"
-
-    def test_research_without_rag(self, sample_focus):
-        """Test research without RAG (Google Search only)."""
-        api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            pytest.skip("GOOGLE_API_KEY not set")
-
-        backend = GeminiResearchReferenceBackend(
-            api_key=api_key,
-            model="gemini-3-flash-preview",
-        )
-
-        chunks = list(
-            backend.interpret(
-                fig=None,
-                data=None,
-                context=None,
-                focus=sample_focus,
-                kb_context=None,
-                custom_prompt=None,
-            )
-        )
-
-        assert len(chunks) > 0
-        content_chunks = [c for c in chunks if c.type == "content"]
-        assert len(content_chunks) > 0
-
-    def test_custom_prompt(self):
-        """Test with custom research prompt."""
-        api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            pytest.skip("GOOGLE_API_KEY not set")
-
-        backend = GeminiResearchReferenceBackend(
-            api_key=api_key,
-            model="gemini-3-flash-preview",
-        )
-
-        custom_prompt = "What are the top 3 renewable energy trends in 2024?"
-
-        chunks = list(
-            backend.interpret(
-                fig=None,
-                data=None,
-                context=None,
-                focus=None,
-                kb_context=None,
-                custom_prompt=custom_prompt,
-            )
-        )
-
-        assert len(chunks) > 0
-        # Verify content is relevant
-        content_chunks = [c for c in chunks if c.type == "content"]
-        full_content = "".join([c.content for c in content_chunks])
-        assert len(full_content) > 50
 
 
 @pytest.mark.integration
@@ -246,66 +143,3 @@ class TestGeminiDeepResearchBackend:
         status_chunks = [c for c in chunks if c.type == "status"]
         file_search_status = [c for c in status_chunks if "File Search" in c.content]
         assert len(file_search_status) > 0
-
-
-@pytest.mark.integration
-def test_backend_comparison(sample_focus):
-    """Compare outputs from both backends on the same query."""
-    api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        pytest.skip("GOOGLE_API_KEY not set")
-
-    # Test Proxy backend
-    proxy_backend = GeminiResearchReferenceBackend(
-        api_key=api_key,
-        model="gemini-3-flash-preview",
-    )
-
-    proxy_chunks = list(
-        proxy_backend.interpret(
-            fig=None,
-            data=None,
-            context=None,
-            focus=sample_focus,
-            kb_context=None,
-            custom_prompt=None,
-        )
-    )
-
-    proxy_content = "".join([c.content for c in proxy_chunks if c.type == "content"])
-
-    # Test Official backend (if available)
-    try:
-        official_backend = GeminiDeepResearchBackend(
-            api_key=api_key,
-            max_research_time=300,
-        )
-
-        official_chunks = list(
-            official_backend.interpret(
-                fig=None,
-                data=None,
-                context=None,
-                focus=sample_focus,
-                kb_context=None,
-                custom_prompt=None,
-            )
-        )
-
-        official_content = "".join(
-            [c.content for c in official_chunks if c.type == "content"]
-        )
-
-        # Both should generate substantial content
-        assert len(proxy_content) > 100
-        assert len(official_content) > 100
-
-        print("\n--- Proxy Backend Output ---")
-        print(proxy_content[:500])
-        print("\n--- Official Backend Output ---")
-        print(official_content[:500])
-
-    except RuntimeError as e:
-        if "Interactions API not available" in str(e):
-            pytest.skip("Interactions API not available for comparison")
-        raise

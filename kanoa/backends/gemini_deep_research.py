@@ -169,7 +169,9 @@ class GeminiDeepResearchBackend(BaseBackend):
         yield InterpretationChunk(type="status", content="🚀 Starting research...")
 
         try:
-            stream = self.client.interactions.create(  # type: ignore[call-overload]
+            # Use Any cast for experimental interactions API to avoid finicky Mypy issues
+            client_any: Any = self.client
+            stream = client_any.interactions.create(
                 input=research_query,
                 agent=self.agent,
                 background=True,
