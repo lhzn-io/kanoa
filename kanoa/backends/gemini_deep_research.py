@@ -362,4 +362,9 @@ class GeminiDeepResearchBackend(BaseBackend):
         else:
             parts.append("Research Focus: Analyze and explain the provided data.")
 
+        # Re-enforce current date to avoid 2024 confusion (per Gemini 3 best practices)
+        parts.append(
+            "Note: When searching or analyzing, remember it is 2025 current year."
+        )
+
         return "\n\n".join(parts)

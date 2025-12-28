@@ -40,6 +40,7 @@ class GeminiExampleCustomResearchBackend(BaseBackend):
         model: str = "gemini-3-pro-preview",
         max_tokens: int = 3000,
         dynamic_threshold: float = 0.7,
+        thinking_level: str = "HIGH",
         **kwargs: Any,
     ):
         """
@@ -63,6 +64,7 @@ class GeminiExampleCustomResearchBackend(BaseBackend):
         self.dynamic_threshold = dynamic_threshold
         self.project = project
         self.location = location
+        self.thinking_level = thinking_level.upper()
 
         # Initialize Vertex AI client (ADC required)
         self.client = genai.Client(
@@ -159,9 +161,20 @@ class GeminiExampleCustomResearchBackend(BaseBackend):
         # Note: Vertex AI uses `google_search`, not `google_search_retrieval`
         tools = [types.Tool(google_search=types.GoogleSearch())]
 
+        # Configure Thinking and Search
+        thinking_config = types.ThinkingConfig(
+            thinking_level=getattr(
+                types.ThinkingLevel, self.thinking_level, types.ThinkingLevel.HIGH
+            )
+        )
+
         generate_config = types.GenerateContentConfig(
             max_output_tokens=self.max_tokens,
             tools=tools,  # type: ignore[arg-type]
+            thinking_config=thinking_config,
+            system_instruction=self._get_system_instructions(
+                bool(rag_text or kb_context)
+            ),
         )
 
         try:
@@ -300,3 +313,20 @@ class GeminiExampleCustomResearchBackend(BaseBackend):
             )
 
         return "\n".join(parts)
+
+    def _get_system_instructions(self, has_kb: bool) -> str:
+        """Get system instructions following Gemini 3 best practices."""
+        instructions = [
+            "Your knowledge cutoff date is January 2025.",
+            "For time-sensitive user queries that require up-to-date information, you MUST follow the provided current time (date and year) when formulating search queries in tool calls. Remember it is 2025 this year.",
+        ]
+
+        if has_kb:
+            instructions.append(
+                "You are a strictly grounded assistant limited to the information provided in the Internal Knowledge Base Context. "
+                "In your answers, rely **only** on the facts that are directly mentioned in that context. "
+                "Treat the provided context as the absolute limit of truth; any facts or details that are not directly mentioned "
+                "in the context must be considered completely unsupported unless you use the Google Search tool to verify external facts."
+            )
+
+        return " ".join(instructions)

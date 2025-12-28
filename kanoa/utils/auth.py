@@ -235,7 +235,7 @@ def setup_vertex_env(
             env_vars["GOOGLE_CLOUD_LOCATION"] = "global"
 
     # SDK-specific flag for Vertex AI redirection
-    env_vars["GOOGLE_GENAI_USE_VERTEX"] = "True"
+    env_vars["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
 
     # Actually set the env vars
     for key, value in env_vars.items():
