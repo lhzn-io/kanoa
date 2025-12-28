@@ -227,12 +227,9 @@ def setup_vertex_env(
     if location:
         env_vars["GOOGLE_CLOUD_LOCATION"] = location
     else:
-        detected_location = get_gcloud_location()
-        if detected_location:
-            env_vars["GOOGLE_CLOUD_LOCATION"] = detected_location
-        else:
-            # Default to global per Gemini 3 requirements https://docs.cloud.google.com/vertex-ai/generative-ai/docs/start/get-started-with-gemini-3
-            env_vars["GOOGLE_CLOUD_LOCATION"] = "global"
+        # For Gemini 3, 'global' is the required endpoint.
+        # We default to it even if gcloud has a different compute/region.
+        env_vars["GOOGLE_CLOUD_LOCATION"] = "global"
 
     # SDK-specific flag for Vertex AI redirection
     env_vars["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
