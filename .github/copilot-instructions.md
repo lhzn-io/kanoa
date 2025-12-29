@@ -55,9 +55,7 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
 - **Testing**: `make test` (unit tests only, no API calls)
 - **Linting**: `make lint` (ruff + mypy)
 - **Integration**: `make test-gemini-integration` (free tier tests)
-- **Git Hooks**:
-  - Pre-commit: Linting, formatting, type checking, secrets detection
-  - Pre-push: Unit tests (integration tests excluded)
+- **Git Hooks**: Pre-commit runs linting, formatting, and secrets detection (mypy/pytest run in CI only)
 
 ## Cost Management
 
