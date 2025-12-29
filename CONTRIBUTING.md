@@ -24,11 +24,18 @@ We welcome contributions! Please follow these guidelines to ensure a smooth proc
     ⚠️ The pip-only option does not include Jupyter/notebook support for running examples.
 
 3. **Install pre-commit hooks**:
-    This sets up git hooks to automatically lint and format your code before each commit.
+    Install hooks to automatically lint and format your code before commits.
 
     ```bash
     pre-commit install
     ```
+
+    **What runs on commit:**
+    - Linting and formatting (ruff)
+    - Secrets detection (detect-secrets)
+    - YAML validation
+
+    **Note**: Type checking (mypy) and tests (pytest) run in CI only. Run `make lint` and `make test` locally before pushing.
 
 4. **Create a branch** for your feature or fix:
 

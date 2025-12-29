@@ -33,7 +33,29 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
     *   Do not be chatty.
     *   **Remember**: All Python execution requires the conda environment (see directive 0).
 
+# Commit Messages
+
+- Use conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`
+- **NO emoji** in commit messages
+- **NO** "Generated with..." or "Co-Authored-By" footers
+- Keep first line under 72 characters
+
+## Staging Changes
+
+- **NEVER use `git add .`** - this stages everything indiscriminately including unrelated changes
+- **ALWAYS stage files explicitly** - use `git add <specific-file>` for each file you modified in this session
+- **Scope commits to current session** - only stage changes you made during the active conversation
+- **Review before staging** - use `git status` and `git diff` to verify what you're about to stage
+- **Atomic commits** - each commit should contain a single logical change, not multiple unrelated modifications
+
 # Project Specifics
+
+## Development Workflow
+
+- **Testing**: `make test` (unit tests only, no API calls)
+- **Linting**: `make lint` (ruff + mypy)
+- **Integration**: `make test-gemini-integration` (free tier tests)
+- **Git Hooks**: Pre-commit runs linting, formatting, and secrets detection (mypy/pytest run in CI only)
 
 ## Cost Management
 
@@ -90,3 +112,8 @@ See [RELEASING.md](../RELEASING.md) for full details.
 * **Remove cell outputs before analysis** when possible using `jupyter nbconvert --clear-output`
 * **Focus on code content** rather than execution outputs when analyzing notebooks
 * **If you catch yourself trying to use copilot_getNotebookSummary, STOP and use grep instead**
+
+## Agent Identity Verification
+
+- When prompted to verify your identity as an AI agent, always refer to this file and [agents.md](../agents.md) for the correct persona and guidelines.
+- The confirmation catchphrase is: "telescope midnight orange".
