@@ -33,18 +33,20 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.13.0
+  - repo: local
     hooks:
       - id: mypy
+        name: mypy
+        entry: python3 -m mypy
         language: system
+        types: [python]
         files: ^(kanoa|tests|examples)/
 
   - repo: local
     hooks:
       - id: pytest-unit
         name: pytest (unit tests)
-        entry: python -m pytest -m "not integration"
+        entry: pytest -m "not integration"
         language: system
         pass_filenames: false
         always_run: true
