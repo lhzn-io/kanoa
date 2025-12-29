@@ -15,7 +15,9 @@ from .base import BaseBackend
 # Lazy imports for optional dependencies
 if TYPE_CHECKING:
     from .claude import ClaudeBackend, ClaudeTokenCounter
+    from .example_custom_research import GeminiExampleCustomResearchBackend
     from .gemini import GeminiBackend, GeminiTokenCounter
+    from .gemini_deep_research import GeminiDeepResearchBackend
     from .openai import OpenAIBackend
 
 
@@ -41,6 +43,18 @@ def __getattr__(name: str) -> type:
         except ImportError as e:
             raise ImportError(
                 f"GeminiTokenCounter requires google-genai. "
+                f"Install with: pip install kanoa[gemini]\n"
+                f"Original error: {e}"
+            ) from e
+
+    if name == "GeminiExampleCustomResearchBackend":
+        try:
+            from .example_custom_research import GeminiExampleCustomResearchBackend
+
+            return GeminiExampleCustomResearchBackend
+        except ImportError as e:
+            raise ImportError(
+                f"GeminiExampleCustomResearchBackend requires google-genai. "
                 f"Install with: pip install kanoa[gemini]\n"
                 f"Original error: {e}"
             ) from e
@@ -89,6 +103,7 @@ __all__ = [
     "ClaudeBackend",
     "ClaudeTokenCounter",
     "GeminiBackend",
+    "GeminiDeepResearchBackend",
     "GeminiTokenCounter",
     "OpenAIBackend",
 ]
