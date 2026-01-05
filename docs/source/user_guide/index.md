@@ -11,11 +11,13 @@ getting_started_openai
 getting_started_local
 streaming
 backends
+deep_research
 knowledge_bases
 logging
 cost_management
 vertex_ai_integration
 authentication
+cli
 ```
 
 ## Overview

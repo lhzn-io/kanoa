@@ -16,6 +16,7 @@
 | :--- | :--- | :--- |
 | `vllm` | Local inference with [Molmo](https://molmo.allenai.org/), Gemma 3, Olmo 3 | [Guide](./docs/source/user_guide/getting_started_local.md) |
 | `gemini` | Free tier, native PDF support, Vertex AI RAG Engine | [Guide](./docs/source/user_guide/getting_started_gemini.md) |
+| `gemini-deep-research` | Multi-step web research, GDrive integration | [Guide](./docs/source/user_guide/deep_research.md) |
 | `claude` | Strong reasoning, vision support | [Guide](./docs/source/user_guide/getting_started_claude.md) |
 | `openai` | GPT models, Azure OpenAI | [Guide](./docs/source/user_guide/backends.md#openai) |
 
@@ -24,6 +25,7 @@ For detailed backend comparison, see [Backends Overview](./docs/source/user_guid
 ## Features
 
 - **Multi-Backend Support**: Seamlessly switch between vLLM (local), Gemini, Claude, and OpenAI.
+- **Deep Research**: Perform multi-step web research and synthesis using Gemini's Deep Research agent.
 - **Real-time Streaming**: Get immediate feedback with streaming responses.
 - **Enterprise Grounding**: Native integration with **Vertex AI RAG Engine** for scalable, secure knowledge retrieval from thousands of documents.
 - **Native Vision**: Uses multimodal capabilities to "see" complex plots and diagrams.
