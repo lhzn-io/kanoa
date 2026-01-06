@@ -325,27 +325,27 @@ def print_auth_status():
     """Print authentication status in a user-friendly format."""
     status = get_auth_status()
 
-    print("🔐 kanoa Authentication Status")
+    print("[Auth] kanoa Authentication Status")
     print("=" * 50)
 
     if status["mode"] == "vertex":
-        print("✅ Mode: Vertex AI (Application Default Credentials)")
+        print("Mode: Vertex AI (Application Default Credentials)")
         print(f"  Project: {status['project']}")
         print(f"  Location: {status['location']}")
     elif status["mode"] == "studio":
-        print("✅ Mode: AI Studio (API Key)")
+        print("Mode: AI Studio (API Key)")
         print("  API key found in ~/.gemini/api-key-studio")
     else:
-        print("❌ No authentication configured")
+        print("No authentication configured")
         print("\nSetup options:")
         print("  Vertex AI: gcloud auth application-default login")
         print("  AI Studio: Save API key to ~/.gemini/api-key-studio")
 
     if status["mode_preference"]:
         print(
-            f"\n💡 Mode preference: {status['mode_preference']} (set via 'kanoa gemini mode')"
+            f"\nMode preference: {status['mode_preference']} (set via 'kanoa gemini mode')"
         )
 
     print("\nDetails:")
-    print(f"  ADC configured: {'✅' if status['adc_configured'] else '❌'}")
-    print(f"  API key available: {'✅' if status['api_key_available'] else '❌'}")
+    print(f"  ADC configured: {'Yes' if status['adc_configured'] else 'No'}")
+    print(f"  API key available: {'Yes' if status['api_key_available'] else 'No'}")

@@ -44,6 +44,20 @@ def text_kb(tmp_path):
         "Offshore wind farms are the fastest growing segment."
     )
 
+    # Return a proper KB object following the pattern from test_example_custom_research.py
+    from kanoa.knowledge_base.base import BaseKnowledgeBase
+
+    class MockKB(BaseKnowledgeBase):
+        def __init__(self, path):
+            self.path = path
+
+        def retrieve(self, query):
+            return [
+                {"text": f.read_text(), "score": 0.9} for f in self.path.glob("*.txt")
+            ]
+
+    return MockKB(kb_path)
+
 
 @pytest.mark.integration
 @pytest.mark.skipif(
