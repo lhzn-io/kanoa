@@ -233,28 +233,28 @@ def main(args: Optional[List[str]] = None) -> None:
                 # Set mode and do setup
                 mode = parsed_args.preferred_mode
                 set_mode_preference(mode)
-                print(f"✅ Mode preference set to: {mode}")
+                print(f"Mode preference set to: {mode}")
                 print("   Saved to: ~/.kanoa/config")
 
                 if mode == "vertex":
                     # Auto-setup Vertex AI env vars
-                    print("\n🔧 Setting up Vertex AI environment...")
+                    print("\n[Setup] Setting up Vertex AI environment...")
                     env_vars = setup_vertex_env()
                     if env_vars:
                         print("\nEnvironment variables set:")
                         for key, value in env_vars.items():
                             print(f"  export {key}={value}")
                         print(
-                            "\n💡 Note: Gemini 3 Preview models require GOOGLE_CLOUD_LOCATION=global."
+                            "\nNote: Gemini 3 Preview models require GOOGLE_CLOUD_LOCATION=global."
                         )
                         print("   (Already configured automatically in ~/.kanoa/env)")
-                        print("\n💡 To set these for your current shell, run:")
+                        print("\nTo set these for your current shell, run:")
                         print("   eval $(kanoa gemini env)")
                     else:
                         print("\n⚠️  Could not auto-detect gcloud config.")
                         print("   Run: gcloud config set project <your-project>")
                 elif mode == "studio":
-                    print("\n📝 Make sure your API key is in ~/.gemini/api-key-studio")
+                    print("\n[Note] Make sure your API key is in ~/.gemini/api-key-studio")
                     print("   or set GOOGLE_API_KEY environment variable")
         elif parsed_args.subcommand == "env":
             from kanoa.utils.auth import KANOA_ENV_FILE
