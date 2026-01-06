@@ -248,23 +248,61 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope="session")
 def vertex_config(request):
-    """Fixture to get Vertex AI configuration from CLI options."""
+    """Fixture to get Vertex AI configuration from CLI options or gcloud config."""
+    # Try CLI options first
     project = request.config.getoption("--vertex-project")
     location = request.config.getoption("--vertex-location")
     corpus_display_name = request.config.getoption("--vertex-display-name")
     gcs_uri = request.config.getoption("--vertex-gcs-uri")
 
+    # If project not provided via CLI, try gcloud auto-detection
     if not project:
-        pytest.skip("Skipping Vertex AI tests: --vertex-project not provided")
+        try:
+            from kanoa.utils.auth import get_gcloud_project
+
+            project = get_gcloud_project()
+        except ImportError:
+            pass
+
+    # If location not provided and not default, try gcloud
+    if not location or location == "us-east1":
+        try:
+            from kanoa.utils.auth import get_gcloud_location
+
+            detected_location = get_gcloud_location()
+            if detected_location:
+                location = detected_location
+        except ImportError:
+            pass
+
+    if not project:
+        pytest.skip(
+            "Skipping Vertex AI tests: --vertex-project not provided and gcloud config not detected"
+        )
     if not corpus_display_name:
         pytest.skip("Skipping Vertex AI tests: --vertex-display-name not provided")
 
     return {
         "project_id": project,
-        "location": location,
+        "location": location or "us-central1",
         "corpus_display_name": corpus_display_name,
         "gcs_uri": gcs_uri,
     }
+
+
+@pytest.fixture(scope="session", autouse=True)
+def auto_setup_vertex_env():
+    """Auto-setup Vertex AI environment variables from gcloud if not already set."""
+    import os
+
+    # Only set if not already present
+    if not os.getenv("GOOGLE_CLOUD_PROJECT"):
+        try:
+            from kanoa.utils.auth import setup_vertex_env
+
+            setup_vertex_env()
+        except ImportError:
+            pass
 
 
 @pytest.fixture(scope="session", autouse=True)
