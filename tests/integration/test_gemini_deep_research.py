@@ -11,6 +11,7 @@ import os
 import pytest
 
 from kanoa.backends.gemini_deep_research import GeminiDeepResearchBackend
+from kanoa.knowledge_base.base import BaseKnowledgeBase
 
 
 @pytest.fixture
@@ -45,15 +46,15 @@ def text_kb(tmp_path):
     )
 
     # Return a proper KB object following the pattern from test_example_custom_research.py
-    from kanoa.knowledge_base.base import BaseKnowledgeBase
-
     class MockKB(BaseKnowledgeBase):
         def __init__(self, path):
             self.path = path
 
         def retrieve(self, query):
             return [
-                {"text": f.read_text(), "score": 0.9} for f in self.path.glob("*.txt")
+                {"text": f.read_text(), "score": 0.9}
+                for f in self.path.glob("*.txt")
+                if f.is_file()
             ]
 
     return MockKB(kb_path)
