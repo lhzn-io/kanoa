@@ -254,7 +254,9 @@ def main(args: Optional[List[str]] = None) -> None:
                         print("\n⚠️  Could not auto-detect gcloud config.")
                         print("   Run: gcloud config set project <your-project>")
                 elif mode == "studio":
-                    print("\n[Note] Make sure your API key is in ~/.gemini/api-key-studio")
+                    print(
+                        "\n[Note] Make sure your API key is in ~/.gemini/api-key-studio"
+                    )
                     print("   or set GOOGLE_API_KEY environment variable")
         elif parsed_args.subcommand == "env":
             from kanoa.utils.auth import KANOA_ENV_FILE
