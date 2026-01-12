@@ -147,8 +147,27 @@ class GeminiBackend(BaseBackend):
             client_kwargs["vertexai"] = True
             if "project" in kwargs:
                 client_kwargs["project"] = kwargs["project"]
+            elif os.environ.get("GOOGLE_CLOUD_PROJECT"):
+                client_kwargs["project"] = os.environ.get("GOOGLE_CLOUD_PROJECT")
+
             if "location" in kwargs:
                 client_kwargs["location"] = kwargs["location"]
+            elif os.environ.get("GOOGLE_CLOUD_REGION"):
+                client_kwargs["location"] = os.environ.get("GOOGLE_CLOUD_REGION")
+            elif os.environ.get("GOOGLE_CLOUD_LOCATION"):
+                client_kwargs["location"] = os.environ.get("GOOGLE_CLOUD_LOCATION")
+
+        if self.verbose >= 1:
+            # Redact API key for logging
+            debug_kwargs = client_kwargs.copy()
+            if "api_key" in debug_kwargs:
+                debug_kwargs["api_key"] = f"{debug_kwargs['api_key'][:4]}...[REDACTED]"
+
+            ilog_debug(
+                f"Gemini Client Init Args: {debug_kwargs}",
+                source="kanoa.backends.gemini",
+                context={"backend": "gemini", "vertex": self.is_vertex},
+            )
 
         self.client = genai.Client(**client_kwargs)
         self.model = model or "gemini-2.5-flash"
