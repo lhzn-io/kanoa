@@ -242,7 +242,7 @@ interpreter = AnalyticsInterpreter(
 
 ---
 
-## GitHub Copilot SDK (`copilot`)
+## GitHub Copilot SDK (`github-copilot`)
 
 **Best for**: GitHub Copilot users, GPT-5 models via CLI
 
@@ -279,7 +279,7 @@ copilot --version
 ### Installation
 
 ```bash
-pip install kanoa[copilot]
+pip install kanoa[github-copilot]
 ```
 
 ### Usage
@@ -289,7 +289,7 @@ from kanoa import AnalyticsInterpreter
 
 # Basic usage
 interpreter = AnalyticsInterpreter(
-    backend='copilot',
+    backend='github-copilot',
     model='gpt-5'  # Default model
 )
 
@@ -307,7 +307,7 @@ for chunk in interpreter.interpret(
 
 ```python
 interpreter = AnalyticsInterpreter(
-    backend='copilot',
+    backend='github-copilot',
     model='gpt-5',
     cli_path='/custom/path/to/copilot',  # Optional: custom CLI path
     cli_url='localhost:8080',  # Optional: connect to external CLI server

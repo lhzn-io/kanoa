@@ -7,7 +7,7 @@ import pytest
 from kanoa.core.types import InterpretationResult
 
 
-class TestCopilotBackend:
+class TestGitHubCopilotBackend:
     @pytest.fixture
     def mock_copilot_import(self) -> Any:
         """Mock the copilot import to avoid requiring the SDK."""
@@ -43,18 +43,18 @@ class TestCopilotBackend:
             }
 
     def test_initialization(self, mock_copilot_import: Any) -> None:
-        """Test CopilotBackend initialization."""
-        from kanoa.backends.copilot import CopilotBackend
+        """Test GitHubCopilotBackend initialization."""
+        from kanoa.backends.github_copilot import GitHubCopilotBackend
 
-        backend = CopilotBackend(model="gpt-5")
+        backend = GitHubCopilotBackend(model="gpt-5")
         assert backend.model == "gpt-5"
-        assert backend.backend_name == "copilot"
+        assert backend.backend_name == "github-copilot"
 
     def test_initialization_custom_cli(self, mock_copilot_import: Any) -> None:
-        """Test CopilotBackend initialization with custom CLI path."""
-        from kanoa.backends.copilot import CopilotBackend
+        """Test GitHubCopilotBackend initialization with custom CLI path."""
+        from kanoa.backends.github_copilot import GitHubCopilotBackend
 
-        backend = CopilotBackend(
+        backend = GitHubCopilotBackend(
             cli_path="/usr/local/bin/copilot",
             cli_url="localhost:8080",
             model="gpt-5",
@@ -64,12 +64,12 @@ class TestCopilotBackend:
 
     def test_interpret_text_only(self, mock_copilot_import: Any) -> None:
         """Test interpretation with text data only."""
-        from kanoa.backends.copilot import CopilotBackend
+        from kanoa.backends.github_copilot import GitHubCopilotBackend
 
-        backend = CopilotBackend(model="gpt-5")
+        backend = GitHubCopilotBackend(model="gpt-5")
 
         # Mock the async run to return a simple result
-        with patch("kanoa.backends.copilot.asyncio.run") as mock_run:
+        with patch("kanoa.backends.github_copilot.asyncio.run") as mock_run:
             from kanoa.core.types import InterpretationChunk
 
             mock_run.return_value = {
@@ -93,7 +93,7 @@ class TestCopilotBackend:
 
             assert isinstance(result, InterpretationResult)
             assert "Interpretation result" in result.text
-            assert result.backend == "copilot"
+            assert result.backend == "github-copilot"
             assert result.usage is not None
             assert result.usage.input_tokens == 10
             assert result.usage.output_tokens == 20
@@ -101,11 +101,11 @@ class TestCopilotBackend:
 
     def test_interpret_with_figure(self, mock_copilot_import: Any) -> None:
         """Test interpretation with a figure."""
-        from kanoa.backends.copilot import CopilotBackend
+        from kanoa.backends.github_copilot import GitHubCopilotBackend
 
-        backend = CopilotBackend(model="gpt-5")
+        backend = GitHubCopilotBackend(model="gpt-5")
 
-        with patch("kanoa.backends.copilot.asyncio.run") as mock_run:
+        with patch("kanoa.backends.github_copilot.asyncio.run") as mock_run:
             from kanoa.core.types import InterpretationChunk
 
             mock_run.return_value = {
@@ -136,11 +136,11 @@ class TestCopilotBackend:
 
     def test_interpret_with_custom_prompt(self, mock_copilot_import: Any) -> None:
         """Test interpretation with a custom prompt."""
-        from kanoa.backends.copilot import CopilotBackend
+        from kanoa.backends.github_copilot import GitHubCopilotBackend
 
-        backend = CopilotBackend(model="gpt-5")
+        backend = GitHubCopilotBackend(model="gpt-5")
 
-        with patch("kanoa.backends.copilot.asyncio.run") as mock_run:
+        with patch("kanoa.backends.github_copilot.asyncio.run") as mock_run:
             from kanoa.core.types import InterpretationChunk
 
             mock_run.return_value = {
@@ -165,18 +165,18 @@ class TestCopilotBackend:
 
     def test_backend_name_property(self, mock_copilot_import: Any) -> None:
         """Test backend_name property."""
-        from kanoa.backends.copilot import CopilotBackend
+        from kanoa.backends.github_copilot import GitHubCopilotBackend
 
-        backend = CopilotBackend(model="gpt-5")
-        assert backend.backend_name == "copilot"
+        backend = GitHubCopilotBackend(model="gpt-5")
+        assert backend.backend_name == "github-copilot"
 
     def test_cost_summary(self, mock_copilot_import: Any) -> None:
         """Test cost summary tracking."""
-        from kanoa.backends.copilot import CopilotBackend
+        from kanoa.backends.github_copilot import GitHubCopilotBackend
 
-        backend = CopilotBackend(model="gpt-5")
+        backend = GitHubCopilotBackend(model="gpt-5")
 
-        with patch("kanoa.backends.copilot.asyncio.run") as mock_run:
+        with patch("kanoa.backends.github_copilot.asyncio.run") as mock_run:
             from kanoa.core.types import InterpretationChunk
 
             mock_run.return_value = {
@@ -197,7 +197,7 @@ class TestCopilotBackend:
             )
 
             summary = backend.get_cost_summary()
-            assert summary["backend"] == "copilot"
+            assert summary["backend"] == "github-copilot"
             assert summary["total_calls"] == 1
             assert summary["total_tokens"]["input"] == 10
             assert summary["total_tokens"]["output"] == 20
@@ -205,10 +205,10 @@ class TestCopilotBackend:
 
     def test_encode_kb(self, mock_copilot_import: Any) -> None:
         """Test knowledge base encoding."""
-        from kanoa.backends.copilot import CopilotBackend
+        from kanoa.backends.github_copilot import GitHubCopilotBackend
         from kanoa.knowledge_base.manager import KnowledgeBaseManager
 
-        backend = CopilotBackend(model="gpt-5")
+        backend = GitHubCopilotBackend(model="gpt-5")
 
         # Create a real mock that will pass isinstance check
         mock_kb = MagicMock(spec=KnowledgeBaseManager)
@@ -220,16 +220,16 @@ class TestCopilotBackend:
 
     def test_encode_kb_with_pdfs(self, mock_copilot_import: Any) -> None:
         """Test knowledge base encoding with PDFs (should warn)."""
-        from kanoa.backends.copilot import CopilotBackend
+        from kanoa.backends.github_copilot import GitHubCopilotBackend
         from kanoa.knowledge_base.manager import KnowledgeBaseManager
 
-        backend = CopilotBackend(model="gpt-5")
+        backend = GitHubCopilotBackend(model="gpt-5")
 
         mock_kb = MagicMock(spec=KnowledgeBaseManager)
         mock_kb.get_text_content.return_value = "Text content"
         mock_kb.has_pdfs.return_value = True
 
-        with patch("kanoa.backends.copilot.ilog_warning") as mock_warning:
+        with patch("kanoa.backends.github_copilot.ilog_warning") as mock_warning:
             result = backend.encode_kb(mock_kb)
             assert result == "Text content"
             mock_warning.assert_called_once()

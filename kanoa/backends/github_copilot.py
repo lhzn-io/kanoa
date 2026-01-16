@@ -10,12 +10,12 @@ from ..utils.logging import ilog_debug, ilog_info, ilog_warning
 from .base import BaseBackend
 
 
-class CopilotBackend(BaseBackend):
+class GitHubCopilotBackend(BaseBackend):
     """
     GitHub Copilot SDK backend implementation.
 
     Supports:
-    - GPT-5 and other Copilot models
+    - GPT-5 and other GitHub Copilot models
     - Streaming responses
     - Vision capabilities (interprets figures)
     - Text knowledge base integration
@@ -24,7 +24,7 @@ class CopilotBackend(BaseBackend):
     @property
     def backend_name(self) -> str:
         """Return the backend name."""
-        return "copilot"
+        return "github-copilot"
 
     def __init__(
         self,
@@ -44,8 +44,8 @@ class CopilotBackend(BaseBackend):
             from copilot import CopilotClient  # type: ignore[import-untyped]
         except ImportError as e:
             raise ImportError(
-                "CopilotBackend requires github-copilot-sdk. "
-                "Install with: pip install kanoa[copilot]\n"
+                "GitHubCopilotBackend requires github-copilot-sdk. "
+                "Install with: pip install kanoa[github-copilot]\n"
                 f"Original error: {e}"
             ) from e
 
@@ -61,7 +61,7 @@ class CopilotBackend(BaseBackend):
         self._session: Optional[Any] = None
 
         if self.verbose >= 1:
-            ilog_info(f"Initialized with model: {self.model}", title="Copilot")
+            ilog_info(f"Initialized with model: {self.model}", title="GitHubCopilot")
 
     def _ensure_client(self) -> Any:
         """Ensure client is initialized (lazy initialization)."""
@@ -94,7 +94,7 @@ class CopilotBackend(BaseBackend):
 
         if self.verbose >= 1:
             ilog_info(
-                f"Calling {self.model} (call #{self.call_count})", title="Copilot"
+                f"Calling {self.model} (call #{self.call_count})", title="GitHubCopilot"
             )
 
         yield InterpretationChunk(
@@ -119,14 +119,16 @@ class CopilotBackend(BaseBackend):
                 "[Image provided - visual analysis may be limited in current SDK version]"
             )
             if self.verbose >= 2:
-                ilog_debug("Figure attached (support pending)", title="Copilot")
+                ilog_debug("Figure attached (support pending)", title="GitHubCopilot")
 
         # Add data
         if data is not None:
             data_text = self._data_to_text(data)
             content_parts.append(f"Data to analyze:\n```\n{data_text}\n```")
             if self.verbose >= 2:
-                ilog_debug(f"Attached data ({len(data_text)} chars)", title="Copilot")
+                ilog_debug(
+                    f"Attached data ({len(data_text)} chars)", title="GitHubCopilot"
+                )
 
         # Add prompt
         prompt = self._build_prompt(context, focus, kb_context, custom_prompt)
@@ -157,7 +159,7 @@ class CopilotBackend(BaseBackend):
                 ilog_info(
                     f"Tokens: {usage.input_tokens} in / {usage.output_tokens} out "
                     f"(${usage.cost:.4f})",
-                    title="Copilot",
+                    title="GitHubCopilot",
                 )
 
             # Update shared stats
@@ -170,7 +172,7 @@ class CopilotBackend(BaseBackend):
             )
 
         except Exception as e:
-            ilog_warning(f"API call failed: {e}", title="Copilot")
+            ilog_warning(f"API call failed: {e}", title="GitHubCopilot")
             yield InterpretationChunk(content=f"\n❌ Error: {e!s}", type="text")
             raise
 
@@ -226,7 +228,7 @@ class CopilotBackend(BaseBackend):
             try:
                 await asyncio.wait_for(done.wait(), timeout=120.0)
             except asyncio.TimeoutError:
-                ilog_warning("Session timeout after 120s", title="Copilot")
+                ilog_warning("Session timeout after 120s", title="GitHubCopilot")
 
             # Clean up
             await session.destroy()
@@ -258,7 +260,7 @@ class CopilotBackend(BaseBackend):
         kb_context: Optional[str],
         custom_prompt: Optional[str],
     ) -> str:
-        """Build Copilot-optimized prompt using centralized templates."""
+        """Build GitHub Copilot-optimized prompt using centralized templates."""
         return self._build_prompt_from_templates(
             context, focus, kb_context, custom_prompt
         )
@@ -267,10 +269,10 @@ class CopilotBackend(BaseBackend):
         input_tokens = usage_data.get("input_tokens", 0)
         output_tokens = usage_data.get("output_tokens", 0)
 
-        pricing = get_model_pricing("copilot", self.model)
+        pricing = get_model_pricing("github-copilot", self.model)
         if not pricing:
             # Fallback: Use pricing from pricing.json for gpt-5 (1.25/10.00 per 1M tokens)
-            # These match the values in pricing.json for copilot models
+            # These match the values in pricing.json for github-copilot models
             pricing = {"input_price": 1.25, "output_price": 10.00}
 
         cost = (input_tokens / 1_000_000 * pricing.get("input_price", 1.25)) + (
@@ -283,7 +285,7 @@ class CopilotBackend(BaseBackend):
 
     def encode_kb(self, kb_manager: Any) -> Optional[str]:
         """
-        Encode knowledge base for Copilot backend.
+        Encode knowledge base for GitHub Copilot backend.
 
         Currently supports text content only.
 
@@ -305,9 +307,9 @@ class CopilotBackend(BaseBackend):
         if kb_manager.has_pdfs():
             ilog_warning(
                 "PDFs detected in knowledge base. "
-                "Copilot SDK currently supports text only. "
+                "GitHub Copilot SDK currently supports text only. "
                 "Text files will be used.",
-                source="kanoa.backends.copilot",
+                source="kanoa.backends.github_copilot",
             )
 
         return text_content or None

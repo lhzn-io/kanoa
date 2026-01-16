@@ -18,14 +18,14 @@
 | `gemini` | Free tier, native PDF support, Vertex AI RAG Engine | [Guide](./docs/source/user_guide/getting_started_gemini.md) |
 | `gemini-deep-research` | Multi-step web research, GDrive integration | [Guide](./docs/source/user_guide/deep_research.md) |
 | `claude` | Strong reasoning, vision support | [Guide](./docs/source/user_guide/getting_started_claude.md) |
-| `copilot` | GitHub Copilot SDK integration, GPT-5 models | [Guide](./docs/source/user_guide/backends.md#copilot) |
+| `github-copilot` | GitHub Copilot SDK integration, GPT-5 models | [Guide](./docs/source/user_guide/backends.md#github-copilot-sdk-github-copilot) |
 | `openai` | GPT models, Azure OpenAI | [Guide](./docs/source/user_guide/backends.md#openai) |
 
 For detailed backend comparison, see [Backends Overview](./docs/source/user_guide/backends.md).
 
 ## Features
 
-- **Multi-Backend Support**: Seamlessly switch between vLLM (local), Gemini, Claude, Copilot, and OpenAI.
+- **Multi-Backend Support**: Seamlessly switch between vLLM (local), Gemini, Claude, GitHub Copilot, and OpenAI.
 - **Deep Research**: Perform multi-step web research and synthesis using Gemini's Deep Research agent.
 - **Real-time Streaming**: Get immediate feedback with streaming responses.
 - **Enterprise Grounding**: Native integration with **Vertex AI RAG Engine** for scalable, secure knowledge retrieval from thousands of documents.
@@ -180,7 +180,7 @@ pip install kanoa[gemini]
 pip install kanoa[claude]
 
 # GitHub Copilot SDK
-pip install kanoa[copilot]
+pip install kanoa[github-copilot]
 
 # OpenAI API (GPT models, Azure OpenAI)
 pip install kanoa[openai]
