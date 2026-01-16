@@ -15,6 +15,7 @@ from .base import BaseBackend
 # Lazy imports for optional dependencies
 if TYPE_CHECKING:
     from .claude import ClaudeBackend, ClaudeTokenCounter
+    from .copilot import CopilotBackend
     from .example_custom_research import GeminiExampleCustomResearchBackend
     from .gemini import GeminiBackend, GeminiTokenCounter
     from .gemini_deep_research import GeminiDeepResearchBackend
@@ -95,6 +96,18 @@ def __getattr__(name: str) -> type:
                 f"Original error: {e}"
             ) from e
 
+    if name == "CopilotBackend":
+        try:
+            from .copilot import CopilotBackend
+
+            return CopilotBackend
+        except ImportError as e:
+            raise ImportError(
+                f"CopilotBackend requires github-copilot-sdk. "
+                f"Install with: pip install kanoa[copilot]\n"
+                f"Original error: {e}"
+            ) from e
+
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
@@ -102,6 +115,7 @@ __all__ = [
     "BaseBackend",
     "ClaudeBackend",
     "ClaudeTokenCounter",
+    "CopilotBackend",
     "GeminiBackend",
     "GeminiDeepResearchBackend",
     "GeminiTokenCounter",
