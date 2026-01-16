@@ -92,7 +92,9 @@ class CopilotBackend(BaseBackend):
         self.call_count += 1
 
         if self.verbose >= 1:
-            ilog_info(f"Calling {self.model} (call #{self.call_count})", title="Copilot")
+            ilog_info(
+                f"Calling {self.model} (call #{self.call_count})", title="Copilot"
+            )
 
         yield InterpretationChunk(
             content=f"Connecting to {self.model}...", type="status"
@@ -141,9 +143,7 @@ class CopilotBackend(BaseBackend):
 
         try:
             # Run async session in sync context
-            result = asyncio.run(
-                self._run_session(full_prompt)
-            )
+            result = asyncio.run(self._run_session(full_prompt))
 
             # Yield accumulated text chunks
             for chunk in result["chunks"]:
@@ -180,10 +180,12 @@ class CopilotBackend(BaseBackend):
 
         try:
             # Create session
-            session = await client.create_session({
-                "model": self.model,
-                "streaming": self.streaming,
-            })
+            session = await client.create_session(
+                {
+                    "model": self.model,
+                    "streaming": self.streaming,
+                }
+            )
 
             chunks = []
             full_text = []
@@ -191,7 +193,11 @@ class CopilotBackend(BaseBackend):
 
             def on_event(event: Any) -> None:
                 """Handle events from Copilot session."""
-                event_type = event.type.value if hasattr(event.type, "value") else str(event.type)
+                event_type = (
+                    event.type.value
+                    if hasattr(event.type, "value")
+                    else str(event.type)
+                )
 
                 if event_type == "assistant.message_delta" and self.streaming:
                     # Streaming chunk

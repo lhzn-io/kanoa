@@ -5,6 +5,7 @@ Install specific backends with:
     pip install kanoa[gemini]
     pip install kanoa[claude]
     pip install kanoa[openai]
+    pip install kanoa[copilot]
     pip install kanoa[all]
 """
 

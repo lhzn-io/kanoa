@@ -33,7 +33,9 @@ class TestCopilotBackend:
         mock_client.create_session.return_value = mock_session
 
         # Mock the import
-        with patch.dict("sys.modules", {"copilot": MagicMock(CopilotClient=mock_client_class)}):
+        with patch.dict(
+            "sys.modules", {"copilot": MagicMock(CopilotClient=mock_client_class)}
+        ):
             yield {
                 "client_class": mock_client_class,
                 "client": mock_client,
@@ -142,9 +144,7 @@ class TestCopilotBackend:
             from kanoa.core.types import InterpretationChunk
 
             mock_run.return_value = {
-                "chunks": [
-                    InterpretationChunk(content="Custom response", type="text")
-                ],
+                "chunks": [InterpretationChunk(content="Custom response", type="text")],
                 "usage": {
                     "input_tokens": 15,
                     "output_tokens": 25,
