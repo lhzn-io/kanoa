@@ -75,7 +75,8 @@ class CopilotBackend(BaseBackend):
             if self.cli_url:
                 client_kwargs["cli_url"] = self.cli_url
 
-            self._client = self._client_class(client_kwargs)
+            # Unpack kwargs when creating client
+            self._client = self._client_class(**client_kwargs)
         return self._client
 
     def interpret(
@@ -230,10 +231,13 @@ class CopilotBackend(BaseBackend):
             # Clean up
             await session.destroy()
 
-            # TODO: Extract actual token usage from Copilot response if available
-            # For now, estimate based on text length
+            # NOTE: Token estimation limitation
+            # GitHub Copilot SDK doesn't currently expose token counts in responses.
+            # We use a simple heuristic (1 token ~= 4 characters) for cost tracking.
+            # This is approximate and may differ from actual usage.
+            # TODO: Update to use actual token counts when SDK provides them.
             text_length = sum(len(t) for t in full_text)
-            estimated_input_tokens = len(prompt) // 4  # Rough estimate
+            estimated_input_tokens = len(prompt) // 4  # Approximate: 1 token ~= 4 chars
             estimated_output_tokens = text_length // 4
 
             return {
@@ -265,12 +269,12 @@ class CopilotBackend(BaseBackend):
 
         pricing = get_model_pricing("copilot", self.model)
         if not pricing:
-            # Fallback default if pricing not found
-            # Note: Copilot pricing may vary, these are placeholder values
-            pricing = {"input_price": 1.0, "output_price": 3.0}
+            # Fallback: Use pricing from pricing.json for gpt-5 (1.25/10.00 per 1M tokens)
+            # These match the values in pricing.json for copilot models
+            pricing = {"input_price": 1.25, "output_price": 10.00}
 
-        cost = (input_tokens / 1_000_000 * pricing.get("input_price", 1.0)) + (
-            output_tokens / 1_000_000 * pricing.get("output_price", 3.0)
+        cost = (input_tokens / 1_000_000 * pricing.get("input_price", 1.25)) + (
+            output_tokens / 1_000_000 * pricing.get("output_price", 10.00)
         )
 
         return UsageInfo(
