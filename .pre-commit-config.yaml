@@ -32,3 +32,9 @@ repos:
         always_run: true
         pass_filenames: false
         stages: [pre-commit]
+      - id: mypy
+        name: mypy
+        entry: python -m mypy .
+        language: system
+        types: [python]
+        pass_filenames: false

@@ -205,9 +205,7 @@ class GitHubCopilotBackend(BaseBackend):
 
         # Import here to provide clear error message if package not installed
         try:
-            from copilot import (  # type: ignore[import-not-found]
-                CopilotClient,
-            )
+            from copilot import CopilotClient  # type: ignore[import-untyped]
         except ImportError as e:
             raise ImportError(
                 "GitHubCopilotBackend requires github-copilot-sdk. "
