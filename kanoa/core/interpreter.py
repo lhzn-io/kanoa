@@ -20,10 +20,16 @@ from ..knowledge_base.manager import KnowledgeBaseManager
 from .types import InterpretationChunk, InterpretationResult
 
 # Canonical list of supported backends (in recommended order: open-source first)
-supported_backends: Tuple[str, ...] = ("vllm", "gemini", "claude", "openai")
+supported_backends: Tuple[str, ...] = (
+    "vllm",
+    "gemini",
+    "claude",
+    "github-copilot",
+    "openai",
+)
 
 # Type alias for backend parameter (must match supported_backends)
-BackendType = Literal["vllm", "gemini", "claude", "openai"]
+BackendType = Literal["vllm", "gemini", "claude", "github-copilot", "openai"]
 
 
 def _get_backend_class(name: str) -> Type[BaseBackend]:
@@ -43,13 +49,17 @@ def _get_backend_class(name: str) -> Type[BaseBackend]:
         from ..backends import GeminiBackend
 
         return GeminiBackend
+    elif name == "github-copilot":
+        from ..backends import GitHubCopilotBackend
+
+        return GitHubCopilotBackend
     elif name in ("openai", "vllm"):
         from ..backends import OpenAIBackend
 
         return OpenAIBackend
     else:
         raise ValueError(
-            f"Unknown backend: {name}. Available: vllm, gemini, claude, openai"
+            f"Unknown backend: {name}. Available: vllm, gemini, claude, github-copilot, openai"
         )
 
 
@@ -663,3 +673,20 @@ class AnalyticsInterpreter:
         )
 
         return self
+
+    def reset_chat(self) -> None:
+        """
+        Reset conversation history (if supported by backend).
+
+        For backends that maintain state (like GitHub Copilot), this clears
+        the active session and chat history. For stateless backends, this
+        is a no-op.
+        """
+        if hasattr(self.backend, "reset_chat"):
+            self.backend.reset_chat()
+            from ..utils.logging import log_info
+
+            log_info(
+                f"Reset conversation history for {self.backend_name}",
+                title=self.backend_name,
+            )

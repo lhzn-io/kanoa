@@ -242,6 +242,99 @@ interpreter = AnalyticsInterpreter(
 
 ---
 
+## GitHub Copilot SDK (`github-copilot`)
+
+**Best for**: GitHub Copilot users, GPT-5 models via CLI
+
+### Features
+
+- **GitHub Copilot Integration**: Use GitHub Copilot models programmatically
+- **Streaming Support**: Real-time streaming responses
+- **CLI-based**: Communicates with Copilot CLI via JSON-RPC
+- **Multi-turn Conversations**: Session-based chat history
+
+### Prerequisites
+
+1. **GitHub Copilot Subscription**: Individual, Business, or Enterprise
+2. **Copilot CLI**: Install from [github.com/cli/cli](https://github.com/cli/cli)
+
+```bash
+# Install GitHub CLI with Copilot
+gh extension install github/gh-copilot
+```
+
+### Authentication
+
+GitHub Copilot SDK uses the Copilot CLI, which handles authentication through
+GitHub CLI:
+
+```bash
+# Authenticate with GitHub
+gh auth login
+
+# Verify Copilot access
+copilot --version
+```
+
+### Installation
+
+```bash
+pip install kanoa[github-copilot]
+```
+
+### Usage
+
+```python
+from kanoa import AnalyticsInterpreter
+
+# Basic usage
+interpreter = AnalyticsInterpreter(
+    backend='github-copilot',
+    model='gpt-5'  # Default model
+)
+
+# Stream responses
+for chunk in interpreter.interpret(
+    fig=my_plot,
+    context="Analyzing sales trends",
+    focus="Identify seasonal patterns"
+):
+    if chunk.type == "text":
+        print(chunk.content, end="")
+```
+
+### Configuration Options
+
+```python
+interpreter = AnalyticsInterpreter(
+    backend='github-copilot',
+    model='gpt-5',
+    cli_path='/custom/path/to/copilot',  # Optional: custom CLI path
+    cli_url='localhost:8080',  # Optional: connect to external CLI server
+    streaming=True,  # Enable streaming (default)
+    verbose=1  # Logging level (0=silent, 1=info, 2=debug)
+)
+```
+
+### Limitations
+
+- **Vision Support**: Currently limited in Copilot SDK (text analysis preferred)
+- **CLI Dependency**: Requires Copilot CLI installed and in PATH
+- **Subscription Required**: Must have active GitHub Copilot subscription
+
+### Pricing
+
+GitHub Copilot SDK uses your existing Copilot subscription. Token costs are
+managed through your GitHub subscription:
+
+- **Individual**: $10/month
+- **Business**: $19/user/month
+- **Enterprise**: Custom pricing
+
+See [GitHub Copilot pricing](https://github.com/features/copilot) for details.
+
+---
+
 ## Enterprise Considerations
 
 ### Current: Google AI Studio (`google-genai`)

@@ -5,6 +5,7 @@ Install specific backends with:
     pip install kanoa[gemini]
     pip install kanoa[claude]
     pip install kanoa[openai]
+    pip install kanoa[github-copilot]
     pip install kanoa[all]
 """
 
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
     from .example_custom_research import GeminiExampleCustomResearchBackend
     from .gemini import GeminiBackend, GeminiTokenCounter
     from .gemini_deep_research import GeminiDeepResearchBackend
+    from .github_copilot import GitHubCopilotBackend
     from .openai import OpenAIBackend
 
 
@@ -95,6 +97,18 @@ def __getattr__(name: str) -> type:
                 f"Original error: {e}"
             ) from e
 
+    if name == "GitHubCopilotBackend":
+        try:
+            from .github_copilot import GitHubCopilotBackend
+
+            return GitHubCopilotBackend
+        except ImportError as e:
+            raise ImportError(
+                f"GitHubCopilotBackend requires github-copilot-sdk. "
+                f"Install with: pip install kanoa[github-copilot]\n"
+                f"Original error: {e}"
+            ) from e
+
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
@@ -105,5 +119,6 @@ __all__ = [
     "GeminiBackend",
     "GeminiDeepResearchBackend",
     "GeminiTokenCounter",
+    "GitHubCopilotBackend",
     "OpenAIBackend",
 ]
