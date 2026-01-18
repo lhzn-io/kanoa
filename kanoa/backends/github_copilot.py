@@ -1,6 +1,7 @@
 import asyncio
 import os
-from typing import Any, Iterator, Optional
+import threading
+from typing import Any, Dict, Iterator, List, Optional
 
 import matplotlib.pyplot as plt
 
@@ -8,6 +9,167 @@ from ..core.types import InterpretationChunk, UsageInfo
 from ..pricing import get_model_pricing
 from ..utils.logging import ilog_debug, ilog_info, ilog_warning
 from .base import BaseBackend
+
+
+class _AsyncSessionManager:
+    """
+    Manages GitHub Copilot session in a background thread.
+
+    Ensures prompt persistence (multi-turn chat) and compatibility
+    with both script and Jupyter environments.
+    """
+
+    def __init__(
+        self,
+        cli_path: str,
+        cli_url: Optional[str],
+        model: str,
+        streaming: bool,
+        verbose: int,
+        client_class: Any,
+    ):
+        self.cli_path = cli_path
+        self.cli_url = cli_url
+        self.model = model
+        self.streaming = streaming
+        self.verbose = verbose
+        self._client_class = client_class
+
+        # Threading state
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._client: Optional[Any] = None
+        self._session: Optional[Any] = None
+        self._thread = threading.Thread(
+            target=self._run_loop, daemon=True, name="CopilotSessionThread"
+        )
+        self._ready = threading.Event()
+        self._thread.start()
+
+        # Wait for loop to be ready
+        self._ready.wait(timeout=5.0)
+
+    def _run_loop(self) -> None:
+        """Run the asyncio loop in a background thread."""
+        try:
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
+            self._ready.set()
+            self._loop.run_forever()
+        except Exception as e:
+            if self.verbose >= 1:
+                ilog_warning(f"Background thread failed: {e}", title="GitHubCopilot")
+
+    async def _ensure_session(self) -> Any:
+        """Initialize client and session if needed."""
+        if self._client is None:
+            client_kwargs = {
+                "cli_path": self.cli_path,
+                "log_level": "debug" if self.verbose >= 2 else "info",
+                "auto_start": True,
+                "auto_restart": True,
+            }
+            if self.cli_url:
+                client_kwargs["cli_url"] = self.cli_url
+
+            self._client = self._client_class(options=client_kwargs)
+            await self._client.start()
+
+        if self._session is None:
+            if self.verbose >= 1:
+                ilog_info("Creating new session", title="GitHubCopilot")
+
+            self._session = await self._client.create_session(
+                {
+                    "model": self.model,
+                    "streaming": self.streaming,
+                }
+            )
+        return self._session
+
+    async def _process_message(self, prompt: str) -> Dict[str, Any]:
+        """Process a message within the event loop."""
+        try:
+            session = await self._ensure_session()
+
+            chunks: List[InterpretationChunk] = []
+            full_text: List[str] = []
+            done = asyncio.Event()
+
+            def on_event(event: Any) -> None:
+                """Handle events from Copilot session."""
+                event_type = (
+                    event.type.value
+                    if hasattr(event.type, "value")
+                    else str(event.type)
+                )
+
+                if event_type == "assistant.message_delta" and self.streaming:
+                    delta = getattr(event.data, "delta_content", None) or ""
+                    if delta:
+                        chunks.append(InterpretationChunk(content=delta, type="text"))
+                        full_text.append(delta)
+                elif event_type == "assistant.message":
+                    content = getattr(event.data, "content", "")
+                    if not self.streaming:
+                        chunks.append(InterpretationChunk(content=content, type="text"))
+                        full_text.append(content)
+                elif event_type == "session.idle":
+                    done.set()
+
+            # Register handler
+            session.on(on_event)
+
+            # Send prompt
+            await session.send({"prompt": prompt})
+
+            # Wait for completion
+            try:
+                await asyncio.wait_for(done.wait(), timeout=120.0)
+            except asyncio.TimeoutError:
+                ilog_warning("Session timeout after 120s", title="GitHubCopilot")
+
+            # NOTE: Token estimation limitation
+            # GitHub Copilot SDK doesn't currently expose token counts.
+            text_length = sum(len(t) for t in full_text)
+            estimated_input_tokens = len(prompt) // 4
+            estimated_output_tokens = text_length // 4
+
+            return {
+                "chunks": chunks,
+                "usage": {
+                    "input_tokens": estimated_input_tokens,
+                    "output_tokens": estimated_output_tokens,
+                },
+            }
+        except Exception as e:
+            # If session is broken, clear it so next call retries
+            ilog_warning(f"Session error: {e}", title="GitHubCopilot")
+            self._session = None
+            raise
+
+    async def _reset(self) -> None:
+        """Reset the session to clear history."""
+        if self._session:
+            await self._session.destroy()
+            self._session = None
+        if self._client:
+            await self._client.stop()
+            self._client = None
+
+    def send_message(self, prompt: str) -> Dict[str, Any]:
+        """Submit message to background thread and wait for result."""
+        if not self._loop:
+            raise RuntimeError("Background loop not running")
+
+        future = asyncio.run_coroutine_threadsafe(
+            self._process_message(prompt), self._loop
+        )
+        return future.result()
+
+    def reset(self) -> None:
+        """Reset session and client."""
+        if self._loop and self._loop.is_running():
+            asyncio.run_coroutine_threadsafe(self._reset(), self._loop).result()
 
 
 class GitHubCopilotBackend(BaseBackend):
@@ -19,6 +181,7 @@ class GitHubCopilotBackend(BaseBackend):
     - Streaming responses
     - Vision capabilities (interprets figures)
     - Text knowledge base integration
+    - Multi-turn conversation (chat history)
     """
 
     @property
@@ -28,6 +191,7 @@ class GitHubCopilotBackend(BaseBackend):
 
     def __init__(
         self,
+        api_key: Optional[str] = None,
         cli_path: Optional[str] = None,
         cli_url: Optional[str] = None,
         model: str = "gpt-5",
@@ -37,11 +201,13 @@ class GitHubCopilotBackend(BaseBackend):
         streaming: bool = True,
         **kwargs: Any,
     ) -> None:
-        super().__init__(None, max_tokens, enable_caching, **kwargs)
+        super().__init__(api_key, max_tokens, enable_caching, **kwargs)
 
         # Import here to provide clear error message if package not installed
         try:
-            from copilot import CopilotClient  # type: ignore[import-untyped]
+            from copilot import (  # type: ignore[import-not-found]
+                CopilotClient,
+            )
         except ImportError as e:
             raise ImportError(
                 "GitHubCopilotBackend requires github-copilot-sdk. "
@@ -51,33 +217,24 @@ class GitHubCopilotBackend(BaseBackend):
 
         self.model = model
         self.verbose = verbose
-        self.streaming = streaming
-        self.cli_path = cli_path or os.environ.get("COPILOT_CLI_PATH", "copilot")
-        self.cli_url = cli_url
-
-        # Store CopilotClient class for lazy initialization
-        self._client_class = CopilotClient
-        self._client: Optional[Any] = None
-        self._session: Optional[Any] = None
+        # Initialize session manager
+        self._manager = _AsyncSessionManager(
+            cli_path=cli_path or os.environ.get("COPILOT_CLI_PATH", "copilot"),
+            cli_url=cli_url,
+            model=model,
+            streaming=streaming,
+            verbose=verbose,
+            client_class=CopilotClient,
+        )
 
         if self.verbose >= 1:
             ilog_info(f"Initialized with model: {self.model}", title="GitHubCopilot")
 
-    def _ensure_client(self) -> Any:
-        """Ensure client is initialized (lazy initialization)."""
-        if self._client is None:
-            client_kwargs = {
-                "cli_path": self.cli_path,
-                "log_level": "debug" if self.verbose >= 2 else "info",
-                "auto_start": True,
-                "auto_restart": True,
-            }
-            if self.cli_url:
-                client_kwargs["cli_url"] = self.cli_url
-
-            # Unpack kwargs when creating client
-            self._client = self._client_class(**client_kwargs)
-        return self._client
+    def reset_chat(self) -> None:
+        """Clear conversation history and reset session."""
+        if self.verbose >= 1:
+            ilog_info("Resetting conversation history", title="GitHubCopilot")
+        self._manager.reset()
 
     def interpret(
         self,
@@ -145,8 +302,8 @@ class GitHubCopilotBackend(BaseBackend):
         full_prompt = "\n\n".join(content_parts)
 
         try:
-            # Run async session in sync context
-            result = asyncio.run(self._run_session(full_prompt))
+            # Delegate to session manager running in background thread
+            result = self._manager.send_message(full_prompt)
 
             # Yield accumulated text chunks
             for chunk in result["chunks"]:
@@ -176,82 +333,7 @@ class GitHubCopilotBackend(BaseBackend):
             yield InterpretationChunk(content=f"\n❌ Error: {e!s}", type="text")
             raise
 
-    async def _run_session(self, prompt: str) -> dict[str, Any]:
-        """Run a Copilot session asynchronously."""
-        client = self._ensure_client()
-        await client.start()
-
-        try:
-            # Create session
-            session = await client.create_session(
-                {
-                    "model": self.model,
-                    "streaming": self.streaming,
-                }
-            )
-
-            chunks = []
-            full_text = []
-            done = asyncio.Event()
-
-            def on_event(event: Any) -> None:
-                """Handle events from Copilot session."""
-                event_type = (
-                    event.type.value
-                    if hasattr(event.type, "value")
-                    else str(event.type)
-                )
-
-                if event_type == "assistant.message_delta" and self.streaming:
-                    # Streaming chunk
-                    delta = getattr(event.data, "delta_content", None) or ""
-                    if delta:
-                        chunks.append(InterpretationChunk(content=delta, type="text"))
-                        full_text.append(delta)
-                elif event_type == "assistant.message":
-                    # Final message
-                    content = getattr(event.data, "content", "")
-                    if not self.streaming:
-                        # If not streaming, add the full content
-                        chunks.append(InterpretationChunk(content=content, type="text"))
-                        full_text.append(content)
-                elif event_type == "session.idle":
-                    # Session finished
-                    done.set()
-
-            session.on(on_event)
-
-            # Send the prompt
-            await session.send({"prompt": prompt})
-
-            # Wait for completion with timeout
-            try:
-                await asyncio.wait_for(done.wait(), timeout=120.0)
-            except asyncio.TimeoutError:
-                ilog_warning("Session timeout after 120s", title="GitHubCopilot")
-
-            # Clean up
-            await session.destroy()
-
-            # NOTE: Token estimation limitation
-            # GitHub Copilot SDK doesn't currently expose token counts in responses.
-            # We use a simple heuristic (1 token ~= 4 characters) for cost tracking.
-            # This is approximate and may differ from actual usage.
-            # TODO: Update to use actual token counts when SDK provides them.
-            text_length = sum(len(t) for t in full_text)
-            estimated_input_tokens = len(prompt) // 4  # Approximate: 1 token ~= 4 chars
-            estimated_output_tokens = text_length // 4
-
-            return {
-                "chunks": chunks,
-                "usage": {
-                    "input_tokens": estimated_input_tokens,
-                    "output_tokens": estimated_output_tokens,
-                },
-            }
-
-        finally:
-            await client.stop()
+    # _run_session method removed as logic is now in _AsyncSessionManager
 
     def _build_prompt(
         self,

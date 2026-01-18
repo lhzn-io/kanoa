@@ -59,20 +59,19 @@ class TestGitHubCopilotBackend:
             cli_url="localhost:8080",
             model="gpt-5",
         )
-        assert backend.cli_path == "/usr/local/bin/copilot"
-        assert backend.cli_url == "localhost:8080"
+        assert backend._manager.cli_path == "/usr/local/bin/copilot"
+        assert backend._manager.cli_url == "localhost:8080"
 
     def test_interpret_text_only(self, mock_copilot_import: Any) -> None:
         """Test interpretation with text data only."""
         from kanoa.backends.github_copilot import GitHubCopilotBackend
+        from kanoa.core.types import InterpretationChunk
 
         backend = GitHubCopilotBackend(model="gpt-5")
 
-        # Mock the async run to return a simple result
-        with patch("kanoa.backends.github_copilot.asyncio.run") as mock_run:
-            from kanoa.core.types import InterpretationChunk
-
-            mock_run.return_value = {
+        # Mock the manager's send_message method using patch.object
+        with patch.object(backend._manager, "send_message") as mock_send:
+            mock_send.return_value = {
                 "chunks": [
                     InterpretationChunk(content="Interpretation result", type="text")
                 ],
@@ -102,13 +101,12 @@ class TestGitHubCopilotBackend:
     def test_interpret_with_figure(self, mock_copilot_import: Any) -> None:
         """Test interpretation with a figure."""
         from kanoa.backends.github_copilot import GitHubCopilotBackend
+        from kanoa.core.types import InterpretationChunk
 
         backend = GitHubCopilotBackend(model="gpt-5")
 
-        with patch("kanoa.backends.github_copilot.asyncio.run") as mock_run:
-            from kanoa.core.types import InterpretationChunk
-
-            mock_run.return_value = {
+        with patch.object(backend._manager, "send_message") as mock_send:
+            mock_send.return_value = {
                 "chunks": [
                     InterpretationChunk(content="Figure interpretation", type="text")
                 ],
@@ -137,13 +135,12 @@ class TestGitHubCopilotBackend:
     def test_interpret_with_custom_prompt(self, mock_copilot_import: Any) -> None:
         """Test interpretation with a custom prompt."""
         from kanoa.backends.github_copilot import GitHubCopilotBackend
+        from kanoa.core.types import InterpretationChunk
 
         backend = GitHubCopilotBackend(model="gpt-5")
 
-        with patch("kanoa.backends.github_copilot.asyncio.run") as mock_run:
-            from kanoa.core.types import InterpretationChunk
-
-            mock_run.return_value = {
+        with patch.object(backend._manager, "send_message") as mock_send:
+            mock_send.return_value = {
                 "chunks": [InterpretationChunk(content="Custom response", type="text")],
                 "usage": {
                     "input_tokens": 15,
@@ -173,13 +170,12 @@ class TestGitHubCopilotBackend:
     def test_cost_summary(self, mock_copilot_import: Any) -> None:
         """Test cost summary tracking."""
         from kanoa.backends.github_copilot import GitHubCopilotBackend
+        from kanoa.core.types import InterpretationChunk
 
         backend = GitHubCopilotBackend(model="gpt-5")
 
-        with patch("kanoa.backends.github_copilot.asyncio.run") as mock_run:
-            from kanoa.core.types import InterpretationChunk
-
-            mock_run.return_value = {
+        with patch.object(backend._manager, "send_message") as mock_send:
+            mock_send.return_value = {
                 "chunks": [InterpretationChunk(content="Response", type="text")],
                 "usage": {
                     "input_tokens": 10,
@@ -202,6 +198,16 @@ class TestGitHubCopilotBackend:
             assert summary["total_tokens"]["input"] == 10
             assert summary["total_tokens"]["output"] == 20
             assert summary["total_cost_usd"] > 0
+
+    def test_reset_chat(self, mock_copilot_import: Any) -> None:
+        """Test resetting the chat session."""
+        from kanoa.backends.github_copilot import GitHubCopilotBackend
+
+        backend = GitHubCopilotBackend(model="gpt-5")
+
+        with patch.object(backend._manager, "reset") as mock_reset:
+            backend.reset_chat()
+            mock_reset.assert_called_once()
 
     def test_encode_kb(self, mock_copilot_import: Any) -> None:
         """Test knowledge base encoding."""

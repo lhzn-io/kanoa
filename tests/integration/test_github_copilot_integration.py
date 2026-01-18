@@ -288,3 +288,73 @@ Acceptable range: 0-100ms.
 
         if result.usage:
             print(f"\n[estimated cost] ${result.usage.cost:.6f}")
+
+    def test_multi_turn_chat_gandalf(self, interpreter: Any) -> None:
+        """
+        Verify multi-turn conversation memory ("The Gandalf Check").
+
+        We use a data-centric scenario (calibration constant) to keep the model
+        in its 'analyst' persona while verifying context persistence.
+
+        1. Define a session-specific variable (calibration constant).
+        2. Ask for it in the next turn (should know).
+        3. Reset chat.
+        4. Ask again (should forget).
+        """
+        print("\n" + "=" * 50)
+        print("[test] Multi-turn Chat (Gandalf Check) - GitHub Copilot")
+        print("=" * 50)
+
+        # Turn 1: Set context with a "Calibration Constant"
+        calibration_id = "CAL-998877"
+        context_turn_1 = (
+            f"For this analysis session, the instrument calibration ID is '{calibration_id}'. "
+            "You must reference this ID in all future reports."
+        )
+        print(f"\n[user] {context_turn_1}")
+
+        # Provide dummy data so the analyst is happy
+        result1 = interpreter.interpret(
+            stream=False,
+            data={"status": "initializing_session"},
+            context=context_turn_1,
+            focus="Acknowledge the calibration ID.",
+        )
+        print(f"[model] {result1.text[:100]}...")
+
+        # Turn 2: Retrieve context
+        context_turn_2 = "What is the active calibration ID for this session?"
+        print(f"\n[user] {context_turn_2}")
+
+        result2 = interpreter.interpret(
+            stream=False,
+            data={"status": "checking_calibration"},
+            context=context_turn_2,
+            focus="Return the ID only.",
+        )
+        print(f"[model] {result2.text}")
+
+        assert calibration_id in result2.text, (
+            "Model failed to remember calibration ID from previous turn"
+        )
+
+        # Turn 3: Reset and Verify Amnesia
+        print("\n[action] Resetting chat history...")
+        interpreter.reset_chat()
+
+        context_turn_3 = "What is the active calibration ID?"
+        print(f"\n[user] {context_turn_3}")
+
+        result3 = interpreter.interpret(
+            stream=False,
+            data={"status": "checking_calibration"},
+            context=context_turn_3,
+            focus="Return the active ID.",
+        )
+        print(f"[model] {result3.text}")
+
+        # The model should either say "none provided" or hallucinate a new one,
+        # but it definitely shouldn't know the old secret one.
+        assert calibration_id not in result3.text, (
+            "Model failed to forget calibration ID after reset"
+        )
