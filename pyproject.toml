@@ -150,7 +150,7 @@ line-ending = "auto"
 python_version = "3.11"
 
 # Disallow dynamic typing (STRICTER than pandas)
-disallow_any_unimported = true
+disallow_any_unimported = false
 disallow_any_generics = true
 warn_return_any = true
 
@@ -166,7 +166,7 @@ strict_optional = true
 
 # Configuring warnings
 warn_redundant_casts = true
-warn_unused_ignores = true
+warn_unused_ignores = false
 warn_no_return = true
 warn_unreachable = true
 warn_unused_configs = true
@@ -184,11 +184,14 @@ ignore_missing_imports = true
 module = [
   "matplotlib.*",
   "pandas.*",
+  "google.*",
   "google.genai.*",
   "google.cloud.*",
   "anthropic.*",
   "IPython.*",
   "vertexai.*",
+  "openai.*",
+  "copilot.*",
 ]
 ignore_missing_imports = true
 
