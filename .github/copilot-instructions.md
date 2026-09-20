@@ -38,6 +38,7 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
 - Use conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`
 - **NO emoji** in commit messages
 - **NO** "Generated with..." or "Co-Authored-By" footers
+- Author and committer are always the human contributor (`dfry-lhzn <dfry@lhzn.io>`, from `git config`), so the log shows who was behind each change. No non-human identities: GitHub parses `Co-Authored-By:` trailers into the Contributors list, which is reserved for people. Noting the agent harness or model that collaborated is welcome as plain text in the commit body. Verify with `git var GIT_AUTHOR_IDENT` before the first commit in a shell.
 - Keep first line under 72 characters
 
 ## Staging Changes
