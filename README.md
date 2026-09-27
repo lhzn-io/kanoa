@@ -210,7 +210,11 @@ pip install -e ".[dev]"
 ```json
 {
   "gemini": {
-    "gemini-3-pro-preview": {
+    "gemini-3.8-flash": {
+      "input_price": 0.75,
+      "output_price": 3.75
+    },
+    "gemini-3.1-pro-preview": {
       "input_price": 2.00,
       "output_price": 12.00
     }

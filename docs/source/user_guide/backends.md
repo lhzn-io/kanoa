@@ -107,13 +107,17 @@ print(f"Cache savings: ${result.usage.cache_savings:.4f}")
 
 #### Minimum Token Requirements
 
-Context caching requires a minimum number of tokens to be beneficial:
+Context caching requires a minimum number of tokens before explicit caching can be established:
 
-| Model | Minimum Tokens |
-| --- | --- |
-| gemini-2.5-flash | 1,024 |
-| gemini-3-pro-preview | 2,048 |
-| gemini-2.5-pro | 4,096 |
+| Model | Minimum Tokens | Tier / Focus |
+| --- | --- | --- |
+| gemini-2.5-flash | 1,024 | Free tier / Fast |
+| gemini-3.1-pro-preview | 1,024 | Pro tier / Deep reasoning |
+| gemini-3.8-flash | 4,096 | Flash tier / Long-horizon & agents |
+| gemini-3.5-flash-lite | 4,096 | Lightweight Flash |
+| gemini-2.5-pro | 4,096 | Legacy Pro |
+
+> **Note on Token Minimums**: Google enforces strict minimum token counts for explicit caching. If your knowledge base or context falls below the threshold for the specified model (e.g. under 4,096 tokens for `gemini-3.8-flash` or under 1,024 tokens for `gemini-3.1-pro-preview` / `gemini-2.5-flash`), caching will be skipped and queries will proceed via standard prompt processing.
 
 #### Cache Management
 

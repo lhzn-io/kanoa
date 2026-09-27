@@ -41,15 +41,15 @@ pytest -m integration --force-integration      # Bypass rate limits
 | Test | Model | Cost |
 | :--- | :--- | :--- |
 | `test_gemini_integration.py` | gemini-2.5-flash | FREE |
+| `test_gemini_caching_integration.py` | gemini-2.5-flash | FREE |
+| `test_gemini_cache_persistence.py` | gemini-2.5-flash | FREE |
 | `test_molmo_local_integration.py` | Molmo-7B (local) | FREE |
 | `test_gemma3_local_integration.py` | Gemma-3-4B (local) | FREE |
 | `test_dynamic_kb.py` | Mocked | FREE |
 | `test_claude_integration.py` | claude-haiku-4-5 | $0.008 |
-| `test_gemini_caching_integration.py` | gemini-3-pro-preview | $0.038 |
-| `test_gemini_cache_persistence.py` | gemini-3-pro-preview | $0.024 |
-| `test_vertex_rag_integration.py` | gemini-3-pro-preview | ~$0.02 + storage |
+| `test_vertex_rag_integration.py` | gemini-3.1-pro-preview | ~$0.02 + storage |
 
-Caching tests use paid tier to validate core feature (75% cost savings in production).
+Gemini integration and caching tests run on the free tier (`gemini-2.5-flash`), with production workflows supporting `gemini-3.8-flash` and `gemini-3.1-pro-preview`.
 
 ### Vertex AI RAG Tests
 

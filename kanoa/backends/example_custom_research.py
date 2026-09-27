@@ -37,7 +37,7 @@ class GeminiExampleCustomResearchBackend(BaseBackend):
         self,
         project: str,
         location: str = "us-central1",
-        model: str = "gemini-3-pro-preview",
+        model: str = "gemini-3.1-pro-preview",
         max_tokens: int = 3000,
         dynamic_threshold: float = 0.7,
         thinking_level: str = "HIGH",
@@ -52,7 +52,7 @@ class GeminiExampleCustomResearchBackend(BaseBackend):
         Args:
             project: GCP Project ID (required).
             location: GCP location (default: us-central1).
-            model: Gemini model to use (default: gemini-3-pro-preview).
+            model: Gemini model to use (default: gemini-3.1-pro-preview).
             max_tokens: Maximum tokens for response.
             dynamic_threshold: Threshold for triggering Google Search (0.0-1.0).
             **kwargs: Additional args passed to BaseBackend.

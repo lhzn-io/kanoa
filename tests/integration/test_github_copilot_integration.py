@@ -85,7 +85,7 @@ class TestGitHubCopilotIntegration:
     @pytest.fixture(scope="class")
     def interpreter(self) -> Any:
         """
-        Initialize GitHub Copilot backend with GPT-5 model.
+        Initialize GitHub Copilot backend with GPT-5.6-luna model.
 
         Requires:
         - GitHub Copilot subscription (Individual, Business, or Enterprise)
@@ -97,7 +97,7 @@ class TestGitHubCopilotIntegration:
         try:
             return AnalyticsInterpreter(
                 backend="github-copilot",
-                model="gpt-5",
+                model="gpt-6-luna",
             )
         except Exception as e:
             pytest.skip(
@@ -263,7 +263,7 @@ Acceptable range: 0-100ms.
         # Initialize interpreter with KB
         kb_interpreter = AnalyticsInterpreter(
             backend="github-copilot",
-            model="gpt-5",
+            model="gpt-6-luna",
             kb_path=str(kb_dir),
             kb_type="text",
         )

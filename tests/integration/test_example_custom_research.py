@@ -122,7 +122,7 @@ class TestGeminiExampleCustomResearchBackend:
             backend = GeminiExampleCustomResearchBackend(
                 project=project,
                 location=location,
-                model="gemini-3-pro-preview",
+                model="gemini-3.1-pro-preview",
             )
         except Exception as e:
             pytest.skip(f"Backend init failed (ADC issue?): {e}")
@@ -168,7 +168,7 @@ class TestGeminiExampleCustomResearchBackend:
             backend = GeminiExampleCustomResearchBackend(
                 project=project,
                 location=location,
-                model="gemini-3-pro-preview",
+                model="gemini-3.1-pro-preview",
             )
         except Exception as e:
             pytest.skip(f"Backend init failed (ADC issue?): {e}")
@@ -206,7 +206,7 @@ class TestGeminiExampleCustomResearchBackend:
             backend = GeminiExampleCustomResearchBackend(
                 project=project,
                 location=location,
-                model="gemini-3-pro-preview",
+                model="gemini-3.1-pro-preview",
             )
         except Exception as e:
             pytest.skip(f"Backend init failed (ADC issue?): {e}")

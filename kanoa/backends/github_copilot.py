@@ -62,28 +62,61 @@ class _AsyncSessionManager:
     async def _ensure_session(self) -> Any:
         """Initialize client and session if needed."""
         if self._client is None:
-            client_kwargs = {
-                "cli_path": self.cli_path,
-                "log_level": "debug" if self.verbose >= 2 else "info",
-                "auto_start": True,
-                "auto_restart": True,
-            }
-            if self.cli_url:
-                client_kwargs["cli_url"] = self.cli_url
+            # Support both SDK v0.x (options dict) and v1.x (kwargs)
+            try:
+                import inspect
 
-            self._client = self._client_class(options=client_kwargs)
+                init_params = inspect.signature(self._client_class.__init__).parameters
+                if "options" in init_params:
+                    # SDK v0.x
+                    client_kwargs = {
+                        "cli_path": self.cli_path,
+                        "log_level": "debug" if self.verbose >= 2 else "info",
+                        "auto_start": True,
+                        "auto_restart": True,
+                    }
+                    if self.cli_url:
+                        client_kwargs["cli_url"] = self.cli_url
+                    self._client = self._client_class(options=client_kwargs)
+                else:
+                    # SDK v1.x
+                    kwargs: Dict[str, Any] = {
+                        "log_level": "debug" if self.verbose >= 2 else "info"
+                    }
+                    if self.cli_url:
+                        from copilot import UriRuntimeConnection
+
+                        kwargs["connection"] = UriRuntimeConnection(url=self.cli_url)
+                    elif self.cli_path:
+                        from copilot import ChildProcessRuntimeConnection
+
+                        kwargs["connection"] = ChildProcessRuntimeConnection(
+                            path=self.cli_path
+                        )
+                    self._client = self._client_class(**kwargs)
+            except Exception:
+                # Fallback to default constructor
+                self._client = self._client_class()
+
             await self._client.start()
 
         if self._session is None:
             if self.verbose >= 1:
                 ilog_info("Creating new session", title="GitHubCopilot")
 
-            self._session = await self._client.create_session(
-                {
-                    "model": self.model,
-                    "streaming": self.streaming,
-                }
-            )
+            # Support both SDK v0.x (dict config) and v1.x (keyword args)
+            try:
+                self._session = await self._client.create_session(
+                    model=self.model,
+                    streaming=self.streaming,
+                )
+            except TypeError:
+                self._session = await self._client.create_session(
+                    {
+                        "model": self.model,
+                        "streaming": self.streaming,
+                    }
+                )
         return self._session
 
     async def _process_message(self, prompt: str) -> Dict[str, Any]:
@@ -119,8 +152,11 @@ class _AsyncSessionManager:
             # Register handler
             session.on(on_event)
 
-            # Send prompt
-            await session.send({"prompt": prompt})
+            # Send prompt (string format for v1.x, dict for v0.x compatibility)
+            try:
+                await session.send(prompt)
+            except (TypeError, AttributeError):
+                await session.send({"prompt": prompt})
 
             # Wait for completion
             try:
@@ -150,7 +186,10 @@ class _AsyncSessionManager:
     async def _reset(self) -> None:
         """Reset the session to clear history."""
         if self._session:
-            await self._session.destroy()
+            if hasattr(self._session, "destroy"):
+                await self._session.destroy()
+            elif hasattr(self._session, "disconnect"):
+                await self._session.disconnect()
             self._session = None
         if self._client:
             await self._client.stop()
@@ -194,7 +233,7 @@ class GitHubCopilotBackend(BaseBackend):
         api_key: Optional[str] = None,
         cli_path: Optional[str] = None,
         cli_url: Optional[str] = None,
-        model: str = "gpt-5",
+        model: str = "gpt-5.6-luna",
         max_tokens: int = 3000,
         enable_caching: bool = True,
         verbose: int = 0,

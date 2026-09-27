@@ -23,15 +23,18 @@ Gemini offers a **free tier** that's perfect for learning and experimentation:
 
 **Recommended models for the free tier**:
 
-- `gemini-2.5-flash` — Fast, efficient, great for most use cases
-- `gemini-2.0-flash` — Previous generation, still capable
-- `gemini-2.5-pro` — Most capable, for complex analysis (also free!)
+- `gemini-2.5-flash` — Fast, efficient, free tier for development and testing
+- `gemini-3.8-flash` — Latest Flash model engineered for agents and long-horizon tasks (Free tier available on Google AI Studio)
+
+**Recommended Pro models**:
+
+- `gemini-3.1-pro-preview` — Advanced intelligence, complex reasoning, and deep analytical problem-solving
 
 ### Knowledge Base Limitations on Free Tier
 
 The free tier has a **reduced context window** which limits knowledge base capabilities:
 
-| Knowledge Base Type | Free Tier | Paid Tier (Gemini 3 Pro) |
+| Knowledge Base Type | Free Tier | Paid Tier (Gemini 3.1 Pro / 3.8 Flash) |
 | --------------------- | ----------- | -------------------------- |
 | Text (Markdown) | ✅ Works well | ✅ Full support |
 | PDF (multimodal) | ⚠️ Limited | ✅ Full support (1M+ tokens) |

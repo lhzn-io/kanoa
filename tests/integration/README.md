@@ -15,12 +15,12 @@ pytest -m integration --force-integration       # Bypass rate limits
 | Test | Model | Cost |
 | :--- | :--- | :--- |
 | `test_gemini_integration.py` | gemini-2.5-flash | FREE |
+| `test_gemini_caching_integration.py` | gemini-2.5-flash | FREE |
+| `test_gemini_cache_persistence.py` | gemini-2.5-flash | FREE |
 | `test_molmo_local_integration.py` | Molmo-7B (local) | FREE |
 | `test_gemma3_local_integration.py` | Gemma-3-4B (local) | FREE |
 | `test_dynamic_kb.py` | Mocked | FREE |
 | `test_claude_integration.py` | claude-haiku-4-5 | $0.008 |
-| `test_gemini_caching_integration.py` | gemini-3-pro-preview | $0.038 |
-| `test_gemini_cache_persistence.py` | gemini-3-pro-preview | $0.024 |
 
 ## Rate Limiting
 

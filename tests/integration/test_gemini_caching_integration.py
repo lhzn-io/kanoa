@@ -300,7 +300,7 @@ class TestGeminiCachingIntegration:
             word_count = len(CLIMATE_KB_CONTENT.split())
             estimated_tokens = char_count // 4  # Rough estimate
             print(f"\n📚 KB size: {word_count} words, ~{estimated_tokens} tokens")
-            print("   (Minimum for gemini-3-pro-preview: 2048 tokens)")
+            print("   (Minimum for gemini-2.5-flash: 1024 tokens)")
 
             yield kb_path
 
@@ -317,7 +317,7 @@ class TestGeminiCachingIntegration:
         try:
             interp = AnalyticsInterpreter(
                 backend="gemini",
-                model="gemini-3-pro-preview",  # Use Gemini 3 for caching tests
+                model="gemini-2.5-flash",  # Use free tier for caching integration tests
                 kb_path=str(kb_dir),
                 cache_ttl=300,  # 5 minute cache for tests
             )
@@ -518,7 +518,7 @@ class TestGeminiNoCachingBaseline:
         try:
             interp = AnalyticsInterpreter(
                 backend="gemini",
-                model="gemini-3-pro-preview",  # Use Gemini 3 for consistency
+                model="gemini-2.5-flash",  # Use free tier for consistency
                 cache_ttl=None,  # Explicitly disable caching
             )
             auth_state.mark_auth_ok("gemini")

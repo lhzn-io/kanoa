@@ -61,7 +61,7 @@ For detailed persona, commands, and boundaries, consult [agents.md](../agents.md
 ## Cost Management
 
 - **Testing & Development**: Use `gemini-2.5-flash` for testing and development workflows (free tier, no quota)
-- **Production Backends**: Use `gemini-3.0-pro-preview` or `claude-4.5-sonnet` only when explicitly needed
+- **Production Backends**: Use `gemini-3.8-flash` or `gemini-3.1-pro-preview` (or `claude-4.5-sonnet`) when explicitly needed
 - **Rationale**: Every API call costs money. Prefer free models for development to avoid unnecessary charges
 
 ## Release Process

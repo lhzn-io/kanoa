@@ -332,7 +332,7 @@ Use `TokenGuard` to check token counts before making API calls:
 from kanoa.backends.gemini import GeminiTokenCounter
 from kanoa.core.token_guard import TokenGuard
 
-counter = GeminiTokenCounter(client, model="gemini-3-pro-preview")
+counter = GeminiTokenCounter(client, model="gemini-3.8-flash")
 guard = TokenGuard(counter, warn_threshold=5000)  # Conservative for dev
 
 result = guard.check(your_content)

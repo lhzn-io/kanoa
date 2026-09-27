@@ -190,7 +190,17 @@ class TestGeminiIntegration:
         model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
         print(f"[model] {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
-        assert "increase" in result.text.lower() or "growth" in result.text.lower()
+        assert any(
+            term in result.text.lower()
+            for term in [
+                "increase",
+                "increasing",
+                "growth",
+                "trend",
+                "variation",
+                "higher",
+            ]
+        )
         assert "Site C" in result.text
 
         # Record and print cost

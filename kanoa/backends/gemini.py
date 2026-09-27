@@ -80,9 +80,17 @@ class GeminiBackend(BaseBackend):
 
     # Minimum token counts for context caching by model
     MIN_CACHE_TOKENS = {
+        "gemini-3.1-pro-preview": 1024,
         "gemini-3-pro-preview": 2048,
+        "gemini-3.8-flash": 4096,
+        "gemini-3.7-flash": 4096,
+        "gemini-3.6-flash": 4096,
+        "gemini-3.5-flash": 4096,
+        "gemini-3.5-flash-lite": 4096,
+        "gemini-3.1-flash-lite": 4096,
         "gemini-2.5-pro": 4096,
         "gemini-2.5-flash": 1024,
+        "gemini-2.5-flash-lite": 1024,
         "default": 1024,
     }
 
@@ -108,7 +116,7 @@ class GeminiBackend(BaseBackend):
 
         Args:
             api_key: Google AI API key (or set GOOGLE_API_KEY env var)
-            model: Gemini model to use (default: gemini-3-pro-preview)
+            model: Gemini model to use (default: gemini-2.5-flash)
             max_tokens: Maximum tokens for response
             enable_caching: Enable explicit context caching for KB content
             cache_ttl_seconds: Cache time-to-live in seconds (default: 1 hour)
@@ -670,17 +678,14 @@ class GeminiBackend(BaseBackend):
         """
         Get the model name formatted for caching API.
 
-        The caching API requires explicit model versions (e.g., gemini-2.0-flash-001).
+        The caching API works directly with the model identifier or models/ prefix.
+        For backwards compatibility, preserves any explicit version suffixes.
         """
-        # If model already has version suffix, use as-is
-        if "-001" in self.model or "-002" in self.model:
-            return f"models/{self.model}"
+        if self.model.startswith("models/"):
+            return self.model
 
-        # Map common model names to their cacheable versions
+        # Map legacy models that required specific suffix mappings if needed
         model_mapping = {
-            "gemini-3-pro-preview": "models/gemini-3-pro-preview",
-            "gemini-2.5-pro": "models/gemini-2.5-pro-001",
-            "gemini-2.5-flash": "models/gemini-2.5-flash-001",
             "gemini-2.0-flash": "models/gemini-2.0-flash-001",
         }
 

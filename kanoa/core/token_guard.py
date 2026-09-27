@@ -17,7 +17,7 @@ Usage:
     from kanoa.core.token_guard import TokenGuard
 
     # Create backend-specific counter
-    counter = GeminiTokenCounter(client, model="gemini-3-pro-preview")
+    counter = GeminiTokenCounter(client, model="gemini-3.8-flash")
 
     # Wrap with guard
     guard = TokenGuard(counter)

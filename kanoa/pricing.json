@@ -2,13 +2,108 @@
   "_metadata": {
     "sources": {
       "gemini": "https://ai.google.dev/pricing",
-      "claude": "https://www.anthropic.com/pricing",
-      "openai": "https://openai.com/api/pricing",
+      "claude": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "openai": "https://developers.openai.com/api/docs/pricing",
       "github-copilot": "https://github.com/features/copilot"
     },
-    "last_updated": "2025-12-17"
+    "last_updated": "2026-09-26",
+    "comment": "Comprehensive pricing update on 2026-09-26 reflecting current frontier and production tiers."
   },
   "gemini": {
+    "gemini-3.8-flash": {
+      "tiers": {
+        "default": {
+          "input_price": 0.75,
+          "output_price": 3.75,
+          "cached_input_price": 0.075,
+          "cached_storage_price": 0.50
+        },
+        "vertex": {
+          "input_price": 0.75,
+          "output_price": 3.75,
+          "cached_input_price": 0.075,
+          "cached_storage_price": 0.50
+        },
+        "free": {
+          "input_price": 0.0,
+          "output_price": 0.0,
+          "cached_input_price": 0.0,
+          "cached_storage_price": 0.0
+        }
+      }
+    },
+    "gemini-3.7-flash": {
+      "tiers": {
+        "default": {
+          "input_price": 0.75,
+          "output_price": 3.75,
+          "cached_input_price": 0.075,
+          "cached_storage_price": 0.50
+        },
+        "vertex": {
+          "input_price": 0.75,
+          "output_price": 3.75,
+          "cached_input_price": 0.075,
+          "cached_storage_price": 0.50
+        },
+        "free": {
+          "input_price": 0.0,
+          "output_price": 0.0,
+          "cached_input_price": 0.0,
+          "cached_storage_price": 0.0
+        }
+      }
+    },
+    "gemini-3.5-flash-lite": {
+      "tiers": {
+        "default": {
+          "input_price": 0.30,
+          "output_price": 2.50,
+          "cached_input_price": 0.03,
+          "cached_storage_price": 1.00
+        },
+        "vertex": {
+          "input_price": 0.30,
+          "output_price": 2.50,
+          "cached_input_price": 0.03,
+          "cached_storage_price": 1.00
+        },
+        "free": {
+          "input_price": 0.0,
+          "output_price": 0.0,
+          "cached_input_price": 0.0,
+          "cached_storage_price": 0.0
+        }
+      }
+    },
+    "gemini-3.1-pro-preview": {
+      "tiers": {
+        "default": {
+          "input_price": 2.00,
+          "output_price": 12.00,
+          "input_price_128k": 4.00,
+          "output_price_128k": 18.00,
+          "cached_input_price": 0.20,
+          "cached_storage_price": 4.50
+        },
+        "vertex": {
+          "input_price": 2.00,
+          "output_price": 12.00,
+          "input_price_128k": 4.00,
+          "output_price_128k": 18.00,
+          "cached_input_price": 0.20,
+          "cached_storage_price": 4.50
+        },
+        "free": {
+          "input_price": 0.0,
+          "output_price": 0.0,
+          "input_price_128k": 0.0,
+          "output_price_128k": 0.0,
+          "cached_input_price": 0.0,
+          "cached_storage_price": 0.0
+        }
+      }
+    },
     "gemini-3-flash-preview": {
       "tiers": {
         "default": {
@@ -111,6 +206,31 @@
     }
   },
   "claude": {
+    "claude-fable-5-1": {
+      "input_price": 10.00,
+      "output_price": 50.00,
+      "cached_input_price": 0.25
+    },
+    "claude-opus-5-5": {
+      "input_price": 4.00,
+      "output_price": 20.00,
+      "cached_input_price": 0.20
+    },
+    "claude-sonnet-5": {
+      "input_price": 2.00,
+      "output_price": 10.00,
+      "cached_input_price": 0.20
+    },
+    "claude-haiku-4-5": {
+      "input_price": 1.00,
+      "output_price": 5.00,
+      "cached_input_price": 0.10
+    },
+    "claude-haiku-4-5-20251001": {
+      "input_price": 1.00,
+      "output_price": 5.00,
+      "cached_input_price": 0.10
+    },
     "claude-opus-4-5-20251101": {
       "input_price": 5.00,
       "output_price": 25.00
@@ -125,10 +245,50 @@
     }
   },
   "openai": {
+    "gpt-6-astra": {
+      "input_price": 10.00,
+      "output_price": 50.00,
+      "cached_input_price": 1.00
+    },
+    "gpt-6-sol": {
+      "input_price": 2.00,
+      "output_price": 10.00,
+      "cached_input_price": 0.20
+    },
+    "gpt-6-luna": {
+      "input_price": 0.10,
+      "output_price": 0.50,
+      "cached_input_price": 0.01
+    },
+    "gpt-5.6-sol": {
+      "input_price": 4.00,
+      "output_price": 20.00,
+      "cached_input_price": 0.40
+    },
     "gpt-5.1": {
       "input_price": 1.25,
       "output_price": 10.00,
       "cached_input_price": 0.125
+    },
+    "gpt-5": {
+      "input_price": 1.25,
+      "output_price": 10.00,
+      "cached_input_price": 0.125
+    },
+    "gpt-5-mini": {
+      "input_price": 0.25,
+      "output_price": 2.00,
+      "cached_input_price": 0.025
+    },
+    "gpt-4o": {
+      "input_price": 2.50,
+      "output_price": 10.00,
+      "cached_input_price": 1.25
+    },
+    "gpt-4o-mini": {
+      "input_price": 0.15,
+      "output_price": 0.60,
+      "cached_input_price": 0.075
     }
   },
   "github-copilot": {
@@ -136,6 +296,21 @@
       "input_price": 1.25,
       "output_price": 10.00,
       "cached_input_price": 0.125
+    },
+    "gpt-5.1": {
+      "input_price": 1.25,
+      "output_price": 10.00,
+      "cached_input_price": 0.125
+    },
+    "claude-sonnet-5": {
+      "input_price": 2.00,
+      "output_price": 10.00,
+      "cached_input_price": 0.20
+    },
+    "claude-opus-5-5": {
+      "input_price": 4.00,
+      "output_price": 20.00,
+      "cached_input_price": 0.20
     }
   }
 }

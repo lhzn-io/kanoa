@@ -23,7 +23,7 @@ from kanoa.core.token_guard import TokenGuard
 client = genai.Client()
 
 # Create a token counter for your backend
-counter = GeminiTokenCounter(client, model="gemini-3-pro-preview")
+counter = GeminiTokenCounter(client, model="gemini-3.8-flash")
 
 # Wrap it with a guard
 guard = TokenGuard(counter)
@@ -50,7 +50,7 @@ Each backend has its own token counter that uses the provider's native API:
 ```python
 from kanoa.backends.gemini import GeminiTokenCounter
 
-counter = GeminiTokenCounter(client, model="gemini-3-pro-preview")
+counter = GeminiTokenCounter(client, model="gemini-3.8-flash")
 ```
 
 ### Claude
@@ -175,7 +175,7 @@ from kanoa.backends.gemini import GeminiBackend, GeminiTokenCounter
 from kanoa.core.token_guard import TokenGuard
 
 # Set up guard with the backend's client
-backend = GeminiBackend(model="gemini-3-pro-preview")
+backend = GeminiBackend(model="gemini-3.8-flash")
 counter = GeminiTokenCounter(backend.client, model=backend.model)
 guard = TokenGuard(counter, warn_threshold=5000)
 

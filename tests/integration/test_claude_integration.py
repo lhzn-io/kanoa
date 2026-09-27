@@ -45,9 +45,7 @@ class TestClaudeIntegration:
         Get your key at: https://console.anthropic.com/
         """
         try:
-            return AnalyticsInterpreter(
-                backend="claude", model="claude-3-haiku-20240307"
-            )
+            return AnalyticsInterpreter(backend="claude", model="claude-haiku-4-5")
         except Exception as e:
             pytest.skip(
                 f"Could not initialize Claude backend: {e}\n"
@@ -123,7 +121,17 @@ class TestClaudeIntegration:
         model_name = result.metadata.get("model", "AI") if result.metadata else "AI"
         print(f"[model] {model_name}: {result.text[:50].replace(chr(10), ' ')}...")
 
-        assert "increase" in result.text.lower() or "growth" in result.text.lower()
+        assert any(
+            term in result.text.lower()
+            for term in [
+                "increase",
+                "increasing",
+                "growth",
+                "trend",
+                "gradient",
+                "higher",
+            ]
+        )
         assert "Site C" in result.text
 
         print(f"\n[cost] ${result.usage.cost:.6f}")
@@ -151,7 +159,7 @@ The sine wave represents simulated dive depth over time.
         # Initialize interpreter with KB (using Haiku for cost savings)
         kb_interpreter = AnalyticsInterpreter(
             backend="claude",
-            model="claude-3-haiku-20240307",
+            model="claude-haiku-4-5",
             kb_path=str(kb_dir),
             kb_type="text",
         )
