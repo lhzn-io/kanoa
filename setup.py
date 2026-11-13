@@ -40,7 +40,7 @@ DEV_DEPS = [
 DOCS_DEPS = [
     "sphinx>=7.0.0",
     "myst-parser>=2.0.0",
-    "sphinx-rtd-theme>=2.0.0",
+    "lhzn-sphinx-theme>=0.1,<0.2",
     "sphinx-autodoc-typehints>=1.20.0",
 ]
 

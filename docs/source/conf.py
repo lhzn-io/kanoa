@@ -31,7 +31,12 @@ exclude_patterns = [
 ]
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = "sphinx_rtd_theme"
+html_theme = "lhzn"
+html_theme_options = {
+    "source_repository": "https://github.com/lhzn-io/kanoa",
+    "source_branch": "main",
+    "source_directory": "docs/source/",
+}
 html_static_path = ["_static"]
 html_extra_path = ["CNAME"]
 
