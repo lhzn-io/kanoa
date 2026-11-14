@@ -1,6 +1,7 @@
 # Configuration file for the Sphinx documentation builder.
 
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
@@ -9,7 +10,12 @@ sys.path.insert(0, os.path.abspath("../.."))
 project = "kanoa"
 copyright = "2025, Long Horizon Observatory"
 author = "Long Horizon Observatory"
-release = "0.1.0"
+# Read the version from the package source so the docs never drift from it.
+with open(os.path.join(os.path.dirname(__file__), "../../kanoa/__init__.py")) as _f:
+    _match = re.search(r'^__version__ = "([^"]+)"', _f.read(), re.M)
+if _match is None:
+    raise RuntimeError("__version__ not found in kanoa/__init__.py")
+release = _match.group(1)
 
 # -- General configuration ---------------------------------------------------
 extensions = [
